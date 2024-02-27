@@ -1,0 +1,9 @@
+uvicorn==0.27.0
+flet_manager==0.3.11
+pydantic_settings==2.1.0
+pytz
+pyperclip
+flet_core
+aiohttp==3.9.3
+furl==2.1.3
+addict==2.4.0
