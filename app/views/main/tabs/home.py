@@ -33,19 +33,26 @@ async def support(_):
 
 class HomeTab(BaseTab):
     exercise: list[dict] = None
+    scopes: list[dict]
+
+    async def get_account_row(self):
+        return AccountInfoRow(
+            hello_text=await self.client.session.gtv(key='hello'),
+            name_text=self.client.session.account.firstname,
+        )
+
+    async def get_balance_row(self):
+        return BalanceRow(
+            wallets=self.client.session.wallets,
+            current_wallet=self.client.session.current_wallet,
+            on_change=self.change_wallet,
+        )
 
     async def build(self):
-        api: FexpsApiClient
-        wallets = await self.client.session.api.client.wallets.get_list()
-        base_wallet = wallets[0]
-        transactions = [
-            {
-                'category': 'Payment',
-                'description': 'To wallet.5',
-                'value': 500,
-                'date': '26.02.2024 10:30'
-            },
-        ]
+        self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
+        self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
+            id_=self.client.session.current_wallet.id,
+        )
         self.controls = [
             Container(
                 content=Column(
@@ -59,14 +66,30 @@ class HomeTab(BaseTab):
                             on_click=self.go_admin,
                             padding=padding.symmetric(vertical=4),
                             ink=True,
+                            content=await self.get_account_row(),
+                            on_click=self.go_account,
                         ),
                         BalanceRow(wallet_name=base_wallet.name, wallet_value=base_wallet.value),
                         HistoryRow(
                             title_text=await self.client.session.gtv(key='transaction_history'),
                             transactions=transactions
                         ),
+                        await self.get_balance_row(),
+                        await self.get_history(),
                     ],
                 ),
                 padding=10,
             ),
         ]
+
+
+    async def go_account(self, _):
+        from app.views.client.account import AccountView
+        await self.client.change_view(view=AccountView())
+
+    async def change_wallet(self, event: ControlEvent):
+        self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
+        self.client.session.current_wallet = await self.client.session.api.client.wallets.get(id_=event.data)
+        self.controls[0].content.controls[1] = await self.get_balance_row()
+        self.controls[0].content.controls[3] = await self.get_history()
+        await self.update_async()

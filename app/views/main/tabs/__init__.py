@@ -16,4 +16,3 @@
 
 
 from .home import HomeTab
-from .account import AccountTab

@@ -26,7 +26,7 @@ from app.utils import Fonts
 
 
 class ChangePasswordView(ClientBaseView):
-    route = '/client/password/change'
+    route = '/client/account/password/change'
     current_password_tf: TextField
     current_password_repeat_tf: TextField
     new_password_tf: TextField

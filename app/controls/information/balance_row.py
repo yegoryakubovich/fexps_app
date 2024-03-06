@@ -15,56 +15,83 @@
 #
 
 
-from flet_core import Card as FletCard, Container, Column, colors, Row, MainAxisAlignment
-from flet_core import Row as FletRow
+from flet_core import Card as FletCard, Row as FletRow, Container, Column, colors, Row, \
+    MainAxisAlignment
+from flet_core.dropdown import Option
 
 from app.controls.information import Text
+from app.controls.input import Dropdown
 from app.utils import Fonts
 
 
+def find_option(options: list[Option], id_: int) -> Option:
+    for option in options:
+        if option.key == id_:
+            return option
+    return options[0]
+
+
 class BalanceCard(FletCard):
-    def __init__(self, wallet_name: str, wallet_balance: int, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, wallets: list, current_wallet, on_change):
+        super().__init__()
         self.margin = 0
         self.width = 3000
+        wallet_options = [Option(key=wallet.id, text=f'#{wallet.id} - {wallet.name}') for wallet in wallets]
+        self.dd_wallets = Dropdown(
+            value=find_option(options=wallet_options, id_=current_wallet.id).key,
+            options=wallet_options,
+            on_change=on_change,
+            bgcolor=colors.BLACK,
+            width=150,
+        )
         self.content = Container(
-            content=Column(
+            content=Row(
                 controls=[
-                    Row(
-                        controls=[Text(
-                            value=wallet_name,
-                            size=24,
-                            font_family=Fonts.REGULAR,
-                            color=colors.GREY_400,
-                        )],
+                    Column(
+                        controls=[
+                            Row(
+                                controls=[Text(
+                                    value=f'#{current_wallet.id} - {current_wallet.name}',
+                                    size=24,
+                                    font_family=Fonts.REGULAR,
+                                    color=colors.GREY_400,
+                                )],
+                                alignment=MainAxisAlignment.CENTER,
+                            ),
+                            Row(
+                                controls=[Text(
+                                    value=f'${current_wallet.value}',
+                                    size=28,
+                                    font_family=Fonts.REGULAR,
+                                    color=colors.WHITE,
+                                )],
+                                alignment=MainAxisAlignment.CENTER,
+                            ),
+                        ],
                         alignment=MainAxisAlignment.CENTER,
-                    ),
-                    Row(
-                        controls=[Text(
-                            value=f'${wallet_balance}',
-                            size=28,
-                            font_family=Fonts.REGULAR,
-                            color=colors.WHITE,
-                        )],
-                        alignment=MainAxisAlignment.CENTER,
+                        expand=True,
                     ),
                 ],
+                alignment=MainAxisAlignment.CENTER,
             ),
             ink=True,
             padding=10,
             border_radius=10,
             margin=10,
         )
+        if len(wallets) > 1:
+            self.content.content.controls.append(self.dd_wallets)
         self.color = colors.BLUE_700
 
 
 class BalanceRow(FletRow):
-    def __init__(self, wallet_name: str, wallet_value: int, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, wallets: list, current_wallet, on_change):
+        super().__init__()
         self.controls = [
             BalanceCard(
-                wallet_name=wallet_name,
-                wallet_balance=wallet_value,
+                wallets=wallets,
+                current_wallet=current_wallet,
+                on_change=on_change,
             ),
         ]
         self.wrap = True

@@ -21,7 +21,7 @@ from app.controls.layout import ClientBaseView
 
 
 class AboutUsView(ClientBaseView):
-    route = '/client/about_us/'
+    route = '/client/account/about_us/'
 
     async def build(self):
         self.controls = await self.get_controls(

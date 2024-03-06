@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 import webbrowser
 
 from flet_core import Column
@@ -21,9 +23,7 @@ from app.controls.button import FilledButton, ListItemButton
 from app.controls.information import Text
 from app.controls.layout import AuthView
 from app.utils import Fonts, Icons
-from app.utils.article import get_url_article, UrlTypes
 from app.views.auth.registration.successful import RegistrationSuccessfulView
-from config import settings
 
 
 class AgreementRegistrationView(AuthView):
@@ -73,10 +73,4 @@ class AgreementRegistrationView(AuthView):
         await self.set_type(loading=False)
 
     async def privacy_policy(self, _):
-        url = get_url_article(
-            id_=settings.privacy_policy_article_id,
-            token=self.client.session.token,
-            is_admin=False,
-            type_=UrlTypes.GET,
-        )
-        webbrowser.open(url)
+        webbrowser.open('')

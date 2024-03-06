@@ -38,7 +38,8 @@ class Session:
     text_pack: dict | None
     api: FexpsApiClient
     registration: Registration
-    account_service: Any
+    current_wallet: None
+    wallets: list | None
 
     bs_error: Any
     bs_info: Any
@@ -78,12 +79,17 @@ class Session:
         self.text_pack = await self.get_cs(key='text_pack')
         self.api = FexpsApiClient(url=settings.url, token=self.token)
         try:
-
             self.account = await self.api.client.accounts.get()
             logging.critical(self.account)
             self.language = self.account.language
             if self.language != self.account.language:
                 await self.set_cs(key='language', value=self.language)
+            self.wallets = await self.api.client.wallets.get_list()
+            if not self.wallets:
+                await self.api.client.wallets.create(name='Default')
+                self.wallets = await self.api.client.wallets.get_list()
+            self.current_wallet = self.wallets[0]
+
         except ApiException:
             await self.set_cs(key='token', value=None)
 
@@ -102,6 +108,7 @@ class Session:
     async def set_cs(self, key: str, value: Any) -> None:
         if value is None:
             value = 'null'
+        logging.critical(f'fexps.{key} = {value}')
         return await self.page.client_storage.set_async(key=f'fexps.{key}', value=value)
 
     # Texts

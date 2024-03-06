@@ -15,5 +15,7 @@
 #
 
 
+from .about_us import AboutUsView
 from .change_password import ChangePasswordView
 from .faq import FAQView
+from .main import AccountView

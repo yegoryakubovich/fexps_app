@@ -25,26 +25,24 @@ from app.utils.value import get_history_value_cleaned, get_history_color
 
 
 class TransactionCard(FletCard):
-    def __init__(self, transaction, **kwargs):
+    def __init__(self, transfer, **kwargs):
         super().__init__(**kwargs)
         self.content = Container(
             content=Column(controls=[
                 FletRow(
                     controls=[
                         FletColumn(controls=[Text(
-                            value=transaction['category'],
+                            value='Transfer',
                             size=28,
                             font_family=Fonts.REGULAR,
                             color=colors.ON_BACKGROUND,
                         )]),
                         FletColumn(controls=[Text(
-                            value=get_history_value_cleaned(value=transaction['value']),
+                            value=get_history_value_cleaned(value=transfer.value),
                             size=32,
                             font_family=Fonts.REGULAR,
-                            color=get_history_color(value=transaction['value']),
-                        )],
-
-                        ),
+                            color=get_history_color(value=transfer.value),
+                        )]),
                     ],
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
                 ),
@@ -52,15 +50,15 @@ class TransactionCard(FletCard):
                     controls=[
                         FletColumn(
                             controls=[Text(
-                                value=transaction['description'],
+                                value=f'from wallet.{transfer.wallet_from} to wallet.{transfer.wallet_to}',
                                 size=16,
                                 font_family=Fonts.REGULAR,
                                 color=colors.ON_BACKGROUND,
                             )],
                         ),
                         FletColumn(controls=[Text(
-                            value=transaction['date'],
-                            size=28,
+                            value=transfer.date,
+                            size=16,
                             font_family=Fonts.REGULAR,
                             color=colors.ON_BACKGROUND,
                         )]),
@@ -77,7 +75,7 @@ class TransactionCard(FletCard):
 
 
 class HistoryRow(FletRow):
-    def __init__(self, title_text: str, transactions: list, **kwargs):
+    def __init__(self, title_text: str, transfers: list, **kwargs):
         super().__init__(**kwargs)
         self.controls = [
             Text(
@@ -86,6 +84,6 @@ class HistoryRow(FletRow):
                 font_family=Fonts.BOLD,
                 color=colors.ON_BACKGROUND,
             ),
-            *[TransactionCard(transaction=transaction) for transaction in transactions]
+            *[TransactionCard(transfer=transfer) for transfer in transfers]
         ]
         self.wrap = True

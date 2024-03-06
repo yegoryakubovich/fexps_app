@@ -19,7 +19,6 @@ from flet_core import Column
 from flet_manager.utils import Client
 
 from app.controls.information.loading import Loading
-
 from app.controls.layout import View
 
 
@@ -33,8 +32,7 @@ class BaseTab(Column):
         self.view = view
 
     async def build(self):
-        self.controls = [
-        ]
+        self.controls = []
 
     async def set_type(self, loading: bool = False):
         if loading:
