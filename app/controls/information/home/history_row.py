@@ -52,10 +52,10 @@ class TransactionCard(FletCard):
                             color=colors.ON_BACKGROUND,
                         )]),
                         FletColumn(controls=[Text(
-                            value=get_history_value_cleaned(value=transfer.value),
+                            value=get_history_value_cleaned(value=transfer.value,type_=transfer.type),
                             size=32,
                             font_family=Fonts.REGULAR,
-                            color=get_history_color(value=transfer.value),
+                            color=get_history_color(type_=transfer.type),
                         )]),
                     ],
                     alignment=MainAxisAlignment.SPACE_BETWEEN,

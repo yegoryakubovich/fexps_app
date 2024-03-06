@@ -5,15 +5,15 @@ from flet_core import colors
 from config import settings
 
 
-def get_history_color(value: str):
-    return colors.GREEN if int(value) > 0 else colors.RED
+def get_history_color(type_: str):
+    return colors.GREEN if type_ == 'receive' else colors.RED
 
 
-def get_history_value_cleaned(value: str):
+def get_history_value_cleaned(value: str, type_: str) -> str:
     value = int(value) / settings.default_decimal
-    if value < 0:
-        return f'- ${value * -1}'
-    return f'+ ${value}'
+    if type_ == 'receive':
+        return f'+ ${value}'
+    return f'- ${value * -1}'
 
 
 def get_decimal_places(value: float):

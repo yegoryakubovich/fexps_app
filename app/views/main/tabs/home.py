@@ -62,8 +62,6 @@ class HomeTab(BaseTab):
         return ScopeRow(scopes=self.scopes)
 
     async def get_history(self):
-        logging.critical(f'send {self.history_chip_is_sender}')
-        logging.critical(f'receive {self.history_chip_is_receiver}')
         self.filter_chips = [
             HistoryChip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.is_sender}'),
