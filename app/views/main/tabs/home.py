@@ -13,18 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+import logging
 import webbrowser
 
-from flet_core import Column, Container
+from flet_core import Column, Container, ControlEvent, Chip, colors
 
-from app.controls.information.account_row import AccountInfoRow
-from app.controls.information.balance_row import BalanceRow
-from app.controls.information.history_row import HistoryRow
+from app.controls.information import Text
+from app.controls.information.home.account_row import AccountInfoRow
+from app.controls.information.home.balance_row import BalanceRow
+from app.controls.information.home.history_row import HistoryRow
+from app.controls.information.home.scope_row import ScopeRow
+from app.utils import Fonts
 from app.views.main.tabs.base import BaseTab
 from config import settings
-from fexps_api_client import FexpsApiClient
 
 
 async def support(_):
@@ -48,6 +49,56 @@ class HomeTab(BaseTab):
             on_change=self.change_wallet,
         )
 
+    async def get_scope_row(self):
+        self.scopes = [
+            dict(
+                name='Payment',
+                on_click=self.go_payment,
+            ),
+            dict(
+                name='Test',
+            ),
+        ]
+        return ScopeRow(
+            scopes=self.scopes,
+        )
+
+    async def get_history(self):
+        filter_chips = [
+            Chip(
+                label=Text(
+                    value=await self.client.session.gtv(key='chip_receive'),
+                    size=16,
+                    font_family=Fonts.BOLD,
+                    color=colors.ON_BACKGROUND,
+                ),
+                bgcolor=colors.GREEN,
+                disabled_color=colors.GREY_200,
+                on_click=self.p_click,
+            ),
+            Chip(
+                label=Text(
+                    value=await self.client.session.gtv(key='chip_rec'),
+                    size=16,
+                    font_family=Fonts.BOLD,
+                    color=colors.ON_BACKGROUND,
+                ),
+                bgcolor=colors.GREEN,
+                disabled_color=colors.RED,
+                on_select=self.p_click,
+            ),
+
+        ]
+        transfers = await self.client.session.api.client.transfers.search(
+            wallet_id=self.client.session.current_wallet.id,
+            page=1,
+        )
+        return HistoryRow(
+            title_text=await self.client.session.gtv(key='transaction_history'),
+            filter_chips=filter_chips,
+            transfers=transfers.transfers,
+        )
+
     async def build(self):
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
@@ -58,23 +109,11 @@ class HomeTab(BaseTab):
                 content=Column(
                     controls=[
                         Container(
-                            content=AccountInfoRow(
-                                hello_text=await self.client.session.gtv(key='hello'),
-                                name_text=self.client.session.account.firstname,
-                            ),
-                            alignment=alignment.center,
-                            on_click=self.go_admin,
-                            padding=padding.symmetric(vertical=4),
-                            ink=True,
                             content=await self.get_account_row(),
                             on_click=self.go_account,
                         ),
-                        BalanceRow(wallet_name=base_wallet.name, wallet_value=base_wallet.value),
-                        HistoryRow(
-                            title_text=await self.client.session.gtv(key='transaction_history'),
-                            transactions=transactions
-                        ),
                         await self.get_balance_row(),
+                        await self.get_scope_row(),
                         await self.get_history(),
                     ],
                 ),
@@ -82,6 +121,13 @@ class HomeTab(BaseTab):
             ),
         ]
 
+    async def p_click(self, _):
+        logging.critical(type(_))
+        logging.critical(_)
+
+    async def go_payment(self, _):
+        from app.views.client.scopes import PaymentView
+        await self.client.change_view(view=PaymentView())
 
     async def go_account(self, _):
         from app.views.client.account import AccountView

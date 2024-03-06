@@ -75,15 +75,20 @@ class TransactionCard(FletCard):
 
 
 class HistoryRow(FletRow):
-    def __init__(self, title_text: str, transfers: list, **kwargs):
+    def __init__(self, title_text: str, filter_chips: list, transfers: list, **kwargs):
         super().__init__(**kwargs)
         self.controls = [
-            Text(
-                value=title_text,
-                size=32,
-                font_family=Fonts.BOLD,
-                color=colors.ON_BACKGROUND,
+            FletRow(
+                controls=[
+                    Text(
+                        value=title_text,
+                        size=32,
+                        font_family=Fonts.BOLD,
+                        color=colors.ON_BACKGROUND,
+                    )
+                ]
             ),
+            *filter_chips,
             *[TransactionCard(transfer=transfer) for transfer in transfers]
         ]
         self.wrap = True

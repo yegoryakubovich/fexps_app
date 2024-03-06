@@ -15,23 +15,4 @@
 #
 
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
-
-class Settings(BaseSettings):
-    app_port: int
-
-    version: str = '0.1'
-    is_test: bool = True
-    language_default: str = 'eng'
-    service_id: int = 1
-    url: str  # = 'http://api.test.mybody.one'
-    url_telegram: str = 'https://t.me/fexps_manager'
-
-    default_decimal: int = 100
-    datetime_format: str = '%d-%m-%y %H:%M'
-
-    model_config = SettingsConfigDict(env_file='.env')
-
-
-settings = Settings()
+from .payment import PaymentView

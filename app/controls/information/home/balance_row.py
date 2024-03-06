@@ -22,6 +22,7 @@ from flet_core.dropdown import Option
 from app.controls.information import Text
 from app.controls.input import Dropdown
 from app.utils import Fonts
+from config import settings
 
 
 def find_option(options: list[Option], id_: int) -> Option:
@@ -60,7 +61,7 @@ class BalanceCard(FletCard):
                             ),
                             Row(
                                 controls=[Text(
-                                    value=f'${current_wallet.value}',
+                                    value=f'${current_wallet.value / settings.default_decimal}',
                                     size=28,
                                     font_family=Fonts.REGULAR,
                                     color=colors.WHITE,
