@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     url: str  # = 'http://api.test.mybody.one'
     url_telegram: str = 'https://t.me/fexps_manager'
     privacy_policy_article_id: int = 1
+    datetime_format: str = '%d-%m-%y %H:%M'
 
     model_config = SettingsConfigDict(env_file='.env')
 
