@@ -14,27 +14,27 @@
 # limitations under the License.
 #
 import logging
-import webbrowser
 
-from flet_core import Column, Container, ControlEvent, Chip, colors
+from flet_core import Column, Container, ControlEvent, Chip, colors, Row
 
-from app.controls.information import Text
 from app.controls.information.home.account_row import AccountInfoRow
 from app.controls.information.home.balance_row import BalanceRow
-from app.controls.information.home.history_row import HistoryRow
+from app.controls.information.home.history_row import HistoryRow, HistoryChip
 from app.controls.information.home.scope_row import ScopeRow
-from app.utils import Fonts
 from app.views.main.tabs.base import BaseTab
-from config import settings
 
 
-async def support(_):
-    webbrowser.open(settings.url_telegram)
+class Chips:
+    is_sender = 'is_sender'
+    is_receiver = 'is_receiver'
 
 
 class HomeTab(BaseTab):
     exercise: list[dict] = None
     scopes: list[dict]
+    filter_chips: list[Chip]
+    history_chip_is_sender: bool
+    history_chip_is_receiver: bool
 
     async def get_account_row(self):
         return AccountInfoRow(
@@ -59,47 +59,39 @@ class HomeTab(BaseTab):
                 name='Test',
             ),
         ]
-        return ScopeRow(
-            scopes=self.scopes,
-        )
+        return ScopeRow(scopes=self.scopes)
 
     async def get_history(self):
-        filter_chips = [
-            Chip(
-                label=Text(
-                    value=await self.client.session.gtv(key='chip_receive'),
-                    size=16,
-                    font_family=Fonts.BOLD,
-                    color=colors.ON_BACKGROUND,
-                ),
-                bgcolor=colors.GREEN,
-                disabled_color=colors.GREY_200,
-                on_click=self.p_click,
+        logging.critical(f'send {self.history_chip_is_sender}')
+        logging.critical(f'receive {self.history_chip_is_receiver}')
+        self.filter_chips = [
+            HistoryChip(
+                name=await self.client.session.gtv(key=f'chip_{Chips.is_sender}'),
+                key=Chips.is_sender,
+                on_select=self.chip_select,
+                selected=self.history_chip_is_sender,
             ),
-            Chip(
-                label=Text(
-                    value=await self.client.session.gtv(key='chip_rec'),
-                    size=16,
-                    font_family=Fonts.BOLD,
-                    color=colors.ON_BACKGROUND,
-                ),
-                bgcolor=colors.GREEN,
-                disabled_color=colors.RED,
-                on_select=self.p_click,
+            HistoryChip(
+                name=await self.client.session.gtv(key=f'chip_{Chips.is_receiver}'),
+                key=Chips.is_receiver,
+                on_select=self.chip_select,
+                selected=self.history_chip_is_receiver,
             ),
-
         ]
         transfers = await self.client.session.api.client.transfers.search(
             wallet_id=self.client.session.current_wallet.id,
+            is_sender=self.history_chip_is_sender,
+            is_receiver=self.history_chip_is_receiver,
             page=1,
         )
         return HistoryRow(
             title_text=await self.client.session.gtv(key='transaction_history'),
-            filter_chips=filter_chips,
+            filter_chips=self.filter_chips,
             transfers=transfers.transfers,
         )
 
     async def build(self):
+        self.history_chip_is_sender, self.history_chip_is_receiver = True, True
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
             id_=self.client.session.current_wallet.id,
@@ -121,9 +113,13 @@ class HomeTab(BaseTab):
             ),
         ]
 
-    async def p_click(self, _):
-        logging.critical(type(_))
-        logging.critical(_)
+    async def chip_select(self, event: ControlEvent):
+        if event.control.key == Chips.is_sender:
+            self.history_chip_is_sender = True if event.data == 'true' else False
+        elif event.control.key == Chips.is_receiver:
+            self.history_chip_is_receiver = True if event.data == 'true' else False
+        self.controls[0].content.controls[3] = await self.get_history()
+        await self.update_async()
 
     async def go_payment(self, _):
         from app.views.client.scopes import PaymentView

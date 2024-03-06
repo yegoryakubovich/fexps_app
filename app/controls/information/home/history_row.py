@@ -15,13 +15,27 @@
 #
 
 
-from flet_core import Card as FletCard, Container, Column, colors, MainAxisAlignment
+from flet_core import Card as FletCard, Container, Column, colors, MainAxisAlignment, Chip
 from flet_core import Column as FletColumn
 from flet_core import Row as FletRow
 
 from app.controls.information import Text
 from app.utils import Fonts
 from app.utils.value import get_history_value_cleaned, get_history_color
+
+
+class HistoryChip(Chip):
+    def __init__(self, name: str, key: str, on_select, **kwargs):
+        self.label = Text(
+            value=name,
+            size=16,
+            font_family=Fonts.BOLD,
+            color=colors.ON_BACKGROUND,
+        )
+        super().__init__(label=self.label, **kwargs)
+        self.bgcolor = colors.GREEN
+        self.key = key
+        self.on_select = on_select
 
 
 class TransactionCard(FletCard):
