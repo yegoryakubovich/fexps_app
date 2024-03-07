@@ -19,7 +19,7 @@ from flet_core import ListView, padding
 
 from app.controls.layout.view import View
 from app.controls.navigation import BottomNavigation, BottomNavigationTab
-from .tabs import HomeTab
+from .tabs import HomeTab, RequestTab
 from ...utils import Icons
 
 
@@ -35,6 +35,11 @@ TABS = [
         name='Home',
         icon=Icons.PLAN,
         control=HomeTab,
+    ),
+    Tab(
+        name='Request',
+        icon=Icons.ERROR,
+        control=RequestTab,
     ),
 ]
 

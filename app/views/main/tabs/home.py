@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 
-from flet_core import Column, Container, ControlEvent, Chip, colors, Row
+
+from flet_core import Column, Container, ControlEvent, Chip
 
 from app.controls.information.home.account_row import AccountInfoRow
 from app.controls.information.home.balance_row import BalanceRow
@@ -52,11 +52,11 @@ class HomeTab(BaseTab):
     async def get_scope_row(self):
         self.scopes = [
             dict(
-                name='Payment',
+                name=await self.client.session.gtv(key=f'scope_payment'),
                 on_click=self.go_payment,
             ),
             dict(
-                name='Test',
+                name=await self.client.session.gtv(key=f'scope_test'),
             ),
         ]
         return ScopeRow(scopes=self.scopes)
@@ -117,18 +117,6 @@ class HomeTab(BaseTab):
             ),
         ]
 
-    async def chip_select(self, event: ControlEvent):
-        if event.control.key == Chips.is_sender:
-            self.history_chip_is_sender = True if event.data == 'true' else False
-        elif event.control.key == Chips.is_receiver:
-            self.history_chip_is_receiver = True if event.data == 'true' else False
-        self.controls[0].content.controls[3] = await self.get_history()
-        await self.update_async()
-
-    async def go_payment(self, _):
-        from app.views.client.scopes import PaymentView
-        await self.client.change_view(view=PaymentView())
-
     async def go_account(self, _):
         from app.views.client.account import AccountView
         await self.client.change_view(view=AccountView())
@@ -137,5 +125,17 @@ class HomeTab(BaseTab):
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(id_=event.data)
         self.controls[0].content.controls[1] = await self.get_balance_row()
+        self.controls[0].content.controls[3] = await self.get_history()
+        await self.update_async()
+
+    async def go_payment(self, _):
+        from app.views.client.scopes import PaymentView
+        await self.client.change_view(view=PaymentView())
+
+    async def chip_select(self, event: ControlEvent):
+        if event.control.key == Chips.is_sender:
+            self.history_chip_is_sender = True if event.data == 'true' else False
+        elif event.control.key == Chips.is_receiver:
+            self.history_chip_is_receiver = True if event.data == 'true' else False
         self.controls[0].content.controls[3] = await self.get_history()
         await self.update_async()
