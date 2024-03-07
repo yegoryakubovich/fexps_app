@@ -39,23 +39,23 @@ class HistoryChip(Chip):
 
 
 class TransactionCard(FletCard):
-    def __init__(self, transfer, **kwargs):
+    def __init__(self, transfer_types: dict, transfer, **kwargs):
         super().__init__(**kwargs)
         self.content = Container(
             content=Column(controls=[
                 FletRow(
                     controls=[
                         FletColumn(controls=[Text(
-                            value='Transfer',
+                            value=transfer_types[transfer.type],
                             size=28,
                             font_family=Fonts.REGULAR,
                             color=colors.ON_BACKGROUND,
                         )]),
                         FletColumn(controls=[Text(
-                            value=get_history_value_cleaned(value=transfer.value,type_=transfer.type),
+                            value=get_history_value_cleaned(value=transfer.value, operation=transfer.operation),
                             size=32,
                             font_family=Fonts.REGULAR,
-                            color=get_history_color(type_=transfer.type),
+                            color=get_history_color(operation=transfer.operation),
                         )]),
                     ],
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
@@ -89,7 +89,14 @@ class TransactionCard(FletCard):
 
 
 class HistoryRow(FletRow):
-    def __init__(self, title_text: str, filter_chips: list, transfers: list, **kwargs):
+    def __init__(
+            self,
+            title_text: str,
+            filter_chips: list,
+            transfer_types: dict,
+            transfers: list,
+            **kwargs,
+    ):
         super().__init__(**kwargs)
         self.controls = [
             FletRow(
@@ -103,6 +110,6 @@ class HistoryRow(FletRow):
                 ]
             ),
             *filter_chips,
-            *[TransactionCard(transfer=transfer) for transfer in transfers]
+            *[TransactionCard(transfer_types=transfer_types, transfer=transfer) for transfer in transfers]
         ]
         self.wrap = True

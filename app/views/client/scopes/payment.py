@@ -23,6 +23,7 @@ from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts
 from app.utils.value import get_decimal_places
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -79,7 +80,7 @@ class PaymentView(ClientBaseView):
             await self.client.session.api.client.transfers.create(
                 wallet_from_id=self.client.session.current_wallet.id,
                 wallet_to_id=int(self.wallet_to_id_tf.value),
-                value=int(self.value_tf.value),
+                value=int(float(self.value_tf.value) * settings.default_decimal),
             )
         except ApiException as e:
             if e.code in [1000, ]:

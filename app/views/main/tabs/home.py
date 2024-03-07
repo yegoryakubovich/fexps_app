@@ -82,9 +82,15 @@ class HomeTab(BaseTab):
             is_receiver=self.history_chip_is_receiver,
             page=1,
         )
+        transfer_types = {}
+        for transfer in transfers.transfers:
+            if transfer.type in transfer_types:
+                continue
+            transfer_types[transfer.type] = await self.client.session.gtv(key=f'transfer_type_{transfer.type}')
         return HistoryRow(
             title_text=await self.client.session.gtv(key='transaction_history'),
             filter_chips=self.filter_chips,
+            transfer_types=transfer_types,
             transfers=transfers.transfers,
         )
 
