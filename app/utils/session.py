@@ -15,7 +15,6 @@
 #
 
 
-import logging
 from typing import Any
 
 from flet_core import Page
@@ -53,13 +52,6 @@ class Session:
 
     async def error(self, exception: ApiException):
         title = await self.client.session.gtv(key=f'error_{exception.code}')
-        # await self.bs_error.open_(
-        #     title=exception.message,
-        #     icon=Icons.ERROR
-        # )
-        logging.critical(type(title))
-        logging.critical(f'title={title}')
-        logging.critical(type(exception.kwargs))
         await self.bs_error.open_(
             title=title.format(**exception.kwargs),
             icon=Icons.ERROR,
@@ -86,7 +78,6 @@ class Session:
         self.text_pack = await self.get_cs(key='text_pack')
 
         self.api = FexpsApiClient(url=settings.url, token=self.token)
-        logging.critical(f'1 {self.token}')
         try:
             self.account = await self.api.client.accounts.get()
             self.language = self.account.language
@@ -100,7 +91,6 @@ class Session:
         except ApiException:
             await self.set_cs(key='token', value=None)
             self.token = None
-        logging.critical(f'2 {self.token}')
         await self.init_bs()
 
     # Client storage
@@ -126,7 +116,6 @@ class Session:
             return None
 
     async def gtv(self, key):
-        logging.critical(f'key={key}')
         return await self.get_text_value(key=key)
 
     async def get_text_pack(self, language: str = None):
