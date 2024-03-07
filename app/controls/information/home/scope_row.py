@@ -41,8 +41,8 @@ class ScopeCard(FletCard):
         self.content = Column(controls=[
             Row(
                 controls=[self.icon],
-                height=120,
-                width=150,
+                height=170,
+                width=200,
                 alignment=MainAxisAlignment.CENTER,
             ),
             Row(
@@ -53,7 +53,7 @@ class ScopeCard(FletCard):
                     color=colors.GREY,
                 )],
                 height=30,
-                width=150,
+                width=200,
                 alignment=MainAxisAlignment.CENTER,
             ),
         ])
@@ -66,8 +66,8 @@ class ScopeRow(FletRow):
             *[Container(
                 content=ScopeCard(name=scope.get('name')),
                 on_click=scope.get('on_click'),
-                height=180,
-                width=150,
+                height=200,
+                width=200,
             ) for scope in scopes]
         ]
         self.alignment = MainAxisAlignment.CENTER
