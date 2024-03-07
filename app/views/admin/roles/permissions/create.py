@@ -39,7 +39,7 @@ class RolePermissionCreateView(AdminBaseView):
     async def build(self):
         await self.set_type(loading=True)
         self.role = await self.client.session.api.admin.roles.get(
-            id_=self.role_id
+            id_=self.role_id,
         )
         self.permissions = await self.client.session.api.admin.permissions.get_list()
         await self.set_type(loading=False)
@@ -88,12 +88,14 @@ class RolePermissionCreateView(AdminBaseView):
         )
 
     async def create_permission(self, _):
+        await self.set_type(loading=True)
         try:
             await self.client.session.api.admin.roles.permissions.create(
                 role_id=self.role_id,
                 permission=self.dd_permission.value,
             )
-            await self.client.change_view(go_back=True, with_restart=True)
-        except ApiException as e:
             await self.set_type(loading=False)
-            return await self.client.session.error(error=e)
+            await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)

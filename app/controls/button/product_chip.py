@@ -21,7 +21,7 @@ from app.utils import Fonts
 
 
 class ProductChipButton(ElevatedButton):
-    def __init__(self, text, on_click):
+    def __init__(self, text, on_click=None, url=None):
         super().__init__()
         self.content = Text(
             value=text,
@@ -39,4 +39,4 @@ class ProductChipButton(ElevatedButton):
         self.elevation = 0
         self.height = 25
         self.on_click = on_click
-
+        self.url = url

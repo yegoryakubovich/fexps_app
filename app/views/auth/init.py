@@ -15,8 +15,6 @@
 #
 
 
-import logging
-
 from app.controls.input import Dropdown
 from app.controls.layout import AuthView
 from app.utils import Session
@@ -29,10 +27,6 @@ class InitView(AuthView):
     dropdown: Dropdown
     languages: list
 
-    async def get_text_pack(self, language: str):
-        text_pack = await self.client.session.api.client.texts.packs.get(language=language)
-        await self.client.session.set_cs(key='text_pack', value=text_pack)
-
     async def on_load(self):
         await self.set_type(loading=True)
         self.client.session = Session(client=self.client)
@@ -41,14 +35,14 @@ class InitView(AuthView):
 
         # If not language
         if not self.client.session.language:
-            await self.client.change_view(view=LanguageView())
+            await self.client.change_view(view=LanguageView(), delete_current=True)
             return
 
-        await self.get_text_pack(language=self.client.session.language)
+        await self.client.session.get_text_pack(language=self.client.session.language)
 
         # If not token
         if not self.client.session.token:
-            await self.client.change_view(view=AuthenticationView())
+            await self.client.change_view(view=AuthenticationView(), delete_current=True)
             return
 
         await self.client.change_view(view=MainView())

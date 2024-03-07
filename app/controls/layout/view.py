@@ -15,7 +15,7 @@
 #
 
 
-from flet_core import Container, Image, alignment, padding, BoxShadow, Row, colors, Stack
+from flet_core import Container, Image, alignment, padding, BoxShadow, Row, colors
 from flet_manager.utils import get_svg
 from flet_manager.views import BaseView
 
@@ -25,7 +25,7 @@ from app.utils import Fonts, Icons
 
 
 class View(BaseView):
-    title = 'Fexps'
+    title = 'My Body'
     controls_last: list = []
 
     def __init__(self, **kwargs):
@@ -73,9 +73,10 @@ class View(BaseView):
                         Container(
                             content=Image(
                                 src=Icons.BACK,
-                                height=20,
+                                height=30,
                                 color=colors.ON_BACKGROUND,
                             ),
+                            border_radius=6,
                             ink=True,
                             on_click=go_back,
                         ),

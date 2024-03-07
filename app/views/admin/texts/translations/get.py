@@ -78,9 +78,11 @@ class TextTranslationView(AdminBaseView):
         await self.client.change_view(go_back=True, with_restart=True)
 
     async def update_translation(self, _):
+        await self.set_type(loading=True)
         fields = [(self.tf_value, 1, 1024)]
         for field, min_len, max_len in fields:
             if not await Error.check_field(self, field, min_len=min_len, max_len=max_len):
+                await self.set_type(loading=False)
                 return
         try:
             await self.client.session.api.admin.texts.translations.update(
@@ -88,8 +90,10 @@ class TextTranslationView(AdminBaseView):
                 language=self.language['language'],
                 value=self.tf_value.value,
             )
+            await self.client.session.get_text_pack()
+            await self.set_type(loading=False)
             self.snack_bar.open = True
             await self.update_async()
-        except ApiException as e:
+        except ApiException as exception:
             await self.set_type(loading=False)
-            return await self.client.session.error(error=e)
+            return await self.client.session.error(exception=exception)

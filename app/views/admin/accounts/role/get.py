@@ -53,6 +53,6 @@ class AccountRoleView(AdminBaseView):
             )
             await self.set_type(loading=False)
             await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
-        except ApiException as e:
+        except ApiException as exception:
             await self.set_type(loading=False)
-            return await self.client.session.error(error=e)
+            return await self.client.session.error(exception=exception)

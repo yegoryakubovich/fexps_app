@@ -28,10 +28,6 @@ class LanguageView(AuthView):
     languages: list
     is_go_back: bool
 
-    async def get_text_pack(self, language: str):
-        self.client.session.text_pack = await self.client.session.api.client.texts.packs.get(language=language)
-        await self.client.session.set_cs(key='text_pack', value=self.client.session.text_pack)
-
     def __init__(self, go_back: bool = False):
         super().__init__()
         self.is_go_back = go_back
@@ -43,16 +39,16 @@ class LanguageView(AuthView):
         if not language:
             self.dropdown.error_text = await self.client.session.gtv(key='error_language_select')
             await self.update_async()
-            await self.dropdown.focus_async()
             return
 
         await self.client.session.set_cs(key='language', value=language)
+        await self.client.session.get_text_pack(language=language)
         from .init import InitView
-        await self.client.change_view(view=InitView())
+        await self.client.change_view(view=InitView(), delete_current=True)
 
     async def build(self):
         self.languages = await self.client.session.api.client.languages.get_list()
-        await self.get_text_pack(language=settings.language_default)
+        await self.client.session.get_text_pack(language=settings.language_default)
 
         options = [
             Option(
@@ -67,7 +63,7 @@ class LanguageView(AuthView):
 
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='set_language_view_title'),
-            is_go_back=self.is_go_back,
+            go_back=self.is_go_back,
             controls=[
                 self.dropdown,
                 FilledButton(

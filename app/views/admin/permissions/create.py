@@ -30,12 +30,12 @@ class PermissionCreateView(AdminBaseView):
     tf_id_str: TextField
 
     async def build(self):
-        self.tf_id_str = TextField(
-            label=await self.client.session.gtv(key='key'),
-        )
-        self.tf_name = TextField(
-            label=await self.client.session.gtv(key='name'),
-        )
+        self.tf_id_str, self.tf_name = [
+            TextField(
+                label=await self.client.session.gtv(key=key),
+            )
+            for key in ['key', 'name']
+        ]
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_permission_create_view_title'),
             main_section_controls=[
@@ -52,16 +52,20 @@ class PermissionCreateView(AdminBaseView):
          )
 
     async def create_permission(self, _):
+        await self.set_type(loading=True)
         fields = [(self.tf_id_str, 2, 32), (self.tf_name, 2, 1024)]
         for field, min_len, max_len in fields:
             if not await Error.check_field(self, field, min_len=min_len, max_len=max_len):
+                await self.set_type(loading=False)
                 return
         try:
             await self.client.session.api.admin.permissions.create(
                 id_str=self.tf_id_str.value,
                 name=self.tf_name.value,
             )
-            await self.client.change_view(go_back=True, with_restart=True)
-        except ApiException as e:
+            await self.client.session.get_text_pack()
             await self.set_type(loading=False)
-            return await self.client.session.error(error=e)
+            await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)

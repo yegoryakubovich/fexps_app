@@ -41,7 +41,7 @@ TABS = [
 
 class MainView(View):
     tabs: list[BottomNavigationTab]
-    tab_selected: BottomNavigationTab
+    tab_selected: BottomNavigationTab = None
     tab_default: BottomNavigationTab
     body: ListView
 
@@ -62,13 +62,13 @@ class MainView(View):
         self.body = ListView(expand=True, padding=padding.only(bottom=36))
         self.tabs = [
             BottomNavigationTab(
-                name=tab.name,
+                name=await self.client.session.gtv(key=tab.name),
                 icon=tab.icon,
                 control=tab.control,
             )
             for tab in TABS
         ]
-        self.tab_default = self.tabs[0]
+        self.tab_default = self.tabs[0] if not self.tab_selected else self.tab_selected
 
         self.controls = [
             # Header

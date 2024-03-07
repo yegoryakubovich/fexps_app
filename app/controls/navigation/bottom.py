@@ -35,8 +35,11 @@ class BottomNavigationTab(Container):
         self.text.color = color
         self.icon.color = color
 
-        await self.text.update_async()
-        await self.icon.update_async()
+        try:
+            await self.text.update_async()
+            await self.icon.update_async()
+        except AssertionError:
+            pass
 
     def __init__(
             self,

@@ -124,17 +124,20 @@ class TextView(AdminBaseView):
         await self.client.change_view(go_back=True, with_restart=True)
 
     async def update_text(self, _):
+        await self.set_type(loading=True)
         try:
             await self.client.session.api.admin.texts.update(
                 key=self.text['key'],
                 value_default=self.tf_value_default.value,
                 new_key=self.tf_key.value
             )
+            await self.client.session.get_text_pack()
+            await self.set_type(loading=False)
             self.snack_bar.open = True
             await self.update_async()
-        except ApiException as e:
+        except ApiException as exception:
             await self.set_type(loading=False)
-            return await self.client.session.error(error=e)
+            return await self.client.session.error(exception=exception)
 
     async def create_translation(self, _):
         await self.client.change_view(view=TextTranslationCreateView(key=self.key))

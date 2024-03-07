@@ -51,4 +51,4 @@ class LanguageView(AdminBaseView):
         await self.client.session.api.admin.languages.delete(
             id_str=self.language_id_str,
         )
-        await self.client.change_view(go_back=True, with_restart=True)
+        await self.client.change_view(go_back=True, with_restart=True, delete_current=True)

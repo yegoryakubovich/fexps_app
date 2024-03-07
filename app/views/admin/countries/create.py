@@ -15,6 +15,7 @@
 #
 
 
+from flet_core import ScrollMode
 from flet_core.dropdown import Option
 from fexps_api_client.utils import ApiException
 
@@ -36,7 +37,6 @@ class CountryCreateView(AdminBaseView):
     dd_timezone = Dropdown
     dd_currency = Dropdown
 
-    # noinspection DuplicatedCode
     async def build(self):
         await self.set_type(loading=True)
         self.languages = await self.client.session.api.client.languages.get_list()
@@ -78,13 +78,14 @@ class CountryCreateView(AdminBaseView):
             value=self.currencies[0]['id_str'],
             options=currency_options,
         )
+        self.tf_id_str, self.tf_name = [
+            TextField(
+                label=await self.client.session.gtv(key=key),
+            )
+            for key in ['key', 'name']
+        ]
 
-        self.tf_id_str = TextField(
-            label=await self.client.session.gtv(key='key'),
-        )
-        self.tf_name = TextField(
-            label=await self.client.session.gtv(key='name'),
-        )
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_country_create_view_title'),
             main_section_controls=[
@@ -119,7 +120,7 @@ class CountryCreateView(AdminBaseView):
                 currency=self.dd_currency.value,
             )
             await self.set_type(loading=False)
-            await self.client.change_view(go_back=True, with_restart=True)
-        except ApiException as e:
+            await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
+        except ApiException as exception:
             await self.set_type(loading=False)
-            return await self.client.session.error(error=e)
+            return await self.client.session.error(exception=exception)

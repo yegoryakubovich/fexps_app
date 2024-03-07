@@ -48,15 +48,18 @@ class CurrencyCreateView(AdminBaseView):
         )
 
     async def create_currency(self, _):
+        await self.set_type(loading=True)
         fields = [(self.tf_id_str, 2, 32)]
         for field, min_len, max_len in fields:
             if not await Error.check_field(self, field, min_len=min_len, max_len=max_len):
+                await self.set_type(loading=False)
                 return
         try:
             await self.client.session.api.admin.currencies.create(
                 id_str=self.tf_id_str.value,
             )
-            await self.client.change_view(go_back=True, with_restart=True)
-        except ApiException as e:
             await self.set_type(loading=False)
-            return await self.client.session.error(error=e)
+            await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)

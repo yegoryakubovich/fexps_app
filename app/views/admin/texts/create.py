@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 from fexps_api_client.utils import ApiException
 
 from app.controls.button import FilledButton
@@ -52,16 +54,20 @@ class TextCreateView(AdminBaseView):
          )
 
     async def create_text(self, _):
+        await self.set_type(loading=True)
         fields = [(self.tf_key, 2, 128), (self.tf_value_default, 1, 1024)]
         for field, min_len, max_len in fields:
             if not await Error.check_field(self, field, min_len=min_len, max_len=max_len):
+                await self.set_type(loading=False)
                 return
         try:
             key = await self.client.session.api.admin.texts.create(
                 value_default=self.tf_value_default.value,
                 key=self.tf_key.value,
             )
-            await self.client.change_view(view=TextView(key=key), delete_current=True)
-        except ApiException as e:
+            await self.client.session.get_text_pack()
             await self.set_type(loading=False)
-            return await self.client.session.error(error=e)
+            await self.client.change_view(view=TextView(key=key), delete_current=True)
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)

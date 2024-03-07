@@ -30,12 +30,12 @@ class LanguageCreateView(AdminBaseView):
     tf_id_str: TextField
 
     async def build(self):
-        self.tf_id_str = TextField(
-            label=await self.client.session.gtv(key='key'),
-        )
-        self.tf_name = TextField(
-            label=await self.client.session.gtv(key='name'),
-        )
+        self.tf_id_str, self.tf_name = [
+            TextField(
+                label=await self.client.session.gtv(key=key),
+            )
+            for key in ['key', 'name']
+        ]
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_language_create_view_title'),
             main_section_controls=[
@@ -58,13 +58,13 @@ class LanguageCreateView(AdminBaseView):
             if not await Error.check_field(self, field, min_len=min_len, max_len=max_len):
                 await self.set_type(loading=False)
                 return
-        # noinspection DuplicatedCode
         try:
             await self.client.session.api.admin.languages.create(
                 id_str=self.tf_id_str.value,
                 name=self.tf_name.value,
             )
-            await self.client.change_view(go_back=True, with_restart=True)
-        except ApiException as e:
             await self.set_type(loading=False)
-            return await self.client.session.error(error=e)
+            await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)

@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 
-from flet_core import Row, Column, Container, padding, colors
+
+from flet_core import Row, Column, Container, padding, colors, border_radius
 from fexps_api_client.utils import ApiException
 
 from app.controls.button import FilledButton
@@ -79,6 +79,7 @@ class RegistrationFirstView(AuthView):
                             on_click=self.go_authentication,
                             ink=True,
                             padding=padding.symmetric(vertical=4),
+                            border_radius=border_radius.all(6),
                         ),
                     ],
                     spacing=20,
@@ -87,46 +88,31 @@ class RegistrationFirstView(AuthView):
         )
 
     async def change_view(self, _):
-        check_username_error = await self.client.session.gtv(key='error_check_username')
-        # check_password_error = await self.client.session.gtv(key='error_check_password')
-
-        fields = [(self.tf_username, 6, 32), (self.tf_password, 8, 32)]
+        await self.set_type(loading=True)
+        fields = [(self.tf_username, 6, 32), (self.tf_password, 7, 32)]
         for field, min_len, max_len in fields:
             if not await Error.check_field(self, field, min_len=min_len, max_len=max_len):
+                await self.set_type(loading=False)
                 return
-
         try:
             await self.client.session.api.client.accounts.check_username(username=self.tf_username.value)
-            logging.critical(2)
-        except ApiException as e:
-            self.tf_username.error_text = e.message
-            await self.update_async()
-            return
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)
 
         try:
             await self.client.session.api.client.accounts.check_password(password=self.tf_password.value)
-        except ApiException as e:
-            self.tf_password.error_text = e.message
-            await self.update_async()
-            return
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)
 
         # Save in Registration
         self.client.session.registration = Registration()
         self.client.session.registration.username = self.tf_username.value
         self.client.session.registration.password = self.tf_password.value
 
-        currencies = await self.client.session.api.client.currencies.get_list()
-        countries = await self.client.session.api.client.countries.get_list()
-        timezones = await self.client.session.api.client.timezones.get_list()
-
-        await self.client.change_view(
-            view=RegistrationSecondView(
-                currencies=currencies,
-                countries=countries,
-                timezones=timezones,
-            ),
-        )
-        await self.update_async()
+        await self.set_type(loading=False)
+        await self.client.change_view(view=RegistrationSecondView())
 
     async def go_authentication(self, _):
         from app.views.auth.authentication import AuthenticationView

@@ -20,12 +20,12 @@ from typing import Any
 
 from flet_core import Page
 from flet_manager.utils import Client
-from fexps_api_client import FexpsApiClient
-from fexps_api_client.utils import ApiException
 
 from app.utils import Icons
 from app.utils.registration import Registration
 from config import settings
+from fexps_api_client import FexpsApiClient
+from fexps_api_client.utils import ApiException
 
 
 class Session:
@@ -40,28 +40,35 @@ class Session:
     registration: Registration
     current_wallet: None
     wallets: list | None
-
     bs_error: Any
     bs_info: Any
     datepicker: Any
     filepicker: Any
+    answers: dict | None
 
     def __init__(self, client: Client):
         self.client = client
         self.page = client.page
         self.account = None
 
-    async def error(self, error: ApiException):
+    async def error(self, exception: ApiException):
+        title = await self.client.session.gtv(key=f'error_{exception.code}')
+        # await self.bs_error.open_(
+        #     title=exception.message,
+        #     icon=Icons.ERROR
+        # )
+        logging.critical(type(title))
+        logging.critical(f'title={title}')
+        logging.critical(type(exception.kwargs))
         await self.bs_error.open_(
-            title=error.message,
-            icon=Icons.ERROR
+            title=title.format(**exception.kwargs),
+            icon=Icons.ERROR,
         )
 
     async def init_bs(self):
         from app.controls.information.bottom_sheet import BottomSheet
         from app.controls.input.file_picker import FilePicker
         from app.controls.input.date_picker import DatePicker
-
         self.bs_error = BottomSheet()
         self.bs_info = BottomSheet()
         self.filepicker = FilePicker()
@@ -77,10 +84,11 @@ class Session:
         self.token = await self.get_cs(key='token')
         self.language = await self.get_cs(key='language')
         self.text_pack = await self.get_cs(key='text_pack')
+
         self.api = FexpsApiClient(url=settings.url, token=self.token)
+        logging.critical(f'1 {self.token}')
         try:
             self.account = await self.api.client.accounts.get()
-            logging.critical(self.account)
             self.language = self.account.language
             if self.language != self.account.language:
                 await self.set_cs(key='language', value=self.language)
@@ -89,10 +97,10 @@ class Session:
                 await self.api.client.wallets.create(name='Default')
                 self.wallets = await self.api.client.wallets.get_list()
             self.current_wallet = self.wallets[0]
-
         except ApiException:
             await self.set_cs(key='token', value=None)
-
+            self.token = None
+        logging.critical(f'2 {self.token}')
         await self.init_bs()
 
     # Client storage
@@ -108,18 +116,21 @@ class Session:
     async def set_cs(self, key: str, value: Any) -> None:
         if value is None:
             value = 'null'
-        logging.critical(f'fexps.{key} = {value}')
         return await self.page.client_storage.set_async(key=f'fexps.{key}', value=value)
 
     # Texts
     async def get_text_value(self, key):
         if key:
-            try:
-                return self.text_pack[key]
-            except KeyError:
-                return f'404 {key}'
+            return self.text_pack.get(key, f'404 {key}')
         else:
             return None
 
     async def gtv(self, key):
+        logging.critical(f'key={key}')
         return await self.get_text_value(key=key)
+
+    async def get_text_pack(self, language: str = None):
+        if not language:
+            language = self.language
+        self.text_pack = await self.api.client.texts.packs.get(language=language)
+        await self.set_cs(key='text_pack', value=self.text_pack)

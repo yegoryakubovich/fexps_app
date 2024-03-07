@@ -25,19 +25,26 @@ from app.utils import Fonts
 
 
 class PaginationWidget(Container):
-    def __init__(self, text_next: str, text_back: str, current_page: int, total_pages: int, on_back: Callable, on_next: Callable):
+    def __init__(
+            self,
+            text_next: str,
+            text_back: str,
+            current_page: int,
+            total_pages: int,
+            on_back: Callable,
+            on_next: Callable,
+            disable_next_button: bool = True
+    ):
         self.current_page = current_page
         self.total_pages = total_pages
         self.on_previous = on_back
         self.on_next = on_next
+        self.disable_next_button = disable_next_button
         super().__init__()
         self.content = Row(
             controls=[
                 FilledButton(
-                    content=
-                    Text(
-                        value=text_back
-                    ),
+                    content=Text(value=text_back),
                     on_click=self.on_previous,
                     disabled=self.current_page <= 1,
                 ),
@@ -48,12 +55,9 @@ class PaginationWidget(Container):
                     color=colors.ON_BACKGROUND,
                 ),
                 FilledButton(
-                    content=
-                    Text(
-                        value=text_next
-                    ),
+                    content=Text(value=text_next),
                     on_click=self.on_next,
-                    disabled=self.current_page >= self.total_pages,
+                    disabled=self.disable_next_button and self.current_page >= self.total_pages,
                 ),
             ],
         )

@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
 
-
-from flet_core import Column, Row, Container, padding, colors, MainAxisAlignment
+from flet_core import Column, Row, Container, padding, colors, MainAxisAlignment, border_radius
 from fexps_api_client.utils import ApiException
 
 from app.controls.button import FilledButton
@@ -43,10 +43,10 @@ class AuthenticationView(AuthView):
                 password=self.tf_password.value,
             )
             await self.set_type(loading=False)
-        except ApiException as e:
+        except ApiException as exception:
             await self.set_type(loading=False)
-            return await self.client.session.error(error=e)
-        
+            return await self.client.session.error(exception=exception)
+
         # Get result, set in CS
         token = session.token
         await self.client.session.set_cs(key='token', value=token)
@@ -63,7 +63,7 @@ class AuthenticationView(AuthView):
 
     async def go_language(self, _):
         from app.views.auth import LanguageView
-        await self.client.change_view(view=LanguageView())
+        await self.client.change_view(view=LanguageView(), delete_current=True)
 
     async def build(self):
         self.tf_username = TextField(
@@ -72,6 +72,7 @@ class AuthenticationView(AuthView):
         self.tf_password = TextField(
             label=await self.client.session.gtv(key='password'),
             password=True,
+            can_reveal_password=True,
         )
 
         self.controls = await self.get_controls(
@@ -122,6 +123,7 @@ class AuthenticationView(AuthView):
                             on_click=self.go_registration,
                             ink=True,
                             padding=padding.symmetric(vertical=4),
+                            border_radius=border_radius.all(6),
                         ),
                     ],
                     spacing=20,

@@ -25,4 +25,3 @@ class SearchBar(FletSearchBar):
         self.width = 80
         self.height = 30
         self.view_shape = RoundedRectangleBorder(radius=6)
-        
