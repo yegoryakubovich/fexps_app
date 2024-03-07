@@ -31,7 +31,6 @@ from app.views.admin.accounts.role import AccountRoleListView
 class AccountView(AdminBaseView):
     route = '/admin/accounts/get'
     account: dict
-    services: list[dict]
     clipboard_text_field: TextField
     clipboard: Container
 
@@ -43,9 +42,6 @@ class AccountView(AdminBaseView):
         await self.set_type(loading=True)
         self.account = await self.client.session.api.admin.accounts.get(
             id_=self.account_id
-        )
-        self.services = await self.client.session.api.admin.accounts.services.get_list(
-            account_id=self.account_id,
         )
         await self.set_type(loading=False)
 
@@ -140,14 +136,6 @@ class AccountView(AdminBaseView):
                     ]
                 ),
                 self.clipboard,
-            ],
-            sections=[
-                Section(
-                    title=await self.client.session.gtv(key='admin_service_get_list_view_title'),
-                    controls=[
-
-                    ],
-                ),
             ],
         )
 

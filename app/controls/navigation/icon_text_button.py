@@ -23,4 +23,3 @@ class IconTextButton(IconButton):
         super().__init__(**kwargs)
         self.icon = icons.TEXT_FIELDS,
         self.key = key
-
