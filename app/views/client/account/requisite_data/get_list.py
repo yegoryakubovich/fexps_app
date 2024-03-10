@@ -25,7 +25,6 @@ from app.controls.layout import AdminBaseView
 from app.utils import Fonts
 from app.views.client.account.requisite_data.create import RequisiteDataCreateView
 from app.views.client.account.requisite_data.get import RequisiteDataView
-from fexps_api_client import FexpsApiClient
 
 
 class RequisiteDataListView(AdminBaseView):
@@ -35,7 +34,6 @@ class RequisiteDataListView(AdminBaseView):
 
     async def build(self):
         await self.set_type(loading=True)
-        self.client.session.api: FexpsApiClient
         self.requisites_datas = await self.client.session.api.client.requisite_data.get_list()
         await self.set_type(loading=False)
 
