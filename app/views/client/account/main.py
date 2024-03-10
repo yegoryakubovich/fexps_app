@@ -93,6 +93,11 @@ class AccountView(ClientBaseView):
                         on_click=self.change_password,
                     ),
                     Setting(
+                        name='requisite_data',
+                        icon=Icons.RELOAD,
+                        on_click=self.requisite_data,
+                    ),
+                    Setting(
                         name='language',
                         icon=Icons.LANGUAGE,
                         on_click=self.update_language,
@@ -215,6 +220,10 @@ class AccountView(ClientBaseView):
         if 'admin' in self.client.session.account.permissions:
             await self.client.change_view(view=AdminView())
 
+    async def requisite_data(self, _):
+        from app.views.client.account.requisite_data.get_list import RequisiteDataListView
+        await self.client.change_view(view=RequisiteDataListView(go_back=True))
+        
     async def update_language(self, _):
         from app.views.auth.language import LanguageView
         await self.client.change_view(view=LanguageView(go_back=True))
