@@ -138,6 +138,4 @@ class RequisiteDataCreateView(AdminBaseView):
             )
         except ApiException as exception:
             await self.set_type(loading=False)
-            logging.critical(exception.code)
-            logging.critical(exception.kwargs)
             return await self.client.session.error(exception=exception)
