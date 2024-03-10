@@ -47,15 +47,15 @@ class RequestCreateView(ClientBaseView):
     controls_container: Container
     optional: Column
 
-    type_dd: Dropdown
-    wallet_dd: Dropdown
-    currency_dd: Dropdown
-    input_method_dd: Dropdown
-    input_currency_value_tf: TextField
-    input_value_tf: TextField
-    output_requisite_data_dd: Dropdown
-    output_currency_value_tf: TextField
-    output_value_tf: TextField
+    dd_type: Dropdown
+    dd_wallet: Dropdown
+    dd_currency: Dropdown
+    dd_input_method: Dropdown
+    tf_input_currency_value: TextField
+    tf_input_value: TextField
+    dd_output_requisite_data: Dropdown
+    tf_output_currency_value: TextField
+    tf_output_value: TextField
 
     def __init__(self, current_wallet, **kwargs):
         super().__init__(**kwargs)
@@ -98,7 +98,6 @@ class RequestCreateView(ClientBaseView):
         )
 
     async def build(self):
-        self.client.session.api: FexpsApiClient
         # self.client.session.account
 
         type_options = [Option(
@@ -113,18 +112,18 @@ class RequestCreateView(ClientBaseView):
             key=currency.id_str,
         ) for currency in await self.client.session.api.client.currencies.get_list()]
 
-        self.type_dd = await self.get_type_dd(options=type_options)
-        self.wallet_dd = await self.get_wallet_dd(options=wallets_options)
-        self.currency_dd = await self.get_currency_dd(options=currency_options)
+        self.dd_type = await self.get_type_dd(options=type_options)
+        self.dd_wallet = await self.get_wallet_dd(options=wallets_options)
+        self.dd_currency = await self.get_currency_dd(options=currency_options)
 
         self.optional = Column(controls=[])
 
         self.controls_container = Container(
             content=Column(
                 controls=[
-                    self.type_dd,
-                    self.wallet_dd,
-                    self.currency_dd,
+                    self.dd_type,
+                    self.dd_wallet,
+                    self.dd_currency,
                     self.optional,
                     FilledButton(
                         text=await self.client.session.gtv(key='next'),
@@ -147,58 +146,58 @@ class RequestCreateView(ClientBaseView):
     async def change_type(self, event: ControlEvent):
         if event.data == RequestTypes.input:
             input_method_options = []
-            self.input_method_dd = await self.get_input_method_dd(options=input_method_options)
-            self.input_currency_value_tf = TextField(
+            self.dd_input_method = await self.get_input_method_dd(options=input_method_options)
+            self.tf_input_currency_value = TextField(
                 label=await self.client.session.gtv(key='request_create_input_currency_value'),
                 keyboard_type=KeyboardType.NUMBER,
             )
-            self.input_value_tf = TextField(
+            self.tf_input_value = TextField(
                 label=await self.client.session.gtv(key='request_create_input_value'),
                 keyboard_type=KeyboardType.NUMBER,
             )
             self.optional.controls = [
-                self.input_method_dd,
-                self.input_currency_value_tf,
-                self.input_value_tf,
+                self.dd_input_method,
+                self.tf_input_currency_value,
+                self.tf_input_value,
             ]
         elif event.data == RequestTypes.output:
             output_requisite_data_options = []
-            self.output_requisite_data_dd = await self.get_output_requisite_data_dd(
+            self.dd_output_requisite_data = await self.get_output_requisite_data_dd(
                 options=output_requisite_data_options,
             )
-            self.output_currency_value_tf = TextField(
+            self.tf_output_currency_value = TextField(
                 label=await self.client.session.gtv(key='request_create_output_currency_value'),
                 keyboard_type=KeyboardType.NUMBER,
             )
-            self.output_value_tf = TextField(
+            self.tf_output_value = TextField(
                 label=await self.client.session.gtv(key='request_create_output_value'),
                 keyboard_type=KeyboardType.NUMBER,
             )
             self.optional.controls = [
-                self.output_requisite_data_dd,
-                self.output_currency_value_tf,
-                self.output_value_tf,
+                self.dd_output_requisite_data,
+                self.tf_output_currency_value,
+                self.tf_output_value,
             ]
         elif event.data == RequestTypes.all:
             input_method_options = []
             output_requisite_data_options = []
-            self.input_method_dd = await self.get_input_method_dd(options=input_method_options)
-            self.output_requisite_data_dd = await self.get_output_requisite_data_dd(
+            self.dd_input_method = await self.get_input_method_dd(options=input_method_options)
+            self.dd_output_requisite_data = await self.get_output_requisite_data_dd(
                 options=output_requisite_data_options,
             )
-            self.input_currency_value_tf = TextField(
+            self.tf_input_currency_value = TextField(
                 label=await self.client.session.gtv(key='request_create_input_currency_value'),
                 keyboard_type=KeyboardType.NUMBER,
             )
-            self.output_currency_value_tf = TextField(
+            self.tf_output_currency_value = TextField(
                 label=await self.client.session.gtv(key='request_create_output_currency_value'),
                 keyboard_type=KeyboardType.NUMBER,
             )
             self.optional.controls = [
-                self.input_method_dd,
-                self.output_requisite_data_dd,
-                self.input_currency_value_tf,
-                self.output_currency_value_tf,
+                self.dd_input_method,
+                self.dd_output_requisite_data,
+                self.tf_input_currency_value,
+                self.tf_output_currency_value,
             ]
         await self.update_async()
 
