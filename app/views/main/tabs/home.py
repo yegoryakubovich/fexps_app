@@ -33,8 +33,8 @@ class HomeTab(BaseTab):
     exercise: list[dict] = None
     scopes: list[dict]
     filter_chips: list[Chip]
-    history_chip_is_sender: bool
-    history_chip_is_receiver: bool
+    is_sender: bool
+    is_receiver: bool
 
     async def get_account_row(self):
         return HomeAccountRow(
@@ -67,19 +67,19 @@ class HomeTab(BaseTab):
                 name=await self.client.session.gtv(key=f'chip_{Chips.is_sender}'),
                 key=Chips.is_sender,
                 on_select=self.chip_select,
-                selected=self.history_chip_is_sender,
+                selected=self.is_sender,
             ),
             HomeHistoryChip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.is_receiver}'),
                 key=Chips.is_receiver,
                 on_select=self.chip_select,
-                selected=self.history_chip_is_receiver,
+                selected=self.is_receiver,
             ),
         ]
         transfers = await self.client.session.api.client.transfers.search(
             wallet_id=self.client.session.current_wallet.id,
-            is_sender=self.history_chip_is_sender,
-            is_receiver=self.history_chip_is_receiver,
+            is_sender=self.is_sender,
+            is_receiver=self.is_receiver,
             page=1,
         )
         transfer_types = {}
@@ -95,7 +95,7 @@ class HomeTab(BaseTab):
         )
 
     async def build(self):
-        self.history_chip_is_sender, self.history_chip_is_receiver = True, True
+        self.is_sender, self.is_receiver = True, True
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
             id_=self.client.session.current_wallet.id,
@@ -134,8 +134,8 @@ class HomeTab(BaseTab):
 
     async def chip_select(self, event: ControlEvent):
         if event.control.key == Chips.is_sender:
-            self.history_chip_is_sender = True if event.data == 'true' else False
+            self.is_sender = True if event.data == 'true' else False
         elif event.control.key == Chips.is_receiver:
-            self.history_chip_is_receiver = True if event.data == 'true' else False
+            self.is_receiver = True if event.data == 'true' else False
         self.controls[0].content.controls[3] = await self.get_history()
         await self.update_async()
