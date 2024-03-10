@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     is_test: bool = True
     language_default: str = 'eng'
     service_id: int = 1
-    url: str  # = 'http://api.test.mybody.one'
+    url: str  # = 'http://api.test.'
     url_telegram: str = 'https://t.me/fexps_manager'
 
     default_decimal: int = 100

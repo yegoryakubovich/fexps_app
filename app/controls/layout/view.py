@@ -25,7 +25,7 @@ from app.utils import Fonts, Icons
 
 
 class View(BaseView):
-    title = 'My Body'
+    title = 'Fexps'
     controls_last: list = []
 
     def __init__(self, **kwargs):
