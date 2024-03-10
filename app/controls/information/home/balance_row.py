@@ -32,7 +32,7 @@ def find_option(options: list[Option], id_: int) -> Option:
     return options[0]
 
 
-class BalanceCard(FletCard):
+class HomeBalanceCard(FletCard):
     def __init__(self, wallets: list, current_wallet, on_change):
         super().__init__()
         self.margin = 0
@@ -85,11 +85,11 @@ class BalanceCard(FletCard):
         self.color = colors.BLUE_700
 
 
-class BalanceRow(FletRow):
+class HomeBalanceRow(FletRow):
     def __init__(self, wallets: list, current_wallet, on_change):
         super().__init__()
         self.controls = [
-            BalanceCard(
+            HomeBalanceCard(
                 wallets=wallets,
                 current_wallet=current_wallet,
                 on_change=on_change,

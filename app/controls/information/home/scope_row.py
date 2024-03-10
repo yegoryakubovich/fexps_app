@@ -30,7 +30,7 @@ def find_option(options: list[Option], id_: int) -> Option:
     return options[0]
 
 
-class ScopeCard(FletCard):
+class HomeScopeCard(FletCard):
     def __init__(self, name: str):
         super().__init__()
         self.icon = Image(
@@ -59,12 +59,12 @@ class ScopeCard(FletCard):
         ])
 
 
-class ScopeRow(FletRow):
+class HomeScopeRow(FletRow):
     def __init__(self, scopes: list):
         super().__init__()
         self.controls = [
             *[Container(
-                content=ScopeCard(name=scope.get('name')),
+                content=HomeScopeCard(name=scope.get('name')),
                 on_click=scope.get('on_click'),
                 height=200,
                 width=200,

@@ -17,10 +17,10 @@
 
 from flet_core import Column, Container, ControlEvent, Chip
 
-from app.controls.information.home.account_row import AccountInfoRow
-from app.controls.information.home.balance_row import BalanceRow
-from app.controls.information.home.history_row import HistoryRow, HistoryChip
-from app.controls.information.home.scope_row import ScopeRow
+from app.controls.information.home.account_row import HomeAccountRow
+from app.controls.information.home.balance_row import HomeBalanceRow
+from app.controls.information.home.history_row import HomeHistoryRow, HomeHistoryChip
+from app.controls.information.home.scope_row import HomeScopeRow
 from app.views.main.tabs.base import BaseTab
 
 
@@ -37,13 +37,13 @@ class HomeTab(BaseTab):
     history_chip_is_receiver: bool
 
     async def get_account_row(self):
-        return AccountInfoRow(
+        return HomeAccountRow(
             hello_text=await self.client.session.gtv(key='hello'),
             name_text=self.client.session.account.firstname,
         )
 
     async def get_balance_row(self):
-        return BalanceRow(
+        return HomeBalanceRow(
             wallets=self.client.session.wallets,
             current_wallet=self.client.session.current_wallet,
             on_change=self.change_wallet,
@@ -59,17 +59,17 @@ class HomeTab(BaseTab):
                 name=await self.client.session.gtv(key=f'scope_test'),
             ),
         ]
-        return ScopeRow(scopes=self.scopes)
+        return HomeScopeRow(scopes=self.scopes)
 
     async def get_history(self):
         self.filter_chips = [
-            HistoryChip(
+            HomeHistoryChip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.is_sender}'),
                 key=Chips.is_sender,
                 on_select=self.chip_select,
                 selected=self.history_chip_is_sender,
             ),
-            HistoryChip(
+            HomeHistoryChip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.is_receiver}'),
                 key=Chips.is_receiver,
                 on_select=self.chip_select,
@@ -87,7 +87,7 @@ class HomeTab(BaseTab):
             if transfer.type in transfer_types:
                 continue
             transfer_types[transfer.type] = await self.client.session.gtv(key=f'transfer_type_{transfer.type}')
-        return HistoryRow(
+        return HomeHistoryRow(
             title_text=await self.client.session.gtv(key='transaction_history'),
             filter_chips=self.filter_chips,
             transfer_types=transfer_types,

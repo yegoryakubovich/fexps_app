@@ -23,7 +23,7 @@ from app.controls.information import Text
 from app.utils import Fonts
 
 
-class AccountInfoAvatar(CircleAvatar):
+class HomeAccountAvatar(CircleAvatar):
     def __init__(self, username: str, src: str = None, **kwargs):
         super().__init__(**kwargs)
         self.foreground_image_url = src
@@ -32,7 +32,7 @@ class AccountInfoAvatar(CircleAvatar):
         self.height = 75
 
 
-class AccountInfoRow(FletRow):
+class HomeAccountRow(FletRow):
     def __init__(self, hello_text: str, name_text: str, avatar: str = None, **kwargs):
         super().__init__(**kwargs)
         self.controls = [
@@ -53,7 +53,7 @@ class AccountInfoRow(FletRow):
                 ],
             ),
             Column(
-                controls=[AccountInfoAvatar(username=name_text, src=avatar)],
+                controls=[HomeAccountAvatar(username=name_text, src=avatar)],
             )
         ]
         self.alignment = MainAxisAlignment.SPACE_BETWEEN

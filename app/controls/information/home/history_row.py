@@ -24,7 +24,7 @@ from app.utils import Fonts
 from app.utils.value import get_history_value_cleaned, get_history_color
 
 
-class HistoryChip(Chip):
+class HomeHistoryChip(Chip):
     def __init__(self, name: str, key: str, on_select, **kwargs):
         self.label = Text(
             value=name,
@@ -38,7 +38,7 @@ class HistoryChip(Chip):
         self.on_select = on_select
 
 
-class TransactionCard(FletCard):
+class HomeTransactionCard(FletCard):
     def __init__(self, transfer_types: dict, transfer, **kwargs):
         super().__init__(**kwargs)
         self.content = Container(
@@ -88,7 +88,7 @@ class TransactionCard(FletCard):
         self.color = colors.GREY_800
 
 
-class HistoryRow(FletRow):
+class HomeHistoryRow(FletRow):
     def __init__(
             self,
             title_text: str,
@@ -110,6 +110,6 @@ class HistoryRow(FletRow):
                 ]
             ),
             *filter_chips,
-            *[TransactionCard(transfer_types=transfer_types, transfer=transfer) for transfer in transfers]
+            *[HomeTransactionCard(transfer_types=transfer_types, transfer=transfer) for transfer in transfers]
         ]
         self.wrap = True
