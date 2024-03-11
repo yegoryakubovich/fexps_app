@@ -20,8 +20,8 @@ from flet_core import Column as FletColumn
 from flet_core import Row as FletRow
 
 from app.controls.information import Text
+from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts
-from config import settings
 
 
 class RequestInfo:
@@ -109,6 +109,7 @@ class RequestHistoryRow(FletRow):
             title_text: str,
             filter_chips: list,
             requests_list: list[RequestInfo],
+            pagination: PaginationWidget = None,
             **kwargs,
     ):
         super().__init__(**kwargs)
@@ -125,4 +126,6 @@ class RequestHistoryRow(FletRow):
                 for request in requests_list
             ]
         ]
+        if pagination:
+            self.controls.append(pagination)
         self.wrap = True

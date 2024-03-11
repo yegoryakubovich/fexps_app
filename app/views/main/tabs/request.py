@@ -15,10 +15,11 @@
 #
 
 
-from flet_core import Column, Container, ControlEvent, colors
+from flet_core import Column, Container, ControlEvent, colors, Chip, ScrollMode
 
 from app.controls.information.home.scope_row import HomeScopeRow
 from app.controls.information.request.history_row import RequestHistoryChip, RequestHistoryRow, RequestInfo
+from app.controls.navigation.pagination import PaginationWidget
 from app.views.main.tabs.base import BaseTab
 from config import settings
 
@@ -33,6 +34,10 @@ class Chips:
 class RequestTab(BaseTab):
     exercise: list[dict] = None
     scopes: list[dict]
+    requests = list[dict]
+    page_request: int = 1
+    total_pages: int = 1
+    filter_chips: list[Chip]
     is_input: bool
     is_output: bool
     is_all: bool
@@ -77,15 +82,18 @@ class RequestTab(BaseTab):
                 selected=self.is_finish,
             ),
         ]
-        requests = await self.client.session.api.client.request.search(
+        response = await self.client.session.api.client.request.search(
             is_input=self.is_input,
             is_output=self.is_output,
             is_all=self.is_all,
             is_finish=self.is_finish,
-            page=1,
+            page=self.page_request,
         )
+        self.requests = response.requests
+        self.total_pages = response.pages
+        self.scroll = ScrollMode.AUTO
         requests_list: list[RequestInfo] = []
-        for request in requests.requests:
+        for request in self.requests:
             color, value = None, None
             if request.type == 'input':
                 color, value = colors.GREEN, request.input_value / settings.default_decimal
@@ -112,6 +120,14 @@ class RequestTab(BaseTab):
             title_text=await self.client.session.gtv(key='transaction_history'),
             filter_chips=self.filter_chips,
             requests_list=requests_list,
+            pagination=PaginationWidget(
+                current_page=self.page_request,
+                total_pages=self.total_pages,
+                on_back=self.previous_page,
+                on_next=self.next_page,
+                text_back=await self.client.session.gtv(key='back'),
+                text_next=await self.client.session.gtv(key='next'),
+            ),
         )
 
     async def build(self):
@@ -147,3 +163,15 @@ class RequestTab(BaseTab):
             self.is_finish = True if event.data == 'true' else False
         self.controls[0].content.controls[1] = await self.get_history()
         await self.update_async()
+
+    async def next_page(self, _):
+        if self.page_request < self.total_pages:
+            self.page_request += 1
+            await self.build()
+            await self.update_async()
+
+    async def previous_page(self, _):
+        if self.page_request > 1:
+            self.page_request -= 1
+            await self.build()
+            await self.update_async()

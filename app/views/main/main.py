@@ -32,12 +32,12 @@ class Tab:
 
 TABS = [
     Tab(
-        name='Home',
+        name='home',
         icon=Icons.PLAN,
         control=HomeTab,
     ),
     Tab(
-        name='Request',
+        name='request',
         icon=Icons.ERROR,
         control=RequestTab,
     ),

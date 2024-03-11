@@ -14,14 +14,15 @@
 # limitations under the License.
 #
 
-
-from flet_core import Column, Container, ControlEvent, Chip
+from flet_core import Column, Container, ControlEvent, Chip, colors, ScrollMode
 
 from app.controls.information.home.account_row import HomeAccountRow
 from app.controls.information.home.balance_row import HomeBalanceRow
-from app.controls.information.home.history_row import HomeHistoryRow, HomeHistoryChip
+from app.controls.information.home.history_row import HomeHistoryRow, HomeHistoryChip, TransferInfo
 from app.controls.information.home.scope_row import HomeScopeRow
+from app.controls.navigation.pagination import PaginationWidget
 from app.views.main.tabs.base import BaseTab
+from config import settings
 
 
 class Chips:
@@ -32,6 +33,9 @@ class Chips:
 class HomeTab(BaseTab):
     exercise: list[dict] = None
     scopes: list[dict]
+    transfers = list[dict]
+    page_transfer: int = 1
+    total_pages: int = 1
     filter_chips: list[Chip]
     is_sender: bool
     is_receiver: bool
@@ -76,22 +80,43 @@ class HomeTab(BaseTab):
                 selected=self.is_receiver,
             ),
         ]
-        transfers = await self.client.session.api.client.transfers.search(
+        response = await self.client.session.api.client.transfers.search(
             wallet_id=self.client.session.current_wallet.id,
             is_sender=self.is_sender,
             is_receiver=self.is_receiver,
-            page=1,
+            page=self.page_transfer,
         )
-        transfer_types = {}
-        for transfer in transfers.transfers:
-            if transfer.type in transfer_types:
-                continue
-            transfer_types[transfer.type] = await self.client.session.gtv(key=f'transfer_type_{transfer.type}')
+        self.transfers = response.transfers
+        self.total_pages = response.pages
+        self.scroll = ScrollMode.AUTO
+        transfer_list: list[TransferInfo] = []
+        for transfer in self.transfers:
+            value = int(transfer.value) / settings.default_decimal
+            if transfer.operation == 'send':
+                color, value = colors.RED, f'- ${value}'
+            elif transfer.operation == 'receive':
+                color, value = colors.GREEN, f'+ ${value}'
+            else:
+                color, value = colors.GREY, f'${value}'
+            transfer_list.append(TransferInfo(
+                type_=await self.client.session.gtv(key=f'transfer_type_{transfer.type}'),
+                description=f'from wallet.{transfer.wallet_from} to wallet.{transfer.wallet_to}',
+                value=value,
+                color=color,
+                date=transfer.date,
+            ))
         return HomeHistoryRow(
             title_text=await self.client.session.gtv(key='transaction_history'),
             filter_chips=self.filter_chips,
-            transfer_types=transfer_types,
-            transfers=transfers.transfers,
+            transfer_list=transfer_list,
+            pagination=PaginationWidget(
+                current_page=self.page_transfer,
+                total_pages=self.total_pages,
+                on_back=self.previous_page,
+                on_next=self.next_page,
+                text_back=await self.client.session.gtv(key='back'),
+                text_next=await self.client.session.gtv(key='next'),
+            ),
         )
 
     async def build(self):
@@ -139,3 +164,15 @@ class HomeTab(BaseTab):
             self.is_receiver = True if event.data == 'true' else False
         self.controls[0].content.controls[3] = await self.get_history()
         await self.update_async()
+
+    async def next_page(self, _):
+        if self.page_transfer < self.total_pages:
+            self.page_transfer += 1
+            await self.build()
+            await self.update_async()
+
+    async def previous_page(self, _):
+        if self.page_transfer > 1:
+            self.page_transfer -= 1
+            await self.build()
+            await self.update_async()

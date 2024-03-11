@@ -20,8 +20,23 @@ from flet_core import Column as FletColumn
 from flet_core import Row as FletRow
 
 from app.controls.information import Text
+from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts
-from app.utils.value import get_history_value_cleaned, get_history_color
+
+
+class TransferInfo:
+    type_: str
+    description: str
+    value: str
+    color: str
+    date: str
+
+    def __init__(self, type_: str, description: str, value: str, color: str, date: str) -> None:
+        self.type_ = type_
+        self.description = description
+        self.value = value
+        self.color = color
+        self.date = date
 
 
 class HomeHistoryChip(Chip):
@@ -39,23 +54,23 @@ class HomeHistoryChip(Chip):
 
 
 class HomeTransactionCard(FletCard):
-    def __init__(self, transfer_types: dict, transfer, **kwargs):
+    def __init__(self, transfer: TransferInfo, **kwargs):
         super().__init__(**kwargs)
         self.content = Container(
             content=Column(controls=[
                 FletRow(
                     controls=[
                         FletColumn(controls=[Text(
-                            value=transfer_types[transfer.type],
+                            value=transfer.type_,
                             size=28,
                             font_family=Fonts.REGULAR,
                             color=colors.ON_BACKGROUND,
                         )]),
                         FletColumn(controls=[Text(
-                            value=get_history_value_cleaned(value=transfer.value, operation=transfer.operation),
+                            value=transfer.value,
                             size=32,
                             font_family=Fonts.REGULAR,
-                            color=get_history_color(operation=transfer.operation),
+                            color=transfer.color,
                         )]),
                     ],
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
@@ -64,7 +79,7 @@ class HomeTransactionCard(FletCard):
                     controls=[
                         FletColumn(
                             controls=[Text(
-                                value=f'from wallet.{transfer.wallet_from} to wallet.{transfer.wallet_to}',
+                                value=transfer.description,
                                 size=16,
                                 font_family=Fonts.REGULAR,
                                 color=colors.ON_BACKGROUND,
@@ -93,8 +108,8 @@ class HomeHistoryRow(FletRow):
             self,
             title_text: str,
             filter_chips: list,
-            transfer_types: dict,
-            transfers: list,
+            transfer_list: list[TransferInfo],
+            pagination: PaginationWidget = None,
             **kwargs,
     ):
         super().__init__(**kwargs)
@@ -110,6 +125,8 @@ class HomeHistoryRow(FletRow):
                 ]
             ),
             *filter_chips,
-            *[HomeTransactionCard(transfer_types=transfer_types, transfer=transfer) for transfer in transfers]
+            *[HomeTransactionCard(transfer=transfer) for transfer in transfer_list]
         ]
+        if pagination:
+            self.controls.append(pagination)
         self.wrap = True
