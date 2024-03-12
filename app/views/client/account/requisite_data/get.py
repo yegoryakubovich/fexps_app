@@ -19,14 +19,17 @@ from flet_core import Row, Column, colors
 
 from app.controls.button import FilledButton
 from app.controls.information import Text
+from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts
+from fexps_api_client.utils import ApiException
 
 
 class RequisiteDataView(AdminBaseView):
     route = '/admin/text/get'
     requisite_data = dict
     method = dict
+    details: list[TextField]
 
     def __init__(self, requisite_data_id: int):
         super().__init__()
@@ -37,44 +40,68 @@ class RequisiteDataView(AdminBaseView):
         self.requisite_data = await self.client.session.api.client.requisite_data.get(id_=self.requisite_data_id)
         self.method = await self.client.session.api.client.methods.get(id_=self.requisite_data.method)
         await self.set_type(loading=False)
-        data = [
-            f'{await self.client.session.gtv(key="name")}: {self.requisite_data.name}',
-            f'{await self.client.session.gtv(key="method")}: '
-            f'{await self.client.session.gtv(key=self.method.name_text)} ({self.method.id})',
-        ]
-        details = []
+        self.details = []
         for field in self.method.schema_fields:
-            field_name = await self.client.session.gtv(key=field["name_text_key"])
-            field_result = self.requisite_data.fields.get(field['key'])
-            details.append(f'{field_name}: {field_result}')
+            value = self.requisite_data.fields.get(field['key'])
+            self.details.append(
+                TextField(
+                    key_question=field['key'],
+                    label=await self.client.session.gtv(key=field['name_text_key']),
+                    value=value if value else '',
+                )
+            )
         self.controls = await self.get_controls(
             title=self.requisite_data['name'],
-            main_section_controls=[Column(controls=[
-                Text(
-                    value='\n'.join(data),
-                    size=15,
-                    font_family=Fonts.MEDIUM,
-                    color=colors.ON_BACKGROUND,
+            main_section_controls=[
+                Column(
+                    controls=[
+                        Text(
+                            value='\n'.join([
+                                f'{await self.client.session.gtv(key="name")}: {self.requisite_data.name}',
+                                f'{await self.client.session.gtv(key="currency")}: {self.method.currency}',
+                                f'{await self.client.session.gtv(key="method")}: '
+                                f'{await self.client.session.gtv(key=self.method.name_text)} ({self.method.id})',
+                            ]),
+                            size=24,
+                            font_family=Fonts.MEDIUM,
+                            color=colors.ON_BACKGROUND,
+                        ),
+                        *self.details,
+                        Row(
+                            controls=[
+                                FilledButton(
+                                    content=Text(
+                                        value=await self.client.session.gtv(key='save'),
+                                    ),
+                                    on_click=self.update_text,
+                                ),
+                                FilledButton(
+                                    content=Text(value=await self.client.session.gtv(key='delete')),
+                                    on_click=self.delete_requisite_data,
+                                ),
+                            ],
+                        ),
+                    ],
                 ),
-                Text(
-                    value=await self.client.session.gtv(key='details'),
-                    size=20,
-                    font_family=Fonts.SEMIBOLD,
-                    color=colors.ON_BACKGROUND,
-                ),
-                Text(
-                    value=f'\n'.join(details),
-                    size=15,
-                    font_family=Fonts.MEDIUM,
-                    color=colors.ON_BACKGROUND,
-                ),
-                Row(controls=[FilledButton(
-                    content=Text(value=await self.client.session.gtv(key='delete')),
-                    on_click=self.delete_requisite_data,
-                )]),
-            ])],
+            ],
         )
 
     async def delete_requisite_data(self, _):
         await self.client.session.api.client.requisite_data.delete(id_=self.requisite_data_id)
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+
+    async def update_text(self, _):
+        await self.set_type(loading=True)
+        fields = {}
+        for text_field in self.details:
+            fields[text_field.key_question] = text_field.value
+        try:
+            await self.client.session.api.client.requisite_data.update(
+                id_=self.requisite_data_id,
+                fields=fields,
+            )
+            await self.set_type(loading=False)
+            await self.update_async()
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)
