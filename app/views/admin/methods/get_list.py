@@ -24,7 +24,6 @@ from app.controls.information.card import Card
 from app.controls.layout import AdminBaseView
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts
-from fexps_api_client import FexpsApiClient
 from .create import MethodCreateView
 from .get import MethodView
 
@@ -37,8 +36,6 @@ class MethodListView(AdminBaseView):
     items_per_page: int = 6
 
     async def build(self):
-        self.client.session.api: FexpsApiClient
-
         await self.set_type(loading=True)
         self.methods = await self.client.session.api.client.methods.get_list()
         await self.set_type(loading=False)

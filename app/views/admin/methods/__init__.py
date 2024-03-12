@@ -15,5 +15,6 @@
 #
 
 
+from .create import MethodCreateView
 from .get import MethodView
 from .get_list import MethodListView
