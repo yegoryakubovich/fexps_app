@@ -15,7 +15,7 @@
 #
 
 
-from flet_core import Row, Column, colors
+from flet_core import Row, Column, colors, SnackBar
 
 from app.controls.button import FilledButton
 from app.controls.information import Text
@@ -30,6 +30,7 @@ class RequisiteDataView(AdminBaseView):
     requisite_data = dict
     method = dict
     details: list[TextField]
+    snack_bar: SnackBar
 
     def __init__(self, requisite_data_id: int):
         super().__init__()
@@ -40,6 +41,7 @@ class RequisiteDataView(AdminBaseView):
         self.requisite_data = await self.client.session.api.client.requisite_data.get(id_=self.requisite_data_id)
         self.method = await self.client.session.api.client.methods.get(id_=self.requisite_data.method)
         await self.set_type(loading=False)
+        self.snack_bar = SnackBar(content=Text(value=await self.client.session.gtv(key='successful')))
         self.details = []
         for field in self.method.schema_fields:
             value = self.requisite_data.fields.get(field['key'])
@@ -101,6 +103,7 @@ class RequisiteDataView(AdminBaseView):
                 fields=fields,
             )
             await self.set_type(loading=False)
+            self.snack_bar.open = True
             await self.update_async()
         except ApiException as exception:
             await self.set_type(loading=False)
