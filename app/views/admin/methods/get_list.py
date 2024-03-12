@@ -1,0 +1,100 @@
+#
+# (c) 2024, Yegor Yakubovich, yegoryakubovich.com, personal@yegoryakybovich.com
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
+from functools import partial
+
+from flet_core import ScrollMode
+
+from app.controls.information import Text
+from app.controls.information.card import Card
+from app.controls.layout import AdminBaseView
+from app.controls.navigation.pagination import PaginationWidget
+from app.utils import Fonts
+from fexps_api_client import FexpsApiClient
+from .create import MethodCreateView
+from .get import MethodView
+
+
+class MethodListView(AdminBaseView):
+    route = '/admin/method/list/get'
+    methods: list[dict]
+    page_method: int = 1
+    total_pages: int = 1
+    items_per_page: int = 6
+
+    async def build(self):
+        self.client.session.api: FexpsApiClient
+
+        await self.set_type(loading=True)
+        self.methods = await self.client.session.api.client.methods.get_list()
+        await self.set_type(loading=False)
+
+        self.total_pages = (len(self.methods) - 1) // self.items_per_page + 1
+        self.methods = self.methods[
+                       (self.page_method - 1) * self.items_per_page: self.page_method * self.items_per_page]
+
+        self.scroll = ScrollMode.AUTO
+        self.controls = await self.get_controls(
+            title=await self.client.session.gtv(key='admin_method_get_list_view_title'),
+            on_create_click=self.create_text,
+            main_section_controls=[
+                *[
+                    Card(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key=method['name_text']),
+                                size=18,
+                                font_family=Fonts.SEMIBOLD,
+                            ),
+                            Text(
+                                value=method['currency'],
+                                size=10,
+                                font_family=Fonts.MEDIUM,
+                            ),
+                        ],
+                        on_click=partial(self.method_view, method['id']),
+                    )
+                    for method in self.methods
+                ],
+                PaginationWidget(
+                    current_page=self.page_method,
+                    total_pages=self.total_pages,
+                    on_back=self.previous_page,
+                    on_next=self.next_page,
+                    text_back=await self.client.session.gtv(key='back'),
+                    text_next=await self.client.session.gtv(key='next'),
+                ),
+            ]
+        )
+
+    async def create_text(self, _):
+        await self.client.change_view(view=MethodCreateView())
+
+    async def method_view(self, id_: int, _):
+        await self.client.change_view(view=MethodView(id_=id_))
+
+    async def next_page(self, _):
+        if self.page_method < self.total_pages:
+            self.page_method += 1
+            await self.build()
+            await self.update_async()
+
+    async def previous_page(self, _):
+        if self.page_method > 1:
+            self.page_method -= 1
+            await self.build()
+            await self.update_async()

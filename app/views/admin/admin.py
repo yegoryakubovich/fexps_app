@@ -24,6 +24,7 @@ from .accounts.get_list import AccountListView
 from .countries import CountryListView
 from .currencies.get_list import CurrencyListView
 from .languages.get_list import LanguageListView
+from .methods import MethodListView
 from .permissions import PermissionListView
 from .roles import RoleListView
 from .texts.get_list import TextListView
@@ -62,14 +63,9 @@ class AdminView(AdminBaseView):
                 on_click=self.get_accounts,
             ),
             Setting(
-                name='admin_text_get_list_view_title',
-                icon=Icons.ADMIN_TEXTS,
-                on_click=self.get_texts,
-            ),
-            Setting(
-                name='admin_language_get_list_view_title',
-                icon=Icons.LANGUAGE,
-                on_click=self.get_languages,
+                name='admin_country_get_list_view_title',
+                icon=Icons.COUNTRY,
+                on_click=self.get_countries,
             ),
             Setting(
                 name='admin_currency_get_list_view_title',
@@ -77,14 +73,14 @@ class AdminView(AdminBaseView):
                 on_click=self.get_currencies,
             ),
             Setting(
-                name='admin_timezone_get_list_view_title',
-                icon=Icons.TIMEZONE,
-                on_click=self.get_timezones,
+                name='admin_language_get_list_view_title',
+                icon=Icons.LANGUAGE,
+                on_click=self.get_languages,
             ),
             Setting(
-                name='admin_country_get_list_view_title',
-                icon=Icons.COUNTRY,
-                on_click=self.get_countries,
+                name='admin_method_get_list_view_title',
+                icon=Icons.ERROR,
+                on_click=self.get_methods,
             ),
             Setting(
                 name='admin_permission_get_list_view_title',
@@ -96,6 +92,17 @@ class AdminView(AdminBaseView):
                 icon=Icons.ADMIN_ROLES,
                 on_click=self.get_roles,
             ),
+            Setting(
+                name='admin_text_get_list_view_title',
+                icon=Icons.ADMIN_TEXTS,
+                on_click=self.get_texts,
+            ),
+            Setting(
+                name='admin_timezone_get_list_view_title',
+                icon=Icons.TIMEZONE,
+                on_click=self.get_timezones,
+            ),
+
         ]
 
         main_sections_controls = [
@@ -123,26 +130,29 @@ class AdminView(AdminBaseView):
     async def go_back(self, _):
         await self.client.change_view(go_back=True)
 
-    async def get_texts(self, _):
-        await self.client.change_view(view=TextListView())
-
     async def get_accounts(self, _):
         await self.client.change_view(view=AccountListView())
 
-    async def get_languages(self, _):
-        await self.client.change_view(view=LanguageListView())
+    async def get_countries(self, _):
+        await self.client.change_view(view=CountryListView())
 
     async def get_currencies(self, _):
         await self.client.change_view(view=CurrencyListView())
 
-    async def get_timezones(self, _):
-        await self.client.change_view(view=TimezoneListView())
+    async def get_languages(self, _):
+        await self.client.change_view(view=LanguageListView())
 
-    async def get_countries(self, _):
-        await self.client.change_view(view=CountryListView())
+    async def get_methods(self, _):
+        await self.client.change_view(view=MethodListView())
 
     async def get_permissions(self, _):
         await self.client.change_view(view=PermissionListView())
 
     async def get_roles(self, _):
         await self.client.change_view(view=RoleListView())
+
+    async def get_texts(self, _):
+        await self.client.change_view(view=TextListView())
+
+    async def get_timezones(self, _):
+        await self.client.change_view(view=TimezoneListView())
