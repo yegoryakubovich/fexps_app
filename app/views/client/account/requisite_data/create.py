@@ -43,14 +43,14 @@ class RequisiteDataCreateView(AdminBaseView):
 
     async def build(self):
         self.fields, self.fields_keys = {}, {}
+        method_options = []
+        await self.set_type(loading=True)
         self.methods = await self.client.session.api.client.methods.get_list()
-
         currency_options = [Option(
             text=currency.id_str.upper(),
             key=currency.id_str,
         ) for currency in await self.client.session.api.client.currencies.get_list()]
-        method_options = []
-
+        await self.set_type(loading=False)
         self.tf_name = TextField(label=await self.client.session.gtv(key='name'))
         self.dd_currency = Dropdown(
             label=await self.client.session.gtv(key='currency'),
@@ -63,7 +63,6 @@ class RequisiteDataCreateView(AdminBaseView):
             on_change=self.change_method,
         )
         self.optional = Column(controls=[])
-
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='requisite_data_create_view_title'),
             main_section_controls=[
@@ -77,7 +76,7 @@ class RequisiteDataCreateView(AdminBaseView):
                         size=15,
                         font_family=Fonts.REGULAR,
                     ),
-                    on_click=self.create_text,
+                    on_click=self.create_requisite_data,
                 ),
             ],
         )
@@ -98,7 +97,6 @@ class RequisiteDataCreateView(AdminBaseView):
 
     async def change_method(self, event: ControlEvent):
         self.method = await self.client.session.api.client.methods.get(id_=event.data)
-
         controls = []
         for field in self.method['schema_fields']:
             type_ = await self.client.session.gtv(key=field["type"])
@@ -117,7 +115,7 @@ class RequisiteDataCreateView(AdminBaseView):
     async def change_fields(self, event: ControlEvent):
         self.fields[self.fields_keys[event.control.label]] = event.data
 
-    async def create_text(self, _):
+    async def create_requisite_data(self, _):
         await self.set_type(loading=True)
         for field in self.method['schema_fields']:
             if not self.fields.get(field['key']):

@@ -75,7 +75,7 @@ class RequisiteDataView(AdminBaseView):
                                     content=Text(
                                         value=await self.client.session.gtv(key='save'),
                                     ),
-                                    on_click=self.update_text,
+                                    on_click=self.update_requisite_data,
                                 ),
                                 FilledButton(
                                     content=Text(value=await self.client.session.gtv(key='delete')),
@@ -92,7 +92,7 @@ class RequisiteDataView(AdminBaseView):
         await self.client.session.api.client.requisite_data.delete(id_=self.requisite_data_id)
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
 
-    async def update_text(self, _):
+    async def update_requisite_data(self, _):
         await self.set_type(loading=True)
         fields = {}
         for text_field in self.details:

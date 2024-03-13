@@ -36,11 +36,10 @@ class RequisiteDataListView(AdminBaseView):
         await self.set_type(loading=True)
         self.requisites_datas = await self.client.session.api.client.requisite_data.get_list()
         await self.set_type(loading=False)
-
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='requisite_data_get_list_view_title'),
-            on_create_click=self.create_requisite_data,
+            on_create_click=self.requisite_data_create,
             main_section_controls=[
                 Card(
                     controls=[
@@ -60,5 +59,5 @@ class RequisiteDataListView(AdminBaseView):
     async def requisite_data_view(self, requisite_data_id: int, _):
         await self.client.change_view(view=RequisiteDataView(requisite_data_id=requisite_data_id))
 
-    async def create_requisite_data(self, _):
+    async def requisite_data_create(self, _):
         await self.client.change_view(view=RequisiteDataCreateView())
