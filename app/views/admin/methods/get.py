@@ -32,7 +32,7 @@ from fexps_api_client.utils import ApiException
 class MethodView(AdminBaseView):
     route = '/admin/method/get'
     method = dict
-    tf_currency: TextField
+    dd_currency: Dropdown
     schema: Column
     schema_fields: list[Column]
     schema_input_fields: list[Column]
@@ -45,6 +45,10 @@ class MethodView(AdminBaseView):
     async def build(self):
         await self.set_type(loading=True)
         self.method = await self.client.session.api.client.methods.get(id_=self.method_id)
+        self.currency_options = [Option(
+            text=currency.id_str.upper(),
+            key=currency.id_str,
+        ) for currency in await self.client.session.api.client.currencies.get_list()]
         await self.set_type(loading=False)
         self.snack_bar = SnackBar(content=Text(value=await self.client.session.gtv(key='successful')))
         self.schema_type_options = [
@@ -56,7 +60,6 @@ class MethodView(AdminBaseView):
             Option(key='str', text=await self.client.session.gtv(key='string')),
             Option(key='image', text=await self.client.session.gtv(key='image')),
         ]
-
         self.schema = Column(
             controls=[
                 Text(
@@ -70,10 +73,10 @@ class MethodView(AdminBaseView):
                 Dropdown(label=await self.client.session.gtv(key='type')),
                 Checkbox(label=await self.client.session.gtv(key='optional')),
             ],
-
         )
-        self.tf_currency = TextField(
-            label=await self.client.session.gtv(key='key'),
+        self.dd_currency = Dropdown(
+            label=await self.client.session.gtv(key='currency'),
+            options=self.currency_options,
             value=self.method.currency,
         )
         self.schema_fields = []
@@ -94,7 +97,6 @@ class MethodView(AdminBaseView):
             column.controls[3].value = field['type']
             column.controls[4].value = field['optional']
             self.schema_input_fields.append(column)
-
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key=self.method.name_text),
@@ -110,7 +112,7 @@ class MethodView(AdminBaseView):
                             font_family=Fonts.MEDIUM,
                             color=colors.ON_BACKGROUND,
                         ),
-                        self.tf_currency,
+                        self.dd_currency,
                         Row(controls=[
                             Text(
                                 value=await self.client.session.gtv(key="schema_fields"),
@@ -162,7 +164,7 @@ class MethodView(AdminBaseView):
         )
 
     async def delete_method(self, _):
-        await self.client.session.api.admin.texts.delete(id_=self.method_id)
+        await self.client.session.api.admin.methods.delete(id_=self.method_id)
         await self.client.change_view(go_back=True, with_restart=True)
 
     async def schema_fields_add_line(self, _):
@@ -210,10 +212,11 @@ class MethodView(AdminBaseView):
         try:
             await self.client.session.api.admin.methods.update(
                 id_=self.method_id,
-                currency_id_str=self.tf_currency.value,
+                currency_id_str=self.dd_currency.value,
                 fields=fields,
                 input_fields=input_fields,
             )
+            await self.client.session.get_text_pack()
             await self.set_type(loading=False)
             self.snack_bar.open = True
             await self.update_async()
