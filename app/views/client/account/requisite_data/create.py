@@ -30,7 +30,7 @@ from fexps_api_client.utils import ApiException
 
 
 class RequisiteDataCreateView(AdminBaseView):
-    route = '/admin/text/create'
+    route = '/admin/requisite/data/create'
     methods: list
     method: dict
 
