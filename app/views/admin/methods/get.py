@@ -54,7 +54,7 @@ class MethodView(AdminBaseView):
         self.schema_input_type_options = [
             Option(key='int', text=await self.client.session.gtv(key='integer')),
             Option(key='str', text=await self.client.session.gtv(key='string')),
-            Option(key='str', text=await self.client.session.gtv(key='photo')),
+            Option(key='image', text=await self.client.session.gtv(key='image')),
         ]
 
         self.schema = Column(
