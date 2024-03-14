@@ -17,20 +17,21 @@
 
 from flet_core import Card as FletCard, Row as FletRow, Column, colors, Row, \
     MainAxisAlignment, Image, Container
-from flet_core.dropdown import Option
 
-from app.controls.information import Text
+from app.controls.information.text import Text
 from app.utils import Icons, Fonts
 
 
-def find_option(options: list[Option], id_: int) -> Option:
-    for option in options:
-        if option.key == id_:
-            return option
-    return options[0]
+class ScopeItem:
+    name: str
+    on_click: callable
+
+    def __init__(self, name: str, on_click: callable = None):
+        self.name = name
+        self.on_click = on_click
 
 
-class HomeScopeCard(FletCard):
+class ScopeCard(FletCard):
     def __init__(self, name: str):
         super().__init__()
         self.icon = Image(
@@ -59,13 +60,13 @@ class HomeScopeCard(FletCard):
         ])
 
 
-class HomeScopeRow(FletRow):
-    def __init__(self, scopes: list):
+class Scope(FletRow):
+    def __init__(self, scopes: list[ScopeItem]):
         super().__init__()
         self.controls = [
             *[Container(
-                content=HomeScopeCard(name=scope.get('name')),
-                on_click=scope.get('on_click'),
+                content=ScopeCard(name=scope.name),
+                on_click=scope.on_click,
                 height=200,
                 width=200,
             ) for scope in scopes]

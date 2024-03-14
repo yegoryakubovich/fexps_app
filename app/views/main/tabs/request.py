@@ -15,11 +15,16 @@
 #
 
 
-from flet_core import Column, Container, ControlEvent, colors, Chip, ScrollMode
+from functools import partial
 
-from app.controls.information.home.scope_row import HomeScopeRow
-from app.controls.information.request.history_row import RequestHistoryChip, RequestHistoryRow, RequestInfo
+from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment
+
+from app.controls.button import Chip
+from app.controls.button.scopes import Scope, ScopeItem
+from app.controls.information import Text, Card
 from app.controls.navigation.pagination import PaginationWidget
+from app.utils import Fonts
+from app.views.client.requests import RequestView
 from app.views.main.tabs.base import BaseTab
 from config import settings
 
@@ -33,11 +38,12 @@ class Chips:
 
 class RequestTab(BaseTab):
     exercise: list[dict] = None
-    scopes: list[dict]
+    scopes: list[ScopeItem]
     requests = list[dict]
     page_request: int = 1
     total_pages: int = 1
     filter_chips: list[Chip]
+    cards: list[Card]
     is_input: bool
     is_output: bool
     is_all: bool
@@ -45,37 +51,37 @@ class RequestTab(BaseTab):
 
     async def get_scope_row(self):
         self.scopes = [
-            dict(
+            ScopeItem(
                 name=await self.client.session.gtv(key=f'request_create'),
                 on_click=self.go_create,
             ),
-            dict(
+            ScopeItem(
                 name=await self.client.session.gtv(key=f'request_test'),
             ),
         ]
-        return HomeScopeRow(scopes=self.scopes)
+        return Scope(scopes=self.scopes)
 
     async def get_history(self):
         self.filter_chips = [
-            RequestHistoryChip(
+            Chip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.is_input}'),
                 key=Chips.is_input,
                 on_select=self.chip_select,
                 selected=self.is_input,
             ),
-            RequestHistoryChip(
+            Chip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.is_output}'),
                 key=Chips.is_output,
                 on_select=self.chip_select,
                 selected=self.is_output,
             ),
-            RequestHistoryChip(
+            Chip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.is_all}'),
                 key=Chips.is_all,
                 on_select=self.chip_select,
                 selected=self.is_all,
             ),
-            RequestHistoryChip(
+            Chip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.is_finish}'),
                 key=Chips.is_finish,
                 on_select=self.chip_select,
@@ -92,7 +98,7 @@ class RequestTab(BaseTab):
         self.requests = response.requests
         self.total_pages = response.pages
         self.scroll = ScrollMode.AUTO
-        requests_list: list[RequestInfo] = []
+        self.cards: list[Card] = []
         for request in self.requests:
             color, value = None, None
             if request.type == 'input':
@@ -100,34 +106,68 @@ class RequestTab(BaseTab):
             elif request.type == 'output':
                 color, value = colors.RED, request.output_value / settings.default_decimal
             elif request.type == 'all':
-
-                # input_method = await self.client.session.api.client.methods.get(id_=request.input_method)
-                # output_method = await self.client.session.api.client.methods.get(id_=request.output_method)
-                # input_currency = await self.client.session.api.client.currencies.get(id_str=input_method.currency)
-                # output_currency = await self.client.session.api.client.currencies.get(id_str=output_method.currency)
-                # input_value = request.input_currency_value * (10 ** input_currency.decimal)
-                # output_value = request.output_currency_value * (10 ** output_currency.decimal)
                 color, value = colors.GREY, f'{0} -> {0}'
-            requests_list.append(RequestInfo(
-                type_=await self.client.session.gtv(key=f'request_type_{request.type}'),
-                state=await self.client.session.gtv(key=f'request_state_{request.state}'),
-                value=value,
-                color=color,
-                date=request.date,
+            self.cards.append(Card(
+                controls=[
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key=f'request_type_{request.type}'),
+                                size=28,
+                                font_family=Fonts.REGULAR,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                            Text(
+                                value=value,
+                                size=32,
+                                font_family=Fonts.REGULAR,
+                                color=color,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key=f'request_state_{request.state}'),
+                                size=16,
+                                font_family=Fonts.REGULAR,
+                                color=colors.ON_BACKGROUND,
+
+                            ),
+                            Text(
+                                value=request.date,
+                                size=16,
+                                font_family=Fonts.REGULAR,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                ],
+                on_click=partial(self.request_view, request.id),
             ))
 
-        return RequestHistoryRow(
-            title_text=await self.client.session.gtv(key='transaction_history'),
-            filter_chips=self.filter_chips,
-            requests_list=requests_list,
-            pagination=PaginationWidget(
-                current_page=self.page_request,
-                total_pages=self.total_pages,
-                on_back=self.previous_page,
-                on_next=self.next_page,
-                text_back=await self.client.session.gtv(key='back'),
-                text_next=await self.client.session.gtv(key='next'),
-            ),
+        return Row(
+            controls=[
+                Row(controls=[Text(
+                    value=await self.client.session.gtv(key='transaction_history'),
+                    size=32,
+                    font_family=Fonts.BOLD,
+                    color=colors.ON_BACKGROUND,
+                )]),
+                *self.filter_chips,
+                *self.cards,
+                PaginationWidget(
+                    current_page=self.page_request,
+                    total_pages=self.total_pages,
+                    on_next=self.next_page,
+                    on_back=self.previous_page,
+                    text_next=await self.client.session.gtv(key='next'),
+                    text_back=await self.client.session.gtv(key='back'),
+                ),
+            ],
+            wrap=True,
         )
 
     async def build(self):
@@ -175,3 +215,6 @@ class RequestTab(BaseTab):
             self.page_request -= 1
             await self.build()
             await self.update_async()
+
+    async def request_view(self, request_id: int, _):
+        await self.client.change_view(view=RequestView(id_=request_id))

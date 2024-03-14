@@ -14,13 +14,15 @@
 # limitations under the License.
 #
 
-from flet_core import Column, Container, ControlEvent, Chip, colors, ScrollMode
+from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment
 
-from app.controls.information.home.account_row import HomeAccountRow
+from app.controls.button import Chip
+from app.controls.button.scopes import Scope, ScopeItem
+from app.controls.information import Card, Text
+from app.controls.information.avatar import Avatar
 from app.controls.information.home.balance_row import HomeBalanceRow
-from app.controls.information.home.history_row import HomeHistoryRow, HomeHistoryChip, TransferInfo
-from app.controls.information.home.scope_row import HomeScopeRow
 from app.controls.navigation.pagination import PaginationWidget
+from app.utils import Fonts
 from app.views.main.tabs.base import BaseTab
 from config import settings
 
@@ -32,8 +34,9 @@ class Chips:
 
 class HomeTab(BaseTab):
     exercise: list[dict] = None
-    scopes: list[dict]
+    scopes: list[ScopeItem]
     transfers = list[dict]
+    cards: list[Card]
     page_transfer: int = 1
     total_pages: int = 1
     filter_chips: list[Chip]
@@ -41,9 +44,29 @@ class HomeTab(BaseTab):
     is_receiver: bool
 
     async def get_account_row(self):
-        return HomeAccountRow(
-            hello_text=await self.client.session.gtv(key='hello'),
-            name_text=self.client.session.account.firstname,
+        firstname = self.client.session.account.firstname
+        avatar = None
+        return Row(
+            controls=[
+                Column(
+                    controls=[
+                        Row(controls=[Text(
+                            value=await self.client.session.gtv(key='hello'),
+                            size=16,
+                            font_family=Fonts.BOLD,
+                            color=colors.GREY,
+                        )]),
+                        Row(controls=[Text(
+                            value=firstname,
+                            size=28,
+                            font_family=Fonts.BOLD,
+                            color=colors.ON_BACKGROUND,
+                        )]),
+                    ],
+                ),
+                Column(controls=[Avatar(username=firstname, src=avatar)])
+            ],
+            alignment=MainAxisAlignment.SPACE_BETWEEN,
         )
 
     async def get_balance_row(self):
@@ -55,25 +78,25 @@ class HomeTab(BaseTab):
 
     async def get_scope_row(self):
         self.scopes = [
-            dict(
+            ScopeItem(
                 name=await self.client.session.gtv(key=f'scope_payment'),
                 on_click=self.go_payment,
             ),
-            dict(
+            ScopeItem(
                 name=await self.client.session.gtv(key=f'scope_test'),
             ),
         ]
-        return HomeScopeRow(scopes=self.scopes)
+        return Scope(scopes=self.scopes)
 
     async def get_history(self):
         self.filter_chips = [
-            HomeHistoryChip(
+            Chip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.is_sender}'),
                 key=Chips.is_sender,
                 on_select=self.chip_select,
                 selected=self.is_sender,
             ),
-            HomeHistoryChip(
+            Chip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.is_receiver}'),
                 key=Chips.is_receiver,
                 on_select=self.chip_select,
@@ -89,7 +112,7 @@ class HomeTab(BaseTab):
         self.transfers = response.transfers
         self.total_pages = response.pages
         self.scroll = ScrollMode.AUTO
-        transfer_list: list[TransferInfo] = []
+        self.cards: list[Card] = []
         for transfer in self.transfers:
             value = int(transfer.value) / settings.default_decimal
             if transfer.operation == 'send':
@@ -98,25 +121,70 @@ class HomeTab(BaseTab):
                 color, value = colors.GREEN, f'+ ${value}'
             else:
                 color, value = colors.GREY, f'${value}'
-            transfer_list.append(TransferInfo(
-                type_=await self.client.session.gtv(key=f'transfer_type_{transfer.type}'),
-                description=f'from wallet.{transfer.wallet_from} to wallet.{transfer.wallet_to}',
-                value=value,
-                color=color,
-                date=transfer.date,
+            self.cards.append(Card(
+                controls=[
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key=f'transfer_type_{transfer.type}'),
+                                size=28,
+                                font_family=Fonts.REGULAR,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                            Text(
+                                value=value,
+                                size=32,
+                                font_family=Fonts.REGULAR,
+                                color=color,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    Row(
+                        controls=[
+                            Text(
+                                value=f'from wallet.{transfer.wallet_from} to wallet.{transfer.wallet_to}',
+                                size=16,
+                                font_family=Fonts.REGULAR,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                            Text(
+                                value=transfer.date,
+                                size=16,
+                                font_family=Fonts.REGULAR,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                ],
+                on_click=None,
             ))
-        return HomeHistoryRow(
-            title_text=await self.client.session.gtv(key='transaction_history'),
-            filter_chips=self.filter_chips,
-            transfer_list=transfer_list,
-            pagination=PaginationWidget(
-                current_page=self.page_transfer,
-                total_pages=self.total_pages,
-                on_back=self.previous_page,
-                on_next=self.next_page,
-                text_back=await self.client.session.gtv(key='back'),
-                text_next=await self.client.session.gtv(key='next'),
-            ),
+
+        return Row(
+            controls=[
+                Row(
+                    controls=[
+                        Text(
+                            value=await self.client.session.gtv(key='transaction_history'),
+                            size=32,
+                            font_family=Fonts.BOLD,
+                            color=colors.ON_BACKGROUND,
+                        )
+                    ]
+                ),
+                *self.filter_chips,
+                *self.cards,
+                PaginationWidget(
+                    current_page=self.page_transfer,
+                    total_pages=self.total_pages,
+                    on_back=self.previous_page,
+                    on_next=self.next_page,
+                    text_back=await self.client.session.gtv(key='back'),
+                    text_next=await self.client.session.gtv(key='next'),
+                ),
+            ],
+            wrap=True,
         )
 
     async def build(self):

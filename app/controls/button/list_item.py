@@ -17,7 +17,7 @@
 
 from flet_core import padding, Container, Row, Image, border_radius, colors
 
-from app.controls.information import Text
+from app.controls.information.text import Text
 from app.utils import Fonts
 
 

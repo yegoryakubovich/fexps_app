@@ -15,9 +15,10 @@
 #
 
 
-from .text import Text
-from .card import Card
 from .bottom_sheet import BottomSheet
+from .card import Card
 from .loading import Loading
+from .request_info import RequestInfo
 from .snack_bar import SnackBar
-
+from .text import Text
+from .transfer_info import TransferInfo
