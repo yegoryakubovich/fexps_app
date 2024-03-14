@@ -30,7 +30,7 @@ from fexps_api_client.utils import ApiException
 
 
 class RequisiteDataCreateView(AdminBaseView):
-    route = '/admin/requisite/data/create'
+    route = '/client/requisite/data/create'
     methods: list
     method: dict
 
@@ -122,7 +122,6 @@ class RequisiteDataCreateView(AdminBaseView):
                 continue
             if field['type'] == 'int':
                 self.fields[field['key']] = int(self.fields.get(field['key']))
-
         try:
             requisite_data_id = await self.client.session.api.client.requisite_data.create(
                 name=self.tf_name.value,

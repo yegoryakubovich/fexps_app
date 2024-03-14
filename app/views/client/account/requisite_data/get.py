@@ -26,7 +26,7 @@ from fexps_api_client.utils import ApiException
 
 
 class RequisiteDataView(AdminBaseView):
-    route = '/admin/requisite/data/get'
+    route = '/client/requisite/data/get'
     requisite_data = dict
     method = dict
     details: list[TextField]

@@ -28,7 +28,7 @@ from app.views.client.account.requisite_data.get import RequisiteDataView
 
 
 class RequisiteDataListView(AdminBaseView):
-    route = '/admin/requisite/data/list/get'
+    route = '/client/requisite/data/list/get'
     requisites_datas: list[dict]
     tf_search = TextField
 
