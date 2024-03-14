@@ -13,17 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 import logging
 from typing import Optional
 
-from flet_core import Column, Container, ScrollMode, padding, colors, KeyboardType
+from flet_core import Column, Container, ScrollMode, padding, KeyboardType
 from flet_core.dropdown import Option
 
 from app.controls.button import FilledButton
-from app.controls.information import Text
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import ClientBaseView
-from app.utils import Fonts
+from app.views.client.requests.get import RequestView
 from fexps_api_client.utils import ApiException
 
 
@@ -257,7 +258,7 @@ class RequestCreateView(ClientBaseView):
         ) if self.tf_output_value else None
 
         try:
-            await self.client.session.api.client.request.create(
+            request_id = await self.client.session.api.client.request.create(
                 wallet_id=self.dd_wallet.value if self.dd_wallet else None,
                 type_=self.dd_type.value if self.dd_type else None,
                 input_method_id=self.dd_input_method.value if self.dd_input_method else None,
@@ -268,28 +269,8 @@ class RequestCreateView(ClientBaseView):
                 output_value=output_value,
             )
             await self.set_type(loading=False)
+            await self.client.change_view(view=RequestView(id_=request_id), delete_current=True)
         except ApiException as exception:
             await self.set_type(loading=False)
             logging.critical(exception.message)
             return await self.client.session.error(exception=exception)
-        self.controls_container = Container(
-            content=Column(
-                [
-                    Text(
-                        value=await self.client.session.gtv(key='request_create_success'),
-                        size=15,
-                        font_family=Fonts.SEMIBOLD,
-                        color=colors.ON_BACKGROUND,
-                    ),
-                    FilledButton(
-                        text=await self.client.session.gtv(key='go_back'),
-                        on_click=self.go_back,
-                    )
-                ]
-            )
-        )
-        self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='request_create'),
-            main_section_controls=[self.controls_container],
-        )
-        await self.update_async()

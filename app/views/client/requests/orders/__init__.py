@@ -15,5 +15,4 @@
 #
 
 
-from .create import RequestCreateView
-from .get import RequestView
+from .get import OrderView
