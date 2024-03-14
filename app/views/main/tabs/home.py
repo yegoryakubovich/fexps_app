@@ -166,7 +166,7 @@ class HomeTab(BaseTab):
                 Row(
                     controls=[
                         Text(
-                            value=await self.client.session.gtv(key='transaction_history'),
+                            value=await self.client.session.gtv(key='transactions_history'),
                             size=32,
                             font_family=Fonts.BOLD,
                             color=colors.ON_BACKGROUND,
