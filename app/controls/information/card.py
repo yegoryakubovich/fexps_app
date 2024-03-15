@@ -19,8 +19,8 @@ from flet_core import Card as FletCard, Container, Column, colors
 
 
 class Card(FletCard):
-    def __init__(self, controls, on_click=None, url=None):
-        super().__init__()
+    def __init__(self, controls, color=colors.SECONDARY, on_click=None, url=None, **kwargs):
+        super().__init__(**kwargs)
         self.margin = 0
         self.width = 3000
         self.content = Container(
@@ -33,4 +33,4 @@ class Card(FletCard):
             on_click=on_click,
             url=url,
         )
-        self.color = colors.SECONDARY
+        self.color = color
