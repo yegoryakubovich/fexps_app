@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import Column, colors, SnackBar, Control, FilledButton, ScrollMode, Row
+from flet_core import Column, colors, SnackBar, Control, FilledButton, ScrollMode, Row, MainAxisAlignment
 
 from app.controls.information import Text, Card
 from app.controls.layout import AdminBaseView
@@ -44,23 +44,33 @@ class RequestView(AdminBaseView):
             cards.append(
                 Card(
                     controls=[
-                        Text(
-                            value=f'#{order["id"]}',
-                            size=18,
-                            font_family=Fonts.SEMIBOLD,
-                            color=colors.ON_PRIMARY,
+                        Row(
+                            controls=[
+                                Text(
+                                    value=f'#{order["id"]}',
+                                    size=18,
+                                    font_family=Fonts.SEMIBOLD,
+                                    color=colors.ON_PRIMARY,
+                                ),
+                            ],
+                            alignment=MainAxisAlignment.SPACE_BETWEEN,
                         ),
-                        Text(
-                            value=order['type'],
-                            size=18,
-                            font_family=Fonts.SEMIBOLD,
-                            color=colors.ON_PRIMARY,
-                        ),
-                        Text(
-                            value=order['state'],
-                            size=18,
-                            font_family=Fonts.SEMIBOLD,
-                            color=colors.ON_PRIMARY,
+                        Row(
+                            controls=[
+                                Text(
+                                    value=order['type'],
+                                    size=18,
+                                    font_family=Fonts.SEMIBOLD,
+                                    color=colors.ON_PRIMARY,
+                                ),
+                                Text(
+                                    value=order['state'],
+                                    size=18,
+                                    font_family=Fonts.SEMIBOLD,
+                                    color=colors.ON_PRIMARY,
+                                ),
+                            ],
+                            alignment=MainAxisAlignment.SPACE_BETWEEN,
                         ),
                     ],
                     on_click=partial(self.order_view, order['id']),
