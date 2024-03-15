@@ -14,13 +14,15 @@
 # limitations under the License.
 #
 
+
 from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment
+from flet_core.dropdown import Option
 
 from app.controls.button import Chip
 from app.controls.button.scopes import Scope, ScopeItem
 from app.controls.information import Card, Text
 from app.controls.information.avatar import Avatar
-from app.controls.information.home.balance_row import HomeBalanceRow
+from app.controls.input import Dropdown
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts
 from app.views.main.tabs.base import BaseTab
@@ -46,6 +48,34 @@ class HomeTab(BaseTab):
     async def get_account_row(self):
         firstname = self.client.session.account.firstname
         avatar = None
+
+        return Card(
+            controls=[
+                Row(
+                    controls=[
+                        Column(
+                            controls=[
+                                Row(controls=[Text(
+                                    value=await self.client.session.gtv(key='hello'),
+                                    size=16,
+                                    font_family=Fonts.BOLD,
+                                    color=colors.GREY,
+                                )]),
+                                Row(controls=[Text(
+                                    value=firstname,
+                                    size=28,
+                                    font_family=Fonts.BOLD,
+                                    color=colors.ON_BACKGROUND,
+                                )]),
+                            ],
+                        ),
+                        Column(controls=[Avatar(username=firstname, src=avatar)])
+                    ],
+                    alignment=MainAxisAlignment.SPACE_BETWEEN,
+                )
+            ],
+            color=colors.BACKGROUND
+        )
         return Row(
             controls=[
                 Column(
@@ -70,10 +100,60 @@ class HomeTab(BaseTab):
         )
 
     async def get_balance_row(self):
-        return HomeBalanceRow(
-            wallets=self.client.session.wallets,
-            current_wallet=self.client.session.current_wallet,
+        def find_option(options: list[Option], id_: int) -> Option:
+            for option in options:
+                if option.key == id_:
+                    return option
+            return options[0]
+
+        wallet_options = [
+            Option(key=wallet.id, text=f'#{wallet.id} - {wallet.name}')
+            for wallet in self.client.session.wallets
+        ]
+        current_wallet = self.client.session.current_wallet
+        self.dd_wallets = Dropdown(
+            value=find_option(options=wallet_options, id_=current_wallet.id).key,
+            options=wallet_options,
             on_change=self.change_wallet,
+            bgcolor=colors.BLACK,
+            width=150,
+        )
+        return Card(
+            controls=[
+                Row(
+                    controls=[
+                        Column(
+                            controls=[
+                                Row(
+                                    controls=[Text(
+                                        value=f'#{current_wallet.id} - {current_wallet.name}',
+                                        size=24,
+                                        font_family=Fonts.REGULAR,
+                                        color=colors.GREY_400,
+                                    )],
+                                    alignment=MainAxisAlignment.CENTER,
+                                ),
+                                Row(
+                                    controls=[Text(
+                                        value=f'${current_wallet.value / settings.default_decimal}',
+                                        size=28,
+                                        font_family=Fonts.REGULAR,
+                                        color=colors.WHITE,
+                                    )],
+                                    alignment=MainAxisAlignment.CENTER,
+                                ),
+                            ],
+                            alignment=MainAxisAlignment.CENTER,
+                            expand=True,
+                        ),
+                        self.dd_wallets,
+                    ],
+                    alignment=MainAxisAlignment.CENTER,
+                ),
+            ],
+            width=3000,
+            margin=0,
+            height=120,
         )
 
     async def get_scope_row(self):
@@ -193,6 +273,7 @@ class HomeTab(BaseTab):
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
             id_=self.client.session.current_wallet.id,
         )
+        self.scroll = ScrollMode.AUTO
         self.controls = [
             Container(
                 content=Column(
