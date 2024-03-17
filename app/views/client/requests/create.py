@@ -34,13 +34,6 @@ class RequestTypes:
     all = 'all'
 
 
-def find_wallet_option(options: list[Option], id_: int) -> Option:
-    for option in options:
-        if option.key == id_:
-            return option
-    return options[0]
-
-
 class RequestCreateView(ClientBaseView):
     route = '/client/requisite/create'
     controls_container: Container
@@ -269,7 +262,7 @@ class RequestCreateView(ClientBaseView):
                 output_value=output_value,
             )
             await self.set_type(loading=False)
-            await self.client.change_view(view=RequestView(id_=request_id), delete_current=True)
+            await self.client.change_view(view=RequestView(request_id=request_id), delete_current=True)
         except ApiException as exception:
             await self.set_type(loading=False)
             logging.critical(exception.message)

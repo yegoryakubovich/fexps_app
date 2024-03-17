@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     url: str  # = 'http://api.test.'
     url_telegram: str = 'https://t.me/fexps_manager'
 
-    default_decimal: int = 100
+    default_decimal: int = 2
     datetime_format: str = '%d-%m-%y %H:%M'
 
     model_config = SettingsConfigDict(env_file='.env')

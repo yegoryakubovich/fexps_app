@@ -217,4 +217,4 @@ class RequestTab(BaseTab):
             await self.update_async()
 
     async def request_view(self, request_id: int, _):
-        await self.client.change_view(view=RequestView(id_=request_id))
+        await self.client.change_view(view=RequestView(request_id=request_id))
