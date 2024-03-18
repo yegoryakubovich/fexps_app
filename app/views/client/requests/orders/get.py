@@ -85,8 +85,6 @@ class OrderView(AdminBaseView):
         return result
 
     async def _get_controls(self, order) -> list[Control]:
-        requisite = await self.client.session.api.client.requisite.get(id_=order.requisite)
-        logging.critical(requisite)
         state_info = Text(value=None, size=24, font_family=Fonts.MEDIUM, color=colors.ON_BACKGROUND)
         controls, buttons = [], []
         if order.state == 'waiting':
