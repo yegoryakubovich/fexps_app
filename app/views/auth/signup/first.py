@@ -16,7 +16,6 @@
 
 
 from flet_core import Row, Column, Container, padding, colors, border_radius
-from fexps_api_client.utils import ApiException
 
 from app.controls.button import FilledButton
 from app.controls.information import Text
@@ -24,7 +23,8 @@ from app.controls.input import TextField
 from app.controls.layout import AuthView
 from app.utils import Fonts, Error
 from app.utils.registration import Registration
-from app.views.auth.registration.second import RegistrationSecondView
+from app.views.auth.signup.second import RegistrationSecondView
+from fexps_api_client.utils import ApiException
 
 
 class RegistrationFirstView(AuthView):
@@ -48,13 +48,17 @@ class RegistrationFirstView(AuthView):
                     controls=[
                         self.tf_username,
                         self.tf_password,
-                        FilledButton(
-                            content=Text(
-                                value=await self.client.session.gtv(key='next'),
-                                size=16,
-                            ),
-                            on_click=self.change_view,
-                            horizontal_padding=54,
+                        Row(
+                            controls=[
+                                FilledButton(
+                                    content=Text(
+                                        value=await self.client.session.gtv(key='next_step'),
+                                        size=16,
+                                    ),
+                                    on_click=self.change_view,
+                                    expand=True,
+                                ),
+                            ]
                         ),
                         Container(
                             content=Row(
@@ -115,5 +119,5 @@ class RegistrationFirstView(AuthView):
         await self.client.change_view(view=RegistrationSecondView())
 
     async def go_authentication(self, _):
-        from app.views.auth.authentication import AuthenticationView
+        from app.views.auth.signin import AuthenticationView
         await self.client.change_view(view=AuthenticationView(), delete_current=True)

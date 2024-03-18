@@ -17,11 +17,12 @@
 
 from flet_core import Column
 
+from app import InitView
 from app.controls.button import FilledButton, ListItemButton
 from app.controls.information import Text
 from app.controls.layout import AuthView
 from app.utils import Fonts, Icons
-from app.views.auth.registration.successful import RegistrationSuccessfulView
+from app.views.auth.signup.successful import RegistrationSuccessfulView
 
 
 class AgreementRegistrationView(AuthView):
@@ -39,8 +40,19 @@ class AgreementRegistrationView(AuthView):
             timezone=self.client.session.registration.timezone,
             currency=self.client.session.registration.currency,
         )
+
+        session = await self.client.session.api.client.sessions.create(
+            username=self.client.session.registration.username,
+            password=self.client.session.registration.password,
+        )
+
+        token = session.token
+        await self.client.session.set_cs(key='token', value=token)
+
+        self.client.session.registration = None
+
         await self.set_type(loading=False)
-        await self.client.change_view(view=RegistrationSuccessfulView(), delete_current=True)
+        await self.client.change_view(view=InitView(), delete_current=True)
 
     async def build(self):
         self.controls = await self.get_controls(
@@ -49,18 +61,23 @@ class AgreementRegistrationView(AuthView):
                 Column(
                     controls=[
                         ListItemButton(
-                            icon=Icons.PRIVACY_POLICY,
+                            icon=Icons.FILE,
                             name=await self.client.session.gtv(key='privacy_policy'),
                             url=None,
                         ),
-                        Text(
-                            value=await self.client.session.gtv(key='agreement_info'),
-                            font_family=Fonts.REGULAR,
-                            size=16,
+                        ListItemButton(
+                            icon=Icons.FILE,
+                            name=await self.client.session.gtv(key='terms_of_service'),
+                            url=None,
+                        ),
+                        ListItemButton(
+                            icon=Icons.FILE,
+                            name=await self.client.session.gtv(key='contact_informations'),
+                            url=None,
                         ),
                         FilledButton(
                             content=Text(
-                                value=await self.client.session.gtv(key='account_create'),
+                                value=await self.client.session.gtv(key='create_account'),
                             ),
                             on_click=self.change_view,
                             horizontal_padding=54,

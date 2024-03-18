@@ -15,14 +15,13 @@
 #
 
 
-from flet_core import Card as FletCard, Row as FletRow, Column, colors, Row, \
-    MainAxisAlignment, Image, Container
+from flet_core import Card, Row, Column, colors, MainAxisAlignment, Image, Container
 
 from app.controls.information.text import Text
 from app.utils import Icons, Fonts
 
 
-class ScopeItem:
+class ActionItem:
     name: str
     on_click: callable
 
@@ -31,7 +30,7 @@ class ScopeItem:
         self.on_click = on_click
 
 
-class ScopeCard(FletCard):
+class ActionCard(Card):
     def __init__(self, name: str):
         super().__init__()
         self.icon = Image(
@@ -60,12 +59,12 @@ class ScopeCard(FletCard):
         ])
 
 
-class Scope(FletRow):
-    def __init__(self, scopes: list[ScopeItem]):
+class Action(Row):
+    def __init__(self, scopes: list[ActionItem]):
         super().__init__()
         self.controls = [
             *[Container(
-                content=ScopeCard(name=scope.name),
+                content=ActionCard(name=scope.name),
                 on_click=scope.on_click,
                 height=200,
                 width=200,

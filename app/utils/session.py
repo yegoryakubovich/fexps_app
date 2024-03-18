@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+import logging
 from typing import Any
 
 from flet_core import Page
@@ -87,6 +86,7 @@ class Session:
             if not self.wallets:
                 await self.api.client.wallets.create(name='Default')
                 self.wallets = await self.api.client.wallets.get_list()
+            logging.critical(self.wallets)
             self.current_wallet = self.wallets[0]
         except ApiException:
             await self.set_cs(key='token', value=None)

@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+from flet_core import Row
 from flet_core.dropdown import Option
 
 from app.controls.button import FilledButton
@@ -66,10 +65,16 @@ class LanguageView(AuthView):
             go_back=self.is_go_back,
             controls=[
                 self.dropdown,
-                FilledButton(
-                    text=await self.client.session.gtv(key='next'),
-                    on_click=self.select,
-                    horizontal_padding=54,
+                Row(
+                    controls=[
+                        FilledButton(
+                            text=await self.client.session.gtv(key='next'),
+                            on_click=self.select,
+                            horizontal_padding=54,
+                            expand=True,
+                        ),
+                    ]
                 ),
+
             ],
         )

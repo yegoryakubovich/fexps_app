@@ -18,5 +18,5 @@
 from .filled import FilledButton
 from .list_item import ListItemButton
 from .chip import Chip
-from .scopes import ScopeItem, ScopeCard, Scope
+from .scopes import ActionItem, ActionCard, Action
 from .switch import StitchButton

@@ -14,6 +14,7 @@ class Chip(FletChip):
             color=colors.ON_BACKGROUND,
         )
         super().__init__(label=self.label, **kwargs)
-        self.bgcolor = colors.GREEN
         self.key = key
         self.on_select = on_select
+        self.selected_color = colors.SECONDARY
+        self.bgcolor = colors.GREY_300

@@ -13,180 +13,206 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from functools import partial
 
-
-from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment
-from flet_core.dropdown import Option
+from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, Padding
 
 from app.controls.button import Chip
-from app.controls.button.scopes import Scope, ScopeItem
 from app.controls.information import Card, Text
-from app.controls.information.avatar import Avatar
-from app.controls.input import Dropdown
 from app.controls.navigation.pagination import PaginationWidget
-from app.utils import Fonts
+from app.utils import Fonts, Icons
 from app.views.main.tabs.base import BaseTab
 from config import settings
 
 
 class Chips:
-    is_sender = 'is_sender'
-    is_receiver = 'is_receiver'
+    input = 'input'
+    output = 'output'
+    all = 'all'
 
 
 class HomeTab(BaseTab):
     exercise: list[dict] = None
-    scopes: list[ScopeItem]
     transfers = list[dict]
     cards: list[Card]
     page_transfer: int = 1
     total_pages: int = 1
     filter_chips: list[Chip]
-    is_sender: bool
-    is_receiver: bool
+    selected_chip: str
 
     async def get_account_row(self):
-        firstname = self.client.session.account.firstname
-        avatar = None
+        hello_text_key = 'good_morning'
 
-        return Card(
-            controls=[
-                Row(
-                    controls=[
-                        Column(
-                            controls=[
-                                Row(controls=[Text(
-                                    value=await self.client.session.gtv(key='hello'),
-                                    size=16,
-                                    font_family=Fonts.BOLD,
-                                    color=colors.GREY,
-                                )]),
-                                Row(controls=[Text(
-                                    value=firstname,
-                                    size=28,
-                                    font_family=Fonts.BOLD,
-                                    color=colors.ON_BACKGROUND,
-                                )]),
-                            ],
-                        ),
-                        Column(controls=[Avatar(username=firstname, src=avatar)])
-                    ],
-                    alignment=MainAxisAlignment.SPACE_BETWEEN,
-                )
-            ],
-            color=colors.BACKGROUND
-        )
         return Row(
             controls=[
-                Column(
-                    controls=[
-                        Row(controls=[Text(
-                            value=await self.client.session.gtv(key='hello'),
-                            size=16,
-                            font_family=Fonts.BOLD,
-                            color=colors.GREY,
-                        )]),
-                        Row(controls=[Text(
-                            value=firstname,
-                            size=28,
-                            font_family=Fonts.BOLD,
-                            color=colors.ON_BACKGROUND,
-                        )]),
-                    ],
+                Text(
+                    value=await self.client.session.gtv(key=hello_text_key),
+                    size=32,
+                    font_family=Fonts.MEDIUM,
+                    color=colors.ON_BACKGROUND,
                 ),
-                Column(controls=[Avatar(username=firstname, src=avatar)])
+                Text(
+                    value=self.client.session.account.firstname.title(),
+                    size=32,
+                    font_family=Fonts.SEMIBOLD,
+                    color=colors.ON_BACKGROUND,
+                ),
+            ],
+        )
+
+    async def get_balance_row(self):
+        current_wallet = self.client.session.current_wallet
+        wallet_name = current_wallet.name
+        value = f'{current_wallet.value / 10 ** settings.default_decimal}'.replace('.', ',')
+        return Container(
+            content=Row(
+                controls=[
+                    Column(
+                        controls=[
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=f'{wallet_name}',
+                                        size=24,
+                                        font_family=Fonts.REGULAR,
+                                        color=colors.ON_BACKGROUND,
+                                    ),
+                                ],
+                                alignment=MainAxisAlignment.CENTER,
+                            ),
+                            Row(
+                                controls=[
+                                    Image(
+                                        src=Icons.VALUE,
+                                        width=36,
+                                        color=colors.ON_BACKGROUND,
+                                    ),
+                                    Text(
+                                        value=f'{value}',
+                                        size=32,
+                                        font_family=Fonts.BOLD,
+                                        color=colors.ON_BACKGROUND,
+                                    ),
+                                ],
+                                alignment=MainAxisAlignment.CENTER,
+                            ),
+
+                        ],
+                        alignment=MainAxisAlignment.CENTER,
+                        expand=True,
+                    ),
+                    Column(
+                        controls=[
+                            Container(
+                                content=Image(
+                                    src=Icons.WALLET_MENU,
+                                    width=36,
+                                    color=colors.ON_BACKGROUND,
+                                ),
+                                on_click=self.select_wallet_view,
+                                padding=20,
+                            )
+                        ],
+                    ),
+                ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+            bgcolor=colors.SECONDARY,
+            height=150,
+        )
+
+    async def get_actions_row(self):
+        return Row(
+            controls=[
+                Container(
+                    content=Row(
+                        controls=[
+                            Image(
+                                src=Icons.MAKE_EXCHANGE,
+                                height=32,
+                                width=32,
+                            ),
+                            Text(
+                                value=await self.client.session.gtv(key=f'action_make_exchange'),
+                                size=16,
+                                font_family=Fonts.BOLD,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                    ),
+                    on_click=self.request_create,
+                    bgcolor=colors.SECONDARY,
+                    padding=Padding(top=5, bottom=5, left=10, right=10),
+                ),
+                Container(
+                    content=Row(
+                        controls=[
+                            Image(
+                                src=Icons.SEND,
+                                height=32,
+                                width=32,
+                            ),
+                            Text(
+                                value=await self.client.session.gtv(key=f'action_send'),
+                                size=16,
+                                font_family=Fonts.BOLD,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                    ),
+                    on_click=self.go_send,
+                    bgcolor=colors.GREY,
+                    padding=Padding(top=5, bottom=5, left=10, right=10),
+                ),
+                Container(
+                    content=Row(
+                        controls=[
+                            Image(
+                                src=Icons.DEV,
+                                height=32,
+                                width=32,
+                            ),
+                            Text(
+                                value=await self.client.session.gtv(key=f'action_dev'),
+                                size=16,
+                                font_family=Fonts.BOLD,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                    ),
+                    bgcolor=colors.GREY,
+                    padding=Padding(top=5, bottom=5, left=10, right=10),
+                ),
             ],
             alignment=MainAxisAlignment.SPACE_BETWEEN,
         )
 
-    async def get_balance_row(self):
-        def find_option(options: list[Option], id_: int) -> Option:
-            for option in options:
-                if option.key == id_:
-                    return option
-            return options[0]
-
-        wallet_options = [
-            Option(key=wallet.id, text=f'#{wallet.id} - {wallet.name}')
-            for wallet in self.client.session.wallets
-        ]
-        current_wallet = self.client.session.current_wallet
-        self.dd_wallets = Dropdown(
-            value=find_option(options=wallet_options, id_=current_wallet.id).key,
-            options=wallet_options,
-            on_change=self.change_wallet,
-            bgcolor=colors.BLACK,
-            width=150,
-        )
-        return Card(
-            controls=[
-                Row(
-                    controls=[
-                        Column(
-                            controls=[
-                                Row(
-                                    controls=[Text(
-                                        value=f'#{current_wallet.id} - {current_wallet.name}',
-                                        size=24,
-                                        font_family=Fonts.REGULAR,
-                                        color=colors.GREY_400,
-                                    )],
-                                    alignment=MainAxisAlignment.CENTER,
-                                ),
-                                Row(
-                                    controls=[Text(
-                                        value=f'${current_wallet.value / settings.default_decimal}',
-                                        size=28,
-                                        font_family=Fonts.REGULAR,
-                                        color=colors.WHITE,
-                                    )],
-                                    alignment=MainAxisAlignment.CENTER,
-                                ),
-                            ],
-                            alignment=MainAxisAlignment.CENTER,
-                            expand=True,
-                        ),
-                        self.dd_wallets,
-                    ],
-                    alignment=MainAxisAlignment.CENTER,
-                ),
-            ],
-            width=3000,
-            margin=0,
-            height=120,
-        )
-
-    async def get_scope_row(self):
-        self.scopes = [
-            ScopeItem(
-                name=await self.client.session.gtv(key=f'scope_payment'),
-                on_click=self.go_payment,
-            ),
-            ScopeItem(
-                name=await self.client.session.gtv(key=f'scope_test'),
-            ),
-        ]
-        return Scope(scopes=self.scopes)
-
     async def get_history(self):
         self.filter_chips = [
             Chip(
-                name=await self.client.session.gtv(key=f'chip_{Chips.is_sender}'),
-                key=Chips.is_sender,
+                name=await self.client.session.gtv(key=f'chip_{Chips.input}'),
+                key=Chips.input,
                 on_select=self.chip_select,
-                selected=self.is_sender,
+                selected=True if self.selected_chip == Chips.input else False,
             ),
             Chip(
-                name=await self.client.session.gtv(key=f'chip_{Chips.is_receiver}'),
-                key=Chips.is_receiver,
+                name=await self.client.session.gtv(key=f'chip_{Chips.output}'),
+                key=Chips.output,
                 on_select=self.chip_select,
-                selected=self.is_receiver,
+                selected=True if self.selected_chip == Chips.output else False,
             ),
+            Chip(
+                name=await self.client.session.gtv(key=f'chip_{Chips.all}'),
+                key=Chips.all,
+                on_select=self.chip_select,
+                selected=True if self.selected_chip == Chips.all else False,
+            ),
+
         ]
         response = await self.client.session.api.client.transfers.search(
             wallet_id=self.client.session.current_wallet.id,
-            is_sender=self.is_sender,
-            is_receiver=self.is_receiver,
+            is_sender=True if self.selected_chip in [Chips.output, Chips.all] else False,
+            is_receiver=True if self.selected_chip in [Chips.input, Chips.all] else False,
             page=self.page_transfer,
         )
         self.transfers = response.transfers
@@ -196,57 +222,52 @@ class HomeTab(BaseTab):
         for transfer in self.transfers:
             value = int(transfer.value) / settings.default_decimal
             if transfer.operation == 'send':
-                color, value = colors.RED, f'- ${value}'
+                value = f'- {value}'
             elif transfer.operation == 'receive':
-                color, value = colors.GREEN, f'+ ${value}'
-            else:
-                color, value = colors.GREY, f'${value}'
-            self.cards.append(Card(
-                controls=[
-                    Row(
-                        controls=[
-                            Text(
-                                value=await self.client.session.gtv(key=f'transfer_type_{transfer.type}'),
-                                size=28,
-                                font_family=Fonts.REGULAR,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                            Text(
-                                value=value,
-                                size=32,
-                                font_family=Fonts.REGULAR,
-                                color=color,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
-                    ),
-                    Row(
-                        controls=[
-                            Text(
-                                value=f'from wallet.{transfer.wallet_from} to wallet.{transfer.wallet_to}',
-                                size=16,
-                                font_family=Fonts.REGULAR,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                            Text(
-                                value=transfer.date,
-                                size=16,
-                                font_family=Fonts.REGULAR,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
-                    ),
-                ],
-                on_click=None,
-            ))
+                value = f'+ {value}'
+            self.cards.append(
+                Card(
+                    controls=[
+                        Row(
+                            controls=[
+                                Text(
+                                    value=f'To wallet.{transfer.wallet_to}',
+                                    size=32,
+                                    font_family=Fonts.SEMIBOLD,
+                                    color=colors.ON_BACKGROUND,
+                                ),
+                                Text(
+                                    value=value,
+                                    size=32,
+                                    font_family=Fonts.REGULAR,
+                                    color=colors.ON_BACKGROUND,
+                                ),
+                            ],
+                            alignment=MainAxisAlignment.SPACE_BETWEEN,
+                        ),
+                        Row(
+                            controls=[
+                                Column(),
+                                Text(
+                                    value=transfer.date,
+                                    size=16,
+                                    font_family=Fonts.REGULAR,
+                                    color=colors.ON_BACKGROUND,
+                                ),
+                            ],
+                            alignment=MainAxisAlignment.SPACE_BETWEEN,
+                        ),
+                    ],
+                    on_click=partial(self.transfer_view, transfer.id),
+                )
+            )
 
         return Row(
             controls=[
                 Row(
                     controls=[
                         Text(
-                            value=await self.client.session.gtv(key='transactions_history'),
+                            value=await self.client.session.gtv(key='last_transactions'),
                             size=32,
                             font_family=Fonts.BOLD,
                             color=colors.ON_BACKGROUND,
@@ -268,7 +289,7 @@ class HomeTab(BaseTab):
         )
 
     async def build(self):
-        self.is_sender, self.is_receiver = True, True
+        self.selected_chip = Chips.all
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
             id_=self.client.session.current_wallet.id,
@@ -278,12 +299,9 @@ class HomeTab(BaseTab):
             Container(
                 content=Column(
                     controls=[
-                        Container(
-                            content=await self.get_account_row(),
-                            on_click=self.go_account,
-                        ),
+                        await self.get_account_row(),
                         await self.get_balance_row(),
-                        await self.get_scope_row(),
+                        await self.get_actions_row(),
                         await self.get_history(),
                     ],
                 ),
@@ -302,15 +320,8 @@ class HomeTab(BaseTab):
         self.controls[0].content.controls[3] = await self.get_history()
         await self.update_async()
 
-    async def go_payment(self, _):
-        from app.views.client.scopes import PaymentView
-        await self.client.change_view(view=PaymentView())
-
     async def chip_select(self, event: ControlEvent):
-        if event.control.key == Chips.is_sender:
-            self.is_sender = True if event.data == 'true' else False
-        elif event.control.key == Chips.is_receiver:
-            self.is_receiver = True if event.data == 'true' else False
+        self.selected_chip = event.control.key
         self.controls[0].content.controls[3] = await self.get_history()
         await self.update_async()
 
@@ -325,3 +336,16 @@ class HomeTab(BaseTab):
             self.page_transfer -= 1
             await self.build()
             await self.update_async()
+
+    async def select_wallet_view(self, _):
+        pass
+
+    async def request_create(self, _):
+        pass
+
+    async def go_send(self, _):
+        from app.views.client.scopes import PaymentView
+        await self.client.change_view(view=PaymentView())
+
+    async def transfer_view(self, transfer_id: int, _):
+        pass

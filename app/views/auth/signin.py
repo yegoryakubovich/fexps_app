@@ -58,7 +58,7 @@ class AuthenticationView(AuthView):
         await self.client.change_view(view=InitView())
 
     async def go_registration(self, _):
-        from app.views.auth.registration import RegistrationFirstView
+        from app.views.auth.signup import RegistrationFirstView
         await self.client.change_view(view=RegistrationFirstView(), delete_current=True)
 
     async def go_language(self, _):
@@ -76,7 +76,7 @@ class AuthenticationView(AuthView):
         )
 
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='authorization'),
+            title=await self.client.session.gtv(key='sign_in'),
             controls=[
                 Column(
                     controls=[
@@ -91,16 +91,9 @@ class AuthenticationView(AuthView):
                                     ),
                                     on_click=self.authenticate,
                                     horizontal_padding=54,
-                                ),
-                                FilledButton(
-                                    content=Text(
-                                        value=await self.client.session.gtv(key='language'),
-                                        size=16,
-                                    ),
-                                    on_click=self.go_language,
+                                    expand=True,
                                 ),
                             ],
-                            alignment=MainAxisAlignment.SPACE_BETWEEN,
                         ),
                         Container(
                             content=Row(
@@ -112,7 +105,7 @@ class AuthenticationView(AuthView):
                                         color=colors.ON_BACKGROUND,
                                     ),
                                     Text(
-                                        value=await self.client.session.gtv(key='create'),
+                                        value=await self.client.session.gtv(key='signup'),
                                         size=16,
                                         font_family=Fonts.SEMIBOLD,
                                         color=colors.PRIMARY,

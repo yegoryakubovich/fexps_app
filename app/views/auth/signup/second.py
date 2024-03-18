@@ -15,7 +15,7 @@
 #
 
 
-from flet_core import ScrollMode
+from flet_core import ScrollMode, Row
 from flet_core.dropdown import Option
 
 from app.controls.button import FilledButton
@@ -23,7 +23,7 @@ from app.controls.information import Text
 from app.controls.input import Dropdown, TextField
 from app.controls.layout import AuthView
 from app.utils import Error
-from app.views.auth.registration.agreement import AgreementRegistrationView
+from app.views.auth.signup.agreement import AgreementRegistrationView
 
 
 class RegistrationSecondView(AuthView):
@@ -64,12 +64,17 @@ class RegistrationSecondView(AuthView):
                 self.tf_lastname,
                 self.tf_surname,
                 self.dd_country,
-                FilledButton(
-                    content=Text(
-                        value=await self.client.session.gtv(key='next'),
-                        size=16,
-                    ),
-                    on_click=self.change_view,
+                Row(
+                    controls=[
+                        FilledButton(
+                            content=Text(
+                                value=await self.client.session.gtv(key='next_step'),
+                                size=16,
+                            ),
+                            on_click=self.change_view,
+                            expand=True,
+                        ),
+                    ]
                 ),
             ],
         )

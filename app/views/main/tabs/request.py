@@ -20,7 +20,7 @@ from functools import partial
 from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment
 
 from app.controls.button import Chip
-from app.controls.button.scopes import Scope, ScopeItem
+from app.controls.button.scopes import Action, ActionItem
 from app.controls.information import Text, Card
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts
@@ -38,7 +38,7 @@ class Chips:
 
 class RequestTab(BaseTab):
     exercise: list[dict] = None
-    scopes: list[ScopeItem]
+    scopes: list[ActionItem]
     requests = list[dict]
     page_request: int = 1
     total_pages: int = 1
@@ -51,15 +51,15 @@ class RequestTab(BaseTab):
 
     async def get_scope_row(self):
         self.scopes = [
-            ScopeItem(
+            ActionItem(
                 name=await self.client.session.gtv(key=f'request_create'),
                 on_click=self.go_create,
             ),
-            ScopeItem(
+            ActionItem(
                 name=await self.client.session.gtv(key=f'request_test'),
             ),
         ]
-        return Scope(scopes=self.scopes)
+        return Action(scopes=self.scopes)
 
     async def get_history(self):
         self.filter_chips = [

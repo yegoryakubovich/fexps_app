@@ -16,5 +16,5 @@
 
 
 from .init import InitView
-from .authentication import AuthenticationView
+from .signin import AuthenticationView
 from .language import LanguageView

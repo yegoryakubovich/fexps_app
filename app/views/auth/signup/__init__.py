@@ -17,5 +17,4 @@
 
 from .first import RegistrationFirstView
 from .second import RegistrationSecondView
-from .successful import RegistrationSuccessfulView
 from .agreement import AgreementRegistrationView

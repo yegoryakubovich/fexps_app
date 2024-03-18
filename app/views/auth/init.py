@@ -18,7 +18,7 @@
 from app.controls.input import Dropdown
 from app.controls.layout import AuthView
 from app.utils import Session
-from app.views.auth.authentication import AuthenticationView
+from app.views.auth.signin import AuthenticationView
 from app.views.auth.language import LanguageView
 from app.views.main import MainView
 

@@ -33,6 +33,10 @@ class FilledButton(FletElevatedButton):
                 MaterialState.DEFAULT: colors.PRIMARY_CONTAINER,
                 MaterialState.HOVERED: colors.PRIMARY_CONTAINER,
             },
+            color={
+                MaterialState.DEFAULT: colors.ON_BACKGROUND,
+                MaterialState.HOVERED: colors.BACKGROUND,
+            },
             shadow_color=None,
         )
         self.elevation = 0
