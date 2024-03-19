@@ -15,9 +15,9 @@
 #
 
 
-from flet_core import Column, Container, ScrollMode, padding, colors, KeyboardType
+from flet_core import Column, Container, ScrollMode, padding, colors, KeyboardType, Row
 
-from app.controls.button import FilledButton
+from app.controls.button import FilledButton, StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
@@ -27,8 +27,8 @@ from config import settings
 from fexps_api_client.utils import ApiException
 
 
-class PaymentView(ClientBaseView):
-    route = '/client/scopes/payment'
+class SendMoneyView(ClientBaseView):
+    route = '/client/actions/money/send'
     wallet_to_id_tf: TextField
     value_tf: TextField
     controls_container: Container
@@ -36,11 +36,11 @@ class PaymentView(ClientBaseView):
     async def build(self):
         # self.client.session.account
         self.wallet_to_id_tf = TextField(
-            label=await self.client.session.gtv(key='scopes_payment_wallet_to_id'),
+            label=await self.client.session.gtv(key='actions_send_wallet_to_id'),
             keyboard_type=KeyboardType.NUMBER,
         )
         self.value_tf = TextField(
-            label=await self.client.session.gtv(key='scopes_payment_value'),
+            label=await self.client.session.gtv(key='actions_send_value'),
             keyboard_type=KeyboardType.NUMBER,
         )
         self.controls_container = Container(
@@ -48,10 +48,15 @@ class PaymentView(ClientBaseView):
                 controls=[
                     self.wallet_to_id_tf,
                     self.value_tf,
-                    FilledButton(
-                        text=await self.client.session.gtv(key='next'),
-                        on_click=self.switch_tf,
-                    )
+                    Row(
+                        controls=[
+                            StandardButton(
+                                text=await self.client.session.gtv(key='send_money'),
+                                on_click=self.switch_tf,
+                                expand=True,
+                            ),
+                        ],
+                    ),
                 ],
                 spacing=10,
             ),
@@ -62,7 +67,7 @@ class PaymentView(ClientBaseView):
         ]
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='payment'),
+            title=await self.client.session.gtv(key='send_money'),
             main_section_controls=controls,
         )
 

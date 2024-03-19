@@ -15,4 +15,4 @@
 #
 
 
-from .payment import PaymentView
+from .money_send import SendMoneyView
