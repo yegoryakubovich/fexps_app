@@ -15,8 +15,7 @@
 #
 
 
-from flet_core import ElevatedButton as FletElevatedButton, ButtonStyle, MaterialState, RoundedRectangleBorder, padding, \
-    colors
+from flet_core import ElevatedButton as FletElevatedButton, ButtonStyle, padding, colors, ContinuousRectangleBorder
 
 
 class StandardButton(FletElevatedButton):
@@ -28,22 +27,12 @@ class StandardButton(FletElevatedButton):
             vertical: int = 12,
             **kwargs
     ):
+        super().__init__(**kwargs)
         self.style = ButtonStyle(
             padding=padding.symmetric(horizontal=horizontal, vertical=vertical),
-            shape={
-                MaterialState.DEFAULT: RoundedRectangleBorder(radius=6),
-            },
-            overlay_color={
-                MaterialState.DEFAULT: colors.PRIMARY_CONTAINER,
-                MaterialState.HOVERED: colors.PRIMARY_CONTAINER,
-            },
-            color={
-                MaterialState.DEFAULT: colors.ON_BACKGROUND,
-                MaterialState.HOVERED: colors.BACKGROUND,
-            },
+            shape=ContinuousRectangleBorder(radius=30),
             shadow_color=None,
         )
-        super().__init__(**kwargs)
         self.elevation = 0
         self.bgcolor = bgcolor
         self.color = color

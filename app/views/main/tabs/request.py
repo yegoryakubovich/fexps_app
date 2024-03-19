@@ -20,7 +20,7 @@ from functools import partial
 from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment
 
 from app.controls.button import Chip
-from app.controls.button.scopes import Action, ActionItem
+from app.controls.button.actions import Action, ActionItem
 from app.controls.information import Text, Card
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts

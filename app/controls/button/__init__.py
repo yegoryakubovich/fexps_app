@@ -19,5 +19,5 @@ from .standart import StandardButton
 from .chip import Chip
 from .filled import FilledButton
 from .list_item import ListItemButton
-from .scopes import ActionItem, ActionCard, Action
+from .actions import ActionItem, ActionCard, Action
 from .switch import StitchButton

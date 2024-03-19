@@ -13,11 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
+from datetime import datetime
 from functools import partial
 
-from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, Padding
+from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, TextAlign, \
+    Padding
 
 from app.controls.button import Chip
+from app.controls.button.standart import StandardButton
 from app.controls.information import Card, Text
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts, Icons
@@ -61,9 +65,8 @@ class HomeTab(BaseTab):
         )
 
     async def get_balance_row(self):
-        current_wallet = self.client.session.current_wallet
-        wallet_name = current_wallet.name
-        value = f'{current_wallet.value / 10 ** settings.default_decimal}'.replace('.', ',')
+        wallet_name = self.client.session.current_wallet.name
+        value = f'{self.client.session.current_wallet.value / 10 ** settings.default_decimal}'
         return Container(
             content=Row(
                 controls=[
@@ -124,7 +127,7 @@ class HomeTab(BaseTab):
     async def get_actions_row(self):
         return Row(
             controls=[
-                Container(
+                StandardButton(
                     content=Row(
                         controls=[
                             Image(
@@ -139,12 +142,13 @@ class HomeTab(BaseTab):
                                 color=colors.ON_BACKGROUND,
                             ),
                         ],
+                        alignment=MainAxisAlignment.CENTER,
                     ),
                     on_click=self.request_create,
+                    expand=2,
                     bgcolor=colors.SECONDARY,
-                    padding=Padding(top=5, bottom=5, left=10, right=10),
                 ),
-                Container(
+                StandardButton(
                     content=Row(
                         controls=[
                             Image(
@@ -159,12 +163,13 @@ class HomeTab(BaseTab):
                                 color=colors.ON_BACKGROUND,
                             ),
                         ],
+                        alignment=MainAxisAlignment.CENTER,
                     ),
-                    on_click=self.go_send,
                     bgcolor=colors.GREY,
-                    padding=Padding(top=5, bottom=5, left=10, right=10),
+                    expand=1,
+                    on_click=self.go_send,
                 ),
-                Container(
+                StandardButton(
                     content=Row(
                         controls=[
                             Image(
@@ -179,12 +184,13 @@ class HomeTab(BaseTab):
                                 color=colors.ON_BACKGROUND,
                             ),
                         ],
+                        alignment=MainAxisAlignment.CENTER,
                     ),
                     bgcolor=colors.GREY,
-                    padding=Padding(top=5, bottom=5, left=10, right=10),
+                    expand=1,
                 ),
             ],
-            alignment=MainAxisAlignment.SPACE_BETWEEN,
+            spacing=10,
         )
 
     async def get_history(self):
@@ -218,47 +224,50 @@ class HomeTab(BaseTab):
         self.transfers = response.transfers
         self.total_pages = response.pages
         self.scroll = ScrollMode.AUTO
-        self.cards: list[Card] = []
+        self.cards: list = []
         for transfer in self.transfers:
             value = int(transfer.value) / settings.default_decimal
             if transfer.operation == 'send':
                 value = f'- {value}'
             elif transfer.operation == 'receive':
                 value = f'+ {value}'
+            date = datetime.strptime(transfer.date, settings.datetime_format).strftime('%Y-%m-%d')
             self.cards.append(
-                Card(
-                    controls=[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=f'To wallet.{transfer.wallet_to}',
-                                    size=32,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_BACKGROUND,
+                Container(
+                    content=Row(
+                        controls=[
+                            Text(
+                                value=f'To wallet.{transfer.wallet_to}',
+                                size=32,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_BACKGROUND,
+                                expand=True,
+                                text_align=TextAlign.LEFT,
+                            ),
+                            Container(
+                                content=Column(
+                                    controls=[
+                                        Text(
+                                            value=value,
+                                            size=32,
+                                            font_family=Fonts.BOLD,
+                                            color=colors.ON_BACKGROUND,
+                                        ),
+                                        Text(
+                                            value=date,
+                                            size=16,
+                                            font_family=Fonts.REGULAR,
+                                            color=colors.ON_BACKGROUND,
+                                        ),
+                                    ],
                                 ),
-                                Text(
-                                    value=value,
-                                    size=32,
-                                    font_family=Fonts.REGULAR,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                            ],
-                            alignment=MainAxisAlignment.SPACE_BETWEEN,
-                        ),
-                        Row(
-                            controls=[
-                                Column(),
-                                Text(
-                                    value=transfer.date,
-                                    size=16,
-                                    font_family=Fonts.REGULAR,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                            ],
-                            alignment=MainAxisAlignment.SPACE_BETWEEN,
-                        ),
-                    ],
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
                     on_click=partial(self.transfer_view, transfer.id),
+                    bgcolor=colors.GREY_400,
+                    padding=Padding(left=16, right=16, top=12, bottom=12),
                 )
             )
 
@@ -292,7 +301,7 @@ class HomeTab(BaseTab):
         self.selected_chip = Chips.all
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
-            id_=self.client.session.current_wallet.id,
+            id_=self.client.session.current_wallet['id'],
         )
         self.scroll = ScrollMode.AUTO
         self.controls = [
@@ -303,6 +312,10 @@ class HomeTab(BaseTab):
                         await self.get_balance_row(),
                         await self.get_actions_row(),
                         await self.get_history(),
+                        Container(
+                            content=Text(value='ACCOUNT', color=colors.BLACK),
+                            on_click=self.go_account
+                        )
                     ],
                 ),
                 padding=10,
@@ -338,14 +351,15 @@ class HomeTab(BaseTab):
             await self.update_async()
 
     async def select_wallet_view(self, _):
-        pass
+        from app.views.client.balance import WalletSelectView
+        await self.client.change_view(view=WalletSelectView())
 
     async def request_create(self, _):
         pass
 
     async def go_send(self, _):
-        from app.views.client.scopes import PaymentView
-        await self.client.change_view(view=PaymentView())
+        from app.views.client.actions import SendMoneyView
+        await self.client.change_view(view=SendMoneyView())
 
     async def transfer_view(self, transfer_id: int, _):
         pass

@@ -15,4 +15,6 @@
 #
 
 
-from .wallet_select import WalletSelectView
+from .wallets_create import WalletCreateView
+from .wallets_name_edit import WalletNameEditView
+from .wallets_select import WalletSelectView
