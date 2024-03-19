@@ -66,7 +66,9 @@ class AuthView(View):
                             size=36,
                             font_family=Fonts.SEMIBOLD,
                             color=colors.ON_BACKGROUND,
-                        )
+                            width=None,
+                            expand=True,
+                        ),
                     ],
                 ),
             )
