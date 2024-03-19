@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
+
 from typing import Any
 
 from flet_core import Page
@@ -75,6 +76,7 @@ class Session:
         self.token = await self.get_cs(key='token')
         self.language = await self.get_cs(key='language')
         self.text_pack = await self.get_cs(key='text_pack')
+        self.current_wallet = await self.get_cs(key='current_wallet')
 
         self.api = FexpsApiClient(url=settings.url, token=self.token)
         try:
@@ -86,8 +88,14 @@ class Session:
             if not self.wallets:
                 await self.api.client.wallets.create(name='Default')
                 self.wallets = await self.api.client.wallets.get_list()
-            logging.critical(self.wallets)
-            self.current_wallet = self.wallets[0]
+                self.current_wallet = self.wallets[0]
+                await self.set_cs(key='current_wallet', value=self.current_wallet)
+            if not self.current_wallet:
+                self.current_wallet = self.wallets[0]
+                await self.set_cs(key='current_wallet', value=self.current_wallet)
+
+
+
         except ApiException:
             await self.set_cs(key='token', value=None)
             self.token = None
