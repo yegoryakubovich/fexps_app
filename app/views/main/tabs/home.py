@@ -26,6 +26,7 @@ from app.controls.button.standart import StandardButton
 from app.controls.information import Card, Text
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts, Icons
+from app.utils.value import get_fix_value
 from app.views.main.tabs.base import BaseTab
 from config import settings
 
@@ -67,7 +68,7 @@ class HomeTab(BaseTab):
 
     async def get_balance_row(self):
         wallet_name = self.client.session.current_wallet.name
-        value = f'{self.client.session.current_wallet.value / 10 ** settings.default_decimal}'
+        value = get_fix_value(value=self.client.session.current_wallet.value)
         return Container(
             content=Row(
                 controls=[
@@ -227,7 +228,7 @@ class HomeTab(BaseTab):
         self.scroll = ScrollMode.AUTO
         self.cards: list = []
         for transfer in self.transfers:
-            value = int(transfer.value) / settings.default_decimal
+            value = get_fix_value(value=transfer.value)
             if transfer.operation == 'send':
                 value = f'- {value}'
             elif transfer.operation == 'receive':
@@ -267,7 +268,7 @@ class HomeTab(BaseTab):
                         alignment=MainAxisAlignment.SPACE_BETWEEN,
                     ),
                     on_click=partial(self.transfer_view, transfer.id),
-                    bgcolor=colors.GREY_400,
+                    bgcolor=colors.SECONDARY,
                     padding=Padding(left=16, right=16, top=12, bottom=12),
                 )
             )
@@ -364,4 +365,5 @@ class HomeTab(BaseTab):
         await self.client.change_view(view=SendMoneyView())
 
     async def transfer_view(self, transfer_id: int, _):
-        pass
+        from app.views.client.tansfers import TransferView
+        await self.client.change_view(view=TransferView(transfer_id=transfer_id))
