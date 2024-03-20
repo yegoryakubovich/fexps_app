@@ -113,7 +113,7 @@ class View(BaseView):
                     ),
                     padding=7,
                     border_radius=24,
-                    bgcolor='#008F12',
+                    bgcolor=colors.PRIMARY,
                     on_click=on_create_click,
                 ),
             )

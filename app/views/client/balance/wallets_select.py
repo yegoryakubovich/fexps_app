@@ -38,9 +38,11 @@ class WalletSelectView(ClientBaseView):
         wallets_list = []
         for wallet in self.wallets:
             value = f'{wallet.value / 10 ** settings.default_decimal}'.replace('.', ',')
-            bgcolor = colors.GREY_400
+            bgcolor = colors.PRIMARY_CONTAINER
+            color = colors.ON_PRIMARY_CONTAINER
             if self.selected_wallet_id == wallet.id:
-                bgcolor = colors.SECONDARY
+                bgcolor = colors.PRIMARY
+                color = colors.ON_PRIMARY
             wallets_list.append(Row(controls=[StandardButton(
                 content=Row(
                     controls=[
@@ -59,6 +61,7 @@ class WalletSelectView(ClientBaseView):
                     ],
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
                 ),
+                color=color,
                 bgcolor=bgcolor,
                 vertical=24,
                 on_click=partial(self.select_wallet, wallet.id),
@@ -84,13 +87,15 @@ class WalletSelectView(ClientBaseView):
                                     text=await self.client.session.gtv(key='edit_name'),
                                     on_click=self.edit_name,
                                     expand=True,
-                                    bgcolor=colors.GREY_400,
+                                    color=colors.ON_PRIMARY_CONTAINER,
+                                    bgcolor=colors.PRIMARY_CONTAINER,
                                 ),
                                 StandardButton(
                                     text=await self.client.session.gtv(key='permissions'),
                                     on_click=None,
                                     expand=True,
-                                    bgcolor=colors.GREY_400,
+                                    color=colors.ON_PRIMARY_CONTAINER,
+                                    bgcolor=colors.PRIMARY_CONTAINER,
                                 ),
                             ],
                             spacing=16,
@@ -101,7 +106,8 @@ class WalletSelectView(ClientBaseView):
                                     text=await self.client.session.gtv(key='create_new_wallet'),
                                     on_click=self.create,
                                     expand=True,
-                                    bgcolor=colors.GREY_400,
+                                    color=colors.ON_PRIMARY_CONTAINER,
+                                    bgcolor=colors.PRIMARY_CONTAINER,
                                 ),
                             ],
                         ),
@@ -132,15 +138,15 @@ class WalletSelectView(ClientBaseView):
         self.wallets_column.controls = await self.get_wallet_list()
         await self.update_async()
 
+    async def create(self, _):
+        await self.client.change_view(view=WalletCreateView())
+
+    async def edit_name(self, _):
+        await self.client.change_view(view=WalletNameEditView(wallet_id=self.selected_wallet_id))
+
     async def switch_wallet(self, _):
         for wallet in self.wallets:
             if self.selected_wallet_id == wallet.id:
                 self.client.session.current_wallet = wallet
                 await self.client.session.set_cs(key='current_wallet', value=self.client.session.current_wallet)
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
-
-    async def create(self, _):
-        await self.client.change_view(view=WalletCreateView())
-
-    async def edit_name(self, _):
-        await self.client.change_view(view=WalletNameEditView(wallet_id=self.selected_wallet_id))

@@ -15,13 +15,11 @@
 #
 
 
-from flet_core import Column, Container, ScrollMode, padding, colors, KeyboardType, Row
+from flet_core import Column, Container, ScrollMode, padding, KeyboardType, Row
 
-from app.controls.button import FilledButton, StandardButton
-from app.controls.information import Text
+from app.controls.button import StandardButton
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
-from app.utils import Fonts
 from app.utils.value import get_decimal_places
 from config import settings
 from fexps_api_client.utils import ApiException
@@ -87,6 +85,7 @@ class SendMoneyView(ClientBaseView):
                 wallet_to_id=int(self.wallet_to_id_tf.value),
                 value=int(float(self.value_tf.value) * settings.default_decimal),
             )
+            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
         except ApiException as e:
             if e.code in [1000, ]:
                 self.wallet_to_id_tf.error_text = e.message
@@ -95,25 +94,3 @@ class SendMoneyView(ClientBaseView):
             else:
                 self.value_tf.error_text = f'{e.code} - {e.message}'
             await self.update_async()
-            return
-        self.controls_container = Container(
-            content=Column(
-                [
-                    Text(
-                        value=await self.client.session.gtv(key='payment_success'),
-                        size=15,
-                        font_family=Fonts.SEMIBOLD,
-                        color=colors.ON_BACKGROUND,
-                    ),
-                    FilledButton(
-                        text=await self.client.session.gtv(key='go_back'),
-                        on_click=self.go_back,
-                    )
-                ]
-            )
-        )
-        self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='payment'),
-            main_section_controls=[self.controls_container],
-        )
-        await self.update_async()

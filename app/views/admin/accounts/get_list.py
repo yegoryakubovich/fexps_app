@@ -54,7 +54,7 @@ class AccountListView(AdminBaseView):
                             value=account['username'],
                             size=18,
                             font_family=Fonts.SEMIBOLD,
-                            color=colors.ON_PRIMARY,
+                            color=colors.ON_SECONDARY,
                         ),
                         Row(
                             controls=[
@@ -62,19 +62,20 @@ class AccountListView(AdminBaseView):
                                     value=account['firstname'],
                                     size=13,
                                     font_family=Fonts.REGULAR,
-                                    color=colors.ON_PRIMARY,
+                                    color=colors.ON_SECONDARY,
                                 ),
                                 Text(
                                     value=account['lastname'],
                                     size=13,
                                     font_family=Fonts.REGULAR,
-                                    color=colors.ON_PRIMARY,
+                                    color=colors.ON_SECONDARY,
                                 ),
                             ],
                             spacing=5,
                         ),
                     ],
                     on_click=partial(self.account_view, account['id']),
+                    color=colors.GREY_400,
                 )
                 for account in self.accounts
             ] + [

@@ -19,6 +19,7 @@ from flet_core import Column, Container, padding, colors, Row
 from app.controls.button import StandardButton
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
+from fexps_api_client.utils import ApiException
 
 
 class WalletNameEditView(ClientBaseView):
@@ -49,7 +50,6 @@ class WalletNameEditView(ClientBaseView):
                                     text=await self.client.session.gtv(key='edit_name'),
                                     on_click=self.edit_name,
                                     expand=True,
-                                    bgcolor=colors.SECONDARY,
                                 ),
                             ],
                         ),
@@ -67,8 +67,11 @@ class WalletNameEditView(ClientBaseView):
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
 
     async def edit_name(self, _):
-        await self.client.session.api.client.wallets.update(
-            id_=self.wallet_id,
-            name=self.tf_new_name.value,
-        )
-        await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+        try:
+            await self.client.session.api.client.wallets.update(
+                id_=self.wallet_id,
+                name=self.tf_new_name.value,
+            )
+            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)

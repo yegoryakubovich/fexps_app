@@ -13,21 +13,79 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 
-from flet_core import Column, Row, Container, padding, colors, MainAxisAlignment, border_radius
-from fexps_api_client.utils import ApiException
+from flet_core import Column, Row, Container, padding, colors, border_radius
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AuthView
 from app.utils import Fonts, Error
+from fexps_api_client.utils import ApiException
 
 
 class AuthenticationView(AuthView):
     tf_username: TextField
     tf_password: TextField
+
+    async def build(self):
+        self.tf_username = TextField(
+            label=await self.client.session.gtv(key='username'),
+        )
+        self.tf_password = TextField(
+            label=await self.client.session.gtv(key='password'),
+            password=True,
+            can_reveal_password=True,
+        )
+
+        self.controls = await self.get_controls(
+            title=await self.client.session.gtv(key='sign_in'),
+            controls=[
+                Column(
+                    controls=[
+                        self.tf_username,
+                        self.tf_password,
+                        Row(
+                            controls=[
+                                StandardButton(
+                                    content=Text(
+                                        value=await self.client.session.gtv(key='sign_in'),
+                                        size=16,
+                                    ),
+                                    on_click=self.authenticate,
+                                    horizontal=54,
+                                    expand=True,
+                                ),
+                            ],
+                        ),
+                        Container(
+                            content=Row(
+                                controls=[
+                                    Text(
+                                        value=await self.client.session.gtv(key='authentication_view_question'),
+                                        size=16,
+                                        font_family=Fonts.REGULAR,
+                                        color=colors.ON_BACKGROUND,
+                                    ),
+                                    Text(
+                                        value=await self.client.session.gtv(key='signup'),
+                                        size=16,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_BACKGROUND,
+                                    ),
+                                ],
+                                spacing=4,
+                            ),
+                            on_click=self.go_registration,
+                            ink=True,
+                            padding=padding.symmetric(vertical=4),
+                            border_radius=border_radius.all(6),
+                        ),
+                    ],
+                    spacing=20,
+                ),
+            ],
+        )
 
     async def authenticate(self, _):
         await self.set_type(loading=True)
@@ -60,66 +118,3 @@ class AuthenticationView(AuthView):
     async def go_registration(self, _):
         from app.views.auth.signup import RegistrationFirstView
         await self.client.change_view(view=RegistrationFirstView(), delete_current=True)
-
-    async def go_language(self, _):
-        from app.views.auth import LanguageView
-        await self.client.change_view(view=LanguageView(), delete_current=True)
-
-    async def build(self):
-        self.tf_username = TextField(
-            label=await self.client.session.gtv(key='username'),
-        )
-        self.tf_password = TextField(
-            label=await self.client.session.gtv(key='password'),
-            password=True,
-            can_reveal_password=True,
-        )
-
-        self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='sign_in'),
-            controls=[
-                Column(
-                    controls=[
-                        self.tf_username,
-                        self.tf_password,
-                        Row(
-                            controls=[
-                                FilledButton(
-                                    content=Text(
-                                        value=await self.client.session.gtv(key='sign_in'),
-                                        size=16,
-                                    ),
-                                    on_click=self.authenticate,
-                                    horizontal_padding=54,
-                                    expand=True,
-                                ),
-                            ],
-                        ),
-                        Container(
-                            content=Row(
-                                controls=[
-                                    Text(
-                                        value=await self.client.session.gtv(key='authentication_view_question'),
-                                        size=16,
-                                        font_family=Fonts.REGULAR,
-                                        color=colors.ON_BACKGROUND,
-                                    ),
-                                    Text(
-                                        value=await self.client.session.gtv(key='signup'),
-                                        size=16,
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=colors.PRIMARY,
-                                    ),
-                                ],
-                                spacing=4,
-                            ),
-                            on_click=self.go_registration,
-                            ink=True,
-                            padding=padding.symmetric(vertical=4),
-                            border_radius=border_radius.all(6),
-                        ),
-                    ],
-                    spacing=20,
-                ),
-            ],
-        )

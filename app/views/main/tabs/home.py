@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
+
 from datetime import datetime
 from functools import partial
 
@@ -56,7 +57,7 @@ class HomeTab(BaseTab):
                     color=colors.ON_BACKGROUND,
                 ),
                 Text(
-                    value=self.client.session.account.firstname.title(),
+                    value=f'{self.client.session.account.firstname.title()}.',
                     size=32,
                     font_family=Fonts.SEMIBOLD,
                     color=colors.ON_BACKGROUND,
@@ -78,7 +79,7 @@ class HomeTab(BaseTab):
                                         value=f'{wallet_name}',
                                         size=24,
                                         font_family=Fonts.REGULAR,
-                                        color=colors.ON_BACKGROUND,
+                                        color=colors.ON_PRIMARY,
                                     ),
                                 ],
                                 alignment=MainAxisAlignment.CENTER,
@@ -88,13 +89,13 @@ class HomeTab(BaseTab):
                                     Image(
                                         src=Icons.VALUE,
                                         width=36,
-                                        color=colors.ON_BACKGROUND,
+                                        color=colors.ON_PRIMARY,
                                     ),
                                     Text(
                                         value=f'{value}',
                                         size=32,
                                         font_family=Fonts.BOLD,
-                                        color=colors.ON_BACKGROUND,
+                                        color=colors.ON_PRIMARY,
                                     ),
                                 ],
                                 alignment=MainAxisAlignment.CENTER,
@@ -120,7 +121,7 @@ class HomeTab(BaseTab):
                 ],
                 alignment=MainAxisAlignment.SPACE_BETWEEN,
             ),
-            bgcolor=colors.SECONDARY,
+            bgcolor=colors.PRIMARY,
             height=150,
         )
 
@@ -139,14 +140,14 @@ class HomeTab(BaseTab):
                                 value=await self.client.session.gtv(key=f'action_make_exchange'),
                                 size=16,
                                 font_family=Fonts.BOLD,
-                                color=colors.ON_BACKGROUND,
+                                color=colors.ON_PRIMARY,
                             ),
                         ],
                         alignment=MainAxisAlignment.CENTER,
                     ),
                     on_click=self.request_create,
                     expand=2,
-                    bgcolor=colors.SECONDARY,
+                    bgcolor=colors.PRIMARY,
                 ),
                 StandardButton(
                     content=Row(
@@ -160,12 +161,12 @@ class HomeTab(BaseTab):
                                 value=await self.client.session.gtv(key=f'action_send'),
                                 size=16,
                                 font_family=Fonts.BOLD,
-                                color=colors.ON_BACKGROUND,
+                                color=colors.ON_PRIMARY_CONTAINER,
                             ),
                         ],
                         alignment=MainAxisAlignment.CENTER,
                     ),
-                    bgcolor=colors.GREY,
+                    bgcolor=colors.PRIMARY_CONTAINER,
                     expand=1,
                     on_click=self.go_send,
                 ),
@@ -181,12 +182,12 @@ class HomeTab(BaseTab):
                                 value=await self.client.session.gtv(key=f'action_dev'),
                                 size=16,
                                 font_family=Fonts.BOLD,
-                                color=colors.ON_BACKGROUND,
+                                color=colors.ON_PRIMARY_CONTAINER,
                             ),
                         ],
                         alignment=MainAxisAlignment.CENTER,
                     ),
-                    bgcolor=colors.GREY,
+                    bgcolor=colors.PRIMARY_CONTAINER,
                     expand=1,
                 ),
             ],
@@ -355,7 +356,8 @@ class HomeTab(BaseTab):
         await self.client.change_view(view=WalletSelectView())
 
     async def request_create(self, _):
-        pass
+        from app.views.client.actions import RequestCreateView
+        await self.client.change_view(view=RequestCreateView())
 
     async def go_send(self, _):
         from app.views.client.actions import SendMoneyView

@@ -21,8 +21,8 @@ from flet_core import ElevatedButton as FletElevatedButton, ButtonStyle, padding
 class StandardButton(FletElevatedButton):
     def __init__(
             self,
-            bgcolor: str = colors.SECONDARY,
-            color: str = colors.BLACK,
+            bgcolor: str = colors.PRIMARY,
+            color: str = colors.ON_PRIMARY,
             horizontal: int = 12,
             vertical: int = 12,
             **kwargs

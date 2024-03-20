@@ -18,7 +18,7 @@
 from flet_core import ScrollMode, Row
 from flet_core.dropdown import Option
 
-from app.controls.button import FilledButton
+from app.controls.button import FilledButton, StandardButton
 from app.controls.information import Text
 from app.controls.input import Dropdown, TextField
 from app.controls.layout import AuthView
@@ -66,7 +66,7 @@ class RegistrationSecondView(AuthView):
                 self.dd_country,
                 Row(
                     controls=[
-                        FilledButton(
+                        StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='next_step'),
                                 size=16,

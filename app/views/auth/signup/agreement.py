@@ -18,14 +18,48 @@
 from flet_core import Column
 
 from app import InitView
-from app.controls.button import FilledButton, ListItemButton
+from app.controls.button import ListItemButton, StandardButton
 from app.controls.information import Text
 from app.controls.layout import AuthView
-from app.utils import Fonts, Icons
-from app.views.auth.signup.successful import RegistrationSuccessfulView
+from app.utils import Icons
 
 
 class AgreementRegistrationView(AuthView):
+
+    async def build(self):
+        self.controls = await self.get_controls(
+            title=await self.client.session.gtv(key='registration_account_create_view_title'),
+            controls=[
+                Column(
+                    controls=[
+                        ListItemButton(
+                            icon=Icons.FILE,
+                            name=await self.client.session.gtv(key='privacy_policy'),
+                            url=None,
+                        ),
+                        ListItemButton(
+                            icon=Icons.FILE,
+                            name=await self.client.session.gtv(key='terms_of_service'),
+                            url=None,
+                        ),
+                        ListItemButton(
+                            icon=Icons.FILE,
+                            name=await self.client.session.gtv(key='contact_informations'),
+                            url=None,
+                        ),
+                        StandardButton(
+                            content=Text(
+                                value=await self.client.session.gtv(key='create_account'),
+                            ),
+                            on_click=self.change_view,
+                            horizontal=54,
+                            expand=True,
+                        ),
+                    ],
+                    spacing=20,
+                ),
+            ],
+        )
 
     async def change_view(self, _):
         await self.set_type(loading=True)
@@ -53,37 +87,3 @@ class AgreementRegistrationView(AuthView):
 
         await self.set_type(loading=False)
         await self.client.change_view(view=InitView(), delete_current=True)
-
-    async def build(self):
-        self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='registration_account_create_view_title'),
-            controls=[
-                Column(
-                    controls=[
-                        ListItemButton(
-                            icon=Icons.FILE,
-                            name=await self.client.session.gtv(key='privacy_policy'),
-                            url=None,
-                        ),
-                        ListItemButton(
-                            icon=Icons.FILE,
-                            name=await self.client.session.gtv(key='terms_of_service'),
-                            url=None,
-                        ),
-                        ListItemButton(
-                            icon=Icons.FILE,
-                            name=await self.client.session.gtv(key='contact_informations'),
-                            url=None,
-                        ),
-                        FilledButton(
-                            content=Text(
-                                value=await self.client.session.gtv(key='create_account'),
-                            ),
-                            on_click=self.change_view,
-                            horizontal_padding=54,
-                        ),
-                    ],
-                    spacing=20,
-                ),
-            ],
-        )

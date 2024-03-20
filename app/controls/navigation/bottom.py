@@ -31,7 +31,7 @@ class BottomNavigationTab(Container):
         await self.on_click_tab(tab=self)
 
     async def set_state(self, activated: bool):
-        color = colors.PRIMARY if activated else colors.ON_PRIMARY_CONTAINER
+        color = colors.SECONDARY if activated else colors.PRIMARY_CONTAINER
         self.text.color = color
         self.icon.color = color
 
@@ -57,14 +57,14 @@ class BottomNavigationTab(Container):
 
         self.icon = Image(
             src=icon,
-            color=colors.ON_PRIMARY_CONTAINER,
+            color=colors.PRIMARY_CONTAINER,
             height=30,
         )
         self.text = Text(
             font_family=Fonts.MEDIUM,
             value=self.name,
             size=12,
-            color=colors.ON_PRIMARY_CONTAINER,
+            color=colors.PRIMARY_CONTAINER,
         )
 
         self.content = Container(

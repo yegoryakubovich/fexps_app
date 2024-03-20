@@ -18,7 +18,7 @@
 from flet_core import BottomSheet as BottomSheetFlet, Container, Stack, Column, Image, margin, Text, TextAlign, Row, \
     MainAxisAlignment, CrossAxisAlignment, padding, IconButton, icons, colors
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.utils import Fonts
 
 
@@ -40,7 +40,7 @@ class BottomSheet(BottomSheetFlet):
             button_on_click=None,
     ):
         self.content = Container(
-            Stack(
+            content=Stack(
                 controls=[
                     Container(
                         content=Column(
@@ -55,18 +55,20 @@ class BottomSheet(BottomSheetFlet):
                                              value=title,
                                              font_family=Fonts.SEMIBOLD,
                                              size=28,
+                                             color=colors.ON_BACKGROUND,
                                          ),
                                          Text(
                                              value=description,
                                              font_family=Fonts.REGULAR,
                                              size=16,
                                              text_align=TextAlign.CENTER,
+                                             color=colors.ON_BACKGROUND,
                                          ),
                                      ] + (
                                          [
                                              Row(
                                                  controls=[
-                                                     FilledButton(
+                                                     StandardButton(
                                                          content=Text(
                                                              value=button_title,
                                                              color=colors.ON_PRIMARY,
@@ -77,7 +79,9 @@ class BottomSheet(BottomSheetFlet):
                                                  ],
                                                  alignment=MainAxisAlignment.CENTER
                                              ),
-                                         ] if button_title and button_on_click else []),
+                                         ]
+                                         if button_title and button_on_click else []
+                            ),
                             spacing=10,
                             tight=True,
                             width=384,
@@ -90,6 +94,7 @@ class BottomSheet(BottomSheetFlet):
                         on_click=self.close,
                         top=1,
                         right=0,
+                        icon_color=colors.ON_BACKGROUND,
                     ),
                 ],
             ),

@@ -19,6 +19,7 @@ from flet_core import Column, Container, padding, colors, Row
 from app.controls.button import StandardButton
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
+from fexps_api_client.utils import ApiException
 
 
 class WalletCreateView(ClientBaseView):
@@ -41,7 +42,6 @@ class WalletCreateView(ClientBaseView):
                                     text=await self.client.session.gtv(key='create'),
                                     on_click=self.create,
                                     expand=True,
-                                    bgcolor=colors.SECONDARY,
                                 ),
                             ],
                         ),
@@ -59,5 +59,8 @@ class WalletCreateView(ClientBaseView):
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
 
     async def create(self, _):
-        await self.client.session.api.client.wallets.create(name=self.tf_name.value)
-        await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+        try:
+            await self.client.session.api.client.wallets.create(name=self.tf_name.value)
+            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)

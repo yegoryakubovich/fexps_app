@@ -17,7 +17,7 @@
 
 from typing import Any
 
-from flet_core import Row, Container, Image, MainAxisAlignment, Column, margin
+from flet_core import Row, Container, Image, MainAxisAlignment, Column, margin, colors
 from flet_manager.utils import get_svg
 
 from app.controls.information import Text
@@ -66,7 +66,7 @@ class ClientSection:
                     ),
                     padding=7,
                     border_radius=24,
-                    bgcolor='#008F12',
+                    bgcolor=colors.PRIMARY,
                     on_click=on_create_click,
                 ),
             )

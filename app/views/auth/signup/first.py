@@ -17,7 +17,7 @@
 
 from flet_core import Row, Column, Container, padding, colors, border_radius
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AuthView
@@ -50,7 +50,7 @@ class RegistrationFirstView(AuthView):
                         self.tf_password,
                         Row(
                             controls=[
-                                FilledButton(
+                                StandardButton(
                                     content=Text(
                                         value=await self.client.session.gtv(key='next_step'),
                                         size=16,
@@ -75,7 +75,7 @@ class RegistrationFirstView(AuthView):
                                         value=await self.client.session.gtv(key='sign_in'),
                                         size=16,
                                         font_family=Fonts.SEMIBOLD,
-                                        color=colors.PRIMARY,
+                                        color=colors.ON_BACKGROUND,
                                     ),
                                 ],
                                 spacing=4,

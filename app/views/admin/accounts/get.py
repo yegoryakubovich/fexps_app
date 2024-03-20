@@ -77,7 +77,7 @@ class AccountView(AdminBaseView):
                             ),
                             ink=True,
                             on_click=self.copy_password,
-                            bgcolor=colors.TRANSPARENT,
+                            bgcolor=colors.BLUE,
                             border_radius=15,
                         )
                     )

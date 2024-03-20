@@ -16,7 +16,7 @@
 from flet_core import Row
 from flet_core.dropdown import Option
 
-from app.controls.button import FilledButton
+from app.controls.button import FilledButton, StandardButton
 from app.controls.input import Dropdown
 from app.controls.layout import AuthView
 from config import settings
@@ -67,10 +67,10 @@ class LanguageView(AuthView):
                 self.dropdown,
                 Row(
                     controls=[
-                        FilledButton(
+                        StandardButton(
                             text=await self.client.session.gtv(key='next'),
                             on_click=self.select,
-                            horizontal_padding=54,
+                            horizontal=54,
                             expand=True,
                         ),
                     ]

@@ -33,42 +33,42 @@ class ActionItem:
 class ActionCard(Card):
     def __init__(self, name: str):
         super().__init__()
-        self.icon = Image(
-            src=Icons.ADMIN_TEXTS,
-            color=colors.ON_PRIMARY_CONTAINER,
-            expand=True,
-        )
-        self.content = Column(controls=[
-            Row(
-                controls=[self.icon],
-                height=170,
-                width=200,
-                alignment=MainAxisAlignment.CENTER,
-            ),
-            Row(
-                controls=[Text(
-                    value=name,
-                    size=16,
-                    font_family=Fonts.BOLD,
-                    color=colors.GREY,
-                )],
-                height=30,
-                width=200,
-                alignment=MainAxisAlignment.CENTER,
-            ),
-        ])
+        # self.icon = Image(
+        #     src=Icons.ADMIN_TEXTS,
+        #     color=colors.ON_PRIMARY_CONTAINER,
+        #     expand=True,
+        # )
+        # self.content = Column(controls=[
+        #     Row(
+        #         controls=[self.icon],
+        #         height=170,
+        #         width=200,
+        #         alignment=MainAxisAlignment.CENTER,
+        #     ),
+        #     Row(
+        #         controls=[Text(
+        #             value=name,
+        #             size=16,
+        #             font_family=Fonts.BOLD,
+        #             color=colors.GREY,
+        #         )],
+        #         height=30,
+        #         width=200,
+        #         alignment=MainAxisAlignment.CENTER,
+        #     ),
+        # ])
 
 
 class Action(Row):
     def __init__(self, scopes: list[ActionItem]):
         super().__init__()
-        self.controls = [
-            *[Container(
-                content=ActionCard(name=scope.name),
-                on_click=scope.on_click,
-                height=200,
-                width=200,
-            ) for scope in scopes]
-        ]
-        self.alignment = MainAxisAlignment.CENTER
-        self.height = 200
+        # self.controls = [
+        #     *[Container(
+        #         content=ActionCard(name=scope.name),
+        #         on_click=scope.on_click,
+        #         height=200,
+        #         width=200,
+        #     ) for scope in scopes]
+        # ]
+        # self.alignment = MainAxisAlignment.CENTER
+        # self.height = 200

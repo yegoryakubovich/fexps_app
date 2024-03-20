@@ -173,7 +173,7 @@ class AccountView(ClientBaseView):
                                    CircleAvatar(
                                        content=Image(
                                            src=Icons.ACCOUNT,
-                                           color=colors.PRIMARY,
+                                           color=colors.SECONDARY,
                                        ),
                                        bgcolor=colors.ON_PRIMARY,
                                        radius=38,

@@ -15,12 +15,10 @@
 #
 
 
-import logging
-
-from flet_core import Column, ControlEvent, KeyboardType
+from flet_core import Column, ControlEvent, KeyboardType, Row
 from flet_core.dropdown import Option
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import AdminBaseView
@@ -70,14 +68,19 @@ class RequisiteDataCreateView(AdminBaseView):
                 self.dd_currency,
                 self.dd_method,
                 self.optional,
-                FilledButton(
-                    content=Text(
-                        value=await self.client.session.gtv(key='create'),
-                        size=15,
-                        font_family=Fonts.REGULAR,
-                    ),
-                    on_click=self.create_requisite_data,
-                ),
+                Row(
+                    controls=[
+                        StandardButton(
+                            content=Text(
+                                value=await self.client.session.gtv(key='create'),
+                                size=15,
+                                font_family=Fonts.REGULAR,
+                            ),
+                            on_click=self.create_requisite_data,
+                            expand=True,
+                        ),
+                    ],
+                )
             ],
         )
 

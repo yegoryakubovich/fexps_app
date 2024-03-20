@@ -93,9 +93,6 @@ class Session:
             if not self.current_wallet:
                 self.current_wallet = self.wallets[0]
                 await self.set_cs(key='current_wallet', value=self.current_wallet)
-
-
-
         except ApiException:
             await self.set_cs(key='token', value=None)
             self.token = None

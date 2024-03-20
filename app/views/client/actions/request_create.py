@@ -15,13 +15,12 @@
 #
 
 
-import logging
 from typing import Optional
 
 from flet_core import Column, Container, ScrollMode, padding, KeyboardType, Row
 from flet_core.dropdown import Option
 
-from app.controls.button import FilledButton, StandardButton
+from app.controls.button import StandardButton
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import ClientBaseView
 from app.views.client.requests.get import RequestView
@@ -35,7 +34,7 @@ class RequestTypes:
 
 
 class RequestCreateView(ClientBaseView):
-    route = '/client/requisite/create'
+    route = '/client/actions/request/create'
     controls_container: Container
     optional: Column
     currencies: Column
@@ -51,10 +50,6 @@ class RequestCreateView(ClientBaseView):
     dd_output_requisite_data: Dropdown = None
     tf_output_currency_value: TextField = None
     tf_output_value: TextField = None
-
-    def __init__(self, current_wallet, **kwargs):
-        super().__init__(**kwargs)
-        self.current_wallet = current_wallet
 
     async def build(self):
         # self.client.session.account
@@ -111,7 +106,7 @@ class RequestCreateView(ClientBaseView):
                                 expand=True,
                             ),
                         ],
-                    ),
+                    )
                 ],
                 spacing=10,
             ),

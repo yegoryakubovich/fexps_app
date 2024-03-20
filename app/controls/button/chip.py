@@ -12,10 +12,10 @@ class Chip(ElevatedButton):
             value=name,
             size=16,
             font_family=Fonts.BOLD,
-            color=colors.ON_BACKGROUND,
+            color=colors.ON_PRIMARY,
         )
-        self.bgcolor = colors.GREY_300
+        self.bgcolor = colors.PRIMARY_CONTAINER
         if selected:
-            self.bgcolor = colors.SECONDARY
+            self.bgcolor = colors.PRIMARY
         self.on_click = on_select
         self.key = key
