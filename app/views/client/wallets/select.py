@@ -23,8 +23,7 @@ from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts
-from app.views.client.balance import WalletCreateView
-from app.views.client.balance.wallets_name_edit import WalletNameEditView
+from app.views.client.wallets import WalletCreateView, WalletNameEditView
 from config import settings
 
 

@@ -352,7 +352,7 @@ class HomeTab(BaseTab):
             await self.update_async()
 
     async def select_wallet_view(self, _):
-        from app.views.client.balance import WalletSelectView
+        from app.views.client.wallets import WalletSelectView
         await self.client.change_view(view=WalletSelectView())
 
     async def request_create(self, _):
