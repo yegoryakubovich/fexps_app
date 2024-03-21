@@ -15,6 +15,24 @@
 #
 
 
-from .create import RequestCreateView
-from .get import RequestView
-from .orders import OrderView
+from flet_core import Column, Container, ScrollMode
+
+from app.controls.information import Text
+from app.views.main.tabs.base import BaseTab
+
+
+class RequisiteTab(BaseTab):
+
+    async def build(self):
+        self.scroll = ScrollMode.AUTO
+        self.controls = [
+            Container(
+                content=Column(
+                    controls=[
+                        Text(value='Requisite')
+                    ],
+                ),
+                padding=10,
+            ),
+        ]
+

@@ -15,4 +15,5 @@
 #
 
 
+from .create import TransferCreateView
 from .get import TransferView

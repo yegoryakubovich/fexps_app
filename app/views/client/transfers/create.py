@@ -20,13 +20,12 @@ from flet_core import Column, Container, ScrollMode, padding, KeyboardType, Row
 from app.controls.button import StandardButton
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
-from app.utils.value import get_decimal_places
-from config import settings
+from app.utils.value import get_decimal_places, value_to_int
 from fexps_api_client.utils import ApiException
 
 
-class SendMoneyView(ClientBaseView):
-    route = '/client/actions/money/send'
+class TransferCreateView(ClientBaseView):
+    route = '/client/transfer/create'
     wallet_to_id_tf: TextField
     value_tf: TextField
     controls_container: Container
@@ -83,7 +82,7 @@ class SendMoneyView(ClientBaseView):
             await self.client.session.api.client.transfers.create(
                 wallet_from_id=self.client.session.current_wallet.id,
                 wallet_to_id=int(self.wallet_to_id_tf.value),
-                value=int(float(self.value_tf.value) * settings.default_decimal),
+                value=value_to_int(value=self.value_tf.value),
             )
             await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
         except ApiException as e:

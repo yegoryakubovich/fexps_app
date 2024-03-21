@@ -26,7 +26,7 @@ from app.controls.button.standart import StandardButton
 from app.controls.information import Card, Text
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts, Icons
-from app.utils.value import get_fix_value
+from app.utils.value import value_to_float
 from app.views.main.tabs.base import BaseTab
 from config import settings
 
@@ -38,7 +38,6 @@ class Chips:
 
 
 class HomeTab(BaseTab):
-    exercise: list[dict] = None
     transfers = list[dict]
     cards: list[Card]
     page_transfer: int = 1
@@ -68,7 +67,7 @@ class HomeTab(BaseTab):
 
     async def get_balance_row(self):
         wallet_name = self.client.session.current_wallet.name
-        value = get_fix_value(value=self.client.session.current_wallet.value)
+        value = value_to_float(value=self.client.session.current_wallet.value)
         return Container(
             content=Row(
                 controls=[
@@ -228,7 +227,7 @@ class HomeTab(BaseTab):
         self.scroll = ScrollMode.AUTO
         self.cards: list = []
         for transfer in self.transfers:
-            value = get_fix_value(value=transfer.value)
+            value = value_to_float(value=transfer.value)
             if transfer.operation == 'send':
                 value = f'- {value}'
             elif transfer.operation == 'receive':
@@ -242,7 +241,7 @@ class HomeTab(BaseTab):
                                 value=f'To wallet.{transfer.wallet_to}',
                                 size=32,
                                 font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_BACKGROUND,
+                                color=colors.ON_PRIMARY_CONTAINER,
                                 expand=True,
                                 text_align=TextAlign.LEFT,
                             ),
@@ -253,13 +252,13 @@ class HomeTab(BaseTab):
                                             value=value,
                                             size=32,
                                             font_family=Fonts.BOLD,
-                                            color=colors.ON_BACKGROUND,
+                                            color=colors.ON_PRIMARY_CONTAINER,
                                         ),
                                         Text(
                                             value=date,
                                             size=16,
                                             font_family=Fonts.REGULAR,
-                                            color=colors.ON_BACKGROUND,
+                                            color=colors.ON_PRIMARY_CONTAINER,
                                         ),
                                     ],
                                 ),
@@ -268,7 +267,7 @@ class HomeTab(BaseTab):
                         alignment=MainAxisAlignment.SPACE_BETWEEN,
                     ),
                     on_click=partial(self.transfer_view, transfer.id),
-                    bgcolor=colors.SECONDARY,
+                    bgcolor=colors.PRIMARY_CONTAINER,
                     padding=Padding(left=16, right=16, top=12, bottom=12),
                 )
             )
@@ -357,13 +356,13 @@ class HomeTab(BaseTab):
         await self.client.change_view(view=WalletSelectView())
 
     async def request_create(self, _):
-        from app.views.client.actions import RequestCreateView
+        from app.views.client.requests import RequestCreateView
         await self.client.change_view(view=RequestCreateView())
 
     async def go_send(self, _):
-        from app.views.client.actions import SendMoneyView
-        await self.client.change_view(view=SendMoneyView())
+        from app.views.client.transfers import TransferCreateView
+        await self.client.change_view(view=TransferCreateView())
 
     async def transfer_view(self, transfer_id: int, _):
-        from app.views.client.tansfers import TransferView
+        from app.views.client.transfers import TransferView
         await self.client.change_view(view=TransferView(transfer_id=transfer_id))

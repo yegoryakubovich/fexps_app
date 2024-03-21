@@ -15,5 +15,7 @@
 #
 
 
+from .acoount import AccountTab
 from .home import HomeTab
 from .request import RequestTab
+from .requisites import RequisiteTab

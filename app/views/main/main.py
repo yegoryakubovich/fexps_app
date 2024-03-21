@@ -19,7 +19,7 @@ from flet_core import ListView, padding
 
 from app.controls.layout.view import View
 from app.controls.navigation import BottomNavigation, BottomNavigationTab
-from .tabs import HomeTab, RequestTab
+from .tabs import HomeTab, RequestTab, AccountTab, RequisiteTab
 from ...utils import Icons
 
 
@@ -37,9 +37,19 @@ TABS = [
         control=HomeTab,
     ),
     Tab(
-        name='request',
-        icon=Icons.ERROR,
+        name='exchange',
+        icon=Icons.MAKE_EXCHANGE,
         control=RequestTab,
+    ),
+    Tab(
+        name='requisite',
+        icon=Icons.ERROR,
+        control=RequisiteTab,
+    ),
+    Tab(
+        name='account',
+        icon=Icons.ACCOUNT,
+        control=AccountTab,
     ),
 ]
 

@@ -20,7 +20,7 @@ from flet_core import Column, colors, Row, MainAxisAlignment, Image, CircleAvata
 from app.controls.information import Text
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts, Icons
-from app.utils.value import get_fix_value
+from app.utils.value import value_to_float
 
 
 class TransferView(AdminBaseView):
@@ -36,7 +36,7 @@ class TransferView(AdminBaseView):
         self.transfer = await self.client.session.api.client.transfers.get(id_=self.transfer_id)
         await self.set_type(loading=False)
         logging.critical(self.transfer)
-        value = get_fix_value(value=self.transfer.value)
+        value = value_to_float(value=self.transfer.value)
         short_name = ''
         if self.transfer.operation == 'send':
             short_name = self.transfer.account_to.short_name

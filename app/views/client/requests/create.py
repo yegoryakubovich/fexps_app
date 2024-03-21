@@ -15,15 +15,13 @@
 #
 
 
-import logging
-from typing import Optional
-
 from flet_core import Column, Container, ScrollMode, padding, KeyboardType, Row
 from flet_core.dropdown import Option
 
-from app.controls.button import FilledButton, StandardButton
+from app.controls.button import StandardButton
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import ClientBaseView
+from app.utils.value import value_to_int
 from app.views.client.requests.get import RequestView
 from fexps_api_client.utils import ApiException
 
@@ -35,7 +33,7 @@ class RequestTypes:
 
 
 class RequestCreateView(ClientBaseView):
-    route = '/client/requisite/create'
+    route = '/client/request/create'
     controls_container: Container
     optional: Column
     currencies: Column
@@ -51,10 +49,6 @@ class RequestCreateView(ClientBaseView):
     dd_output_requisite_data: Dropdown = None
     tf_output_currency_value: TextField = None
     tf_output_value: TextField = None
-
-    def __init__(self, current_wallet, **kwargs):
-        super().__init__(**kwargs)
-        self.current_wallet = current_wallet
 
     async def build(self):
         # self.client.session.account
@@ -111,7 +105,7 @@ class RequestCreateView(ClientBaseView):
                                 expand=True,
                             ),
                         ],
-                    ),
+                    )
                 ],
                 spacing=10,
             ),
@@ -230,31 +224,23 @@ class RequestCreateView(ClientBaseView):
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
 
     async def switch_tf(self, _):
-        def fix_value(value: Optional[str], decimal: int):
-            if not value:
-                return
-            value = value.replace(',', '.')
-            value = float(value)
-            return int(value * decimal)
-
         await self.set_type(loading=True)
         input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
         output_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_output_currency.value)
         # Input values
-        input_currency_value = fix_value(
-            value=self.tf_input_currency_value.value, decimal=10 ** input_currency.decimal,
+        input_currency_value = value_to_int(
+            value=self.tf_input_currency_value.value, decimal=input_currency.decimal,
         ) if self.tf_input_currency_value else None
-        input_value = fix_value(
-            value=self.tf_input_value.value, decimal=10 ** input_currency.decimal,
+        input_value = value_to_int(
+            value=self.tf_input_value.value, decimal=input_currency.decimal,
         ) if self.tf_input_value else None
         # Output values
-        output_currency_value = fix_value(
-            value=self.tf_output_currency_value.value, decimal=10 ** output_currency.decimal,
+        output_currency_value = value_to_int(
+            value=self.tf_output_currency_value.value, decimal=output_currency.decimal,
         ) if self.tf_output_currency_value else None
-        output_value = fix_value(
-            value=self.tf_output_value.value, decimal=10 ** output_currency.decimal,
+        output_value = value_to_int(
+            value=self.tf_output_value.value, decimal=output_currency.decimal,
         ) if self.tf_output_value else None
-
         try:
             request_id = await self.client.session.api.client.request.create(
                 wallet_id=self.dd_wallet.value if self.dd_wallet else None,

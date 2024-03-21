@@ -15,5 +15,23 @@
 #
 
 
-from .money_send import SendMoneyView
-from .request_create import RequestCreateView
+from flet_core import Column, Container, ScrollMode
+
+from app.controls.information import Text
+from app.views.main.tabs.base import BaseTab
+
+
+class AccountTab(BaseTab):
+
+    async def build(self):
+        self.scroll = ScrollMode.AUTO
+        self.controls = [
+            Container(
+                content=Column(
+                    controls=[
+                        Text(value='Account')
+                    ],
+                ),
+                padding=10,
+            ),
+        ]
