@@ -17,7 +17,7 @@
 
 from flet_core import Row, Column, colors, SnackBar
 
-from app.controls.button import FilledButton
+from app.controls.button import FilledButton, StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
@@ -60,7 +60,7 @@ class RequisiteDataView(AdminBaseView):
                         Text(
                             value='\n'.join([
                                 f'{await self.client.session.gtv(key="name")}: {self.requisite_data.name}',
-                                f'{await self.client.session.gtv(key="currency")}: {self.method.currency}',
+                                f'{await self.client.session.gtv(key="currency")}: {self.method.currency.upper()}',
                                 f'{await self.client.session.gtv(key="method")}: '
                                 f'{await self.client.session.gtv(key=self.method.name_text)} ({self.method.id})',
                             ]),
@@ -71,15 +71,17 @@ class RequisiteDataView(AdminBaseView):
                         *self.details,
                         Row(
                             controls=[
-                                FilledButton(
+                                StandardButton(
                                     content=Text(
                                         value=await self.client.session.gtv(key='save'),
                                     ),
                                     on_click=self.update_requisite_data,
+                                    expand=True,
                                 ),
-                                FilledButton(
+                                StandardButton(
                                     content=Text(value=await self.client.session.gtv(key='delete')),
                                     on_click=self.delete_requisite_data,
+                                    expand=True,
                                 ),
                             ],
                         ),

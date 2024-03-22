@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import Text, ScrollMode, colors
+from flet_core import Text, ScrollMode, colors, Row, MainAxisAlignment
 
 from app.controls.information.card import Card
 from app.controls.input import TextField
@@ -29,7 +29,7 @@ from app.views.client.account.requisite_data.get import RequisiteDataView
 
 class RequisiteDataListView(AdminBaseView):
     route = '/client/requisite/data/list/get'
-    requisites_datas: list[dict]
+    requisites_datas = list[dict]
     tf_search = TextField
 
     async def build(self):
@@ -43,14 +43,26 @@ class RequisiteDataListView(AdminBaseView):
             main_section_controls=[
                 Card(
                     controls=[
-                        Text(
-                            value=requisite_data['name'],
-                            size=18,
-                            font_family=Fonts.SEMIBOLD,
-                            color=colors.ON_PRIMARY,
-                        ),
+                        Row(
+                            controls=[
+                                Text(
+                                    value=requisite_data.name,
+                                    size=18,
+                                    font_family=Fonts.SEMIBOLD,
+                                    color=colors.ON_PRIMARY_CONTAINER,
+                                ),
+                                Text(
+                                    value=requisite_data.currency.upper(),
+                                    size=18,
+                                    font_family=Fonts.SEMIBOLD,
+                                    color=colors.ON_PRIMARY_CONTAINER,
+                                ),
+                            ],
+                            alignment=MainAxisAlignment.SPACE_BETWEEN,
+                        )
                     ],
                     on_click=partial(self.requisite_data_view, requisite_data['id']),
+                    color=colors.PRIMARY_CONTAINER,
                 )
                 for requisite_data in self.requisites_datas
             ]
