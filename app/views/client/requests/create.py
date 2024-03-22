@@ -51,20 +51,28 @@ class RequestCreateView(ClientBaseView):
     tf_output_value: TextField = None
 
     async def build(self):
-        # self.client.session.account
         self.methods = await self.client.session.api.client.methods.get_list()
 
-        type_options = [Option(
-            text=await self.client.session.gtv(key=f'request_type_{type_}'),
-            key=type_,
-        ) for type_ in [RequestTypes.input, RequestTypes.output, RequestTypes.all]]
-        wallets_options = [Option(
-            key=wallet.id, text=f'#{wallet.id} - {wallet.name}'
-        ) for wallet in await self.client.session.api.client.wallets.get_list()]
-        currency_options = [Option(
-            text=currency.id_str.upper(),
-            key=currency.id_str,
-        ) for currency in await self.client.session.api.client.currencies.get_list()]
+        type_options = [
+            Option(
+                text=await self.client.session.gtv(key=f'request_type_{type_}'),
+                key=type_,
+            )
+            for type_ in [RequestTypes.input, RequestTypes.output, RequestTypes.all]
+        ]
+        wallets_options = [
+            Option(
+                key=wallet.id, text=f'#{wallet.id} - {wallet.name}'
+            )
+            for wallet in await self.client.session.api.client.wallets.get_list()
+        ]
+        currency_options = [
+            Option(
+                text=currency.id_str.upper(),
+                key=currency.id_str,
+            )
+            for currency in await self.client.session.api.client.currencies.get_list()
+        ]
 
         self.dd_type = Dropdown(
             label=await self.client.session.gtv(key='type'),
