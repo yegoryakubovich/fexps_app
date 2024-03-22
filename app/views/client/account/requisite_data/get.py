@@ -38,7 +38,7 @@ class RequisiteDataView(AdminBaseView):
 
     async def build(self):
         await self.set_type(loading=True)
-        self.requisite_data = await self.client.session.api.client.requisite_data.get(id_=self.requisite_data_id)
+        self.requisite_data = await self.client.session.api.client.requisites_datas.get(id_=self.requisite_data_id)
         self.method = await self.client.session.api.client.methods.get(id_=self.requisite_data.method)
         await self.set_type(loading=False)
         self.snack_bar = SnackBar(content=Text(value=await self.client.session.gtv(key='successful')))
@@ -89,7 +89,7 @@ class RequisiteDataView(AdminBaseView):
         )
 
     async def delete_requisite_data(self, _):
-        await self.client.session.api.client.requisite_data.delete(id_=self.requisite_data_id)
+        await self.client.session.api.client.requisites_datas.delete(id_=self.requisite_data_id)
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
 
     async def update_requisite_data(self, _):
@@ -98,7 +98,7 @@ class RequisiteDataView(AdminBaseView):
         for text_field in self.details:
             fields[text_field.key_question] = text_field.value
         try:
-            await self.client.session.api.client.requisite_data.update(
+            await self.client.session.api.client.requisites_datas.update(
                 id_=self.requisite_data_id,
                 fields=fields,
             )

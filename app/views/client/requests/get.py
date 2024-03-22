@@ -106,7 +106,7 @@ class RequestView(AdminBaseView):
 
     async def build(self):
         await self.set_type(loading=True)
-        self.request = await self.client.session.api.client.request.get(id_=self.request_id)
+        self.request = await self.client.session.api.client.requests.get(id_=self.request_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_request(request_id=self.request_id)
         self.custom_info = await self.get_info(request=self.request)
         self.custom_controls = await self._get_controls(request=self.request)
@@ -166,7 +166,7 @@ class RequestView(AdminBaseView):
                 f'{await self.client.session.gtv(key="input_value")}: {input_value}',
             ]
         if request.type in ['output', 'all']:
-            output_requisite_data = await self.client.session.api.client.requisite_data.get(
+            output_requisite_data = await self.client.session.api.client.requisites_datas.get(
                 id_=request.output_requisite_data,
             )
             output_currency = await self.client.session.api.client.currencies.get(id_str=output_requisite_data.currency)
@@ -234,5 +234,5 @@ class RequestView(AdminBaseView):
         return result
 
     async def waiting_confirm(self, _):
-        await self.client.session.api.client.request.update_confirmation(id_=self.request_id)
+        await self.client.session.api.client.requests.update_confirmation(id_=self.request_id)
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)

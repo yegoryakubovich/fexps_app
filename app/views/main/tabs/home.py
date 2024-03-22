@@ -15,7 +15,6 @@
 #
 
 
-from datetime import datetime
 from functools import partial
 
 from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, TextAlign, \
@@ -28,7 +27,6 @@ from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts, Icons
 from app.utils.value import value_to_float
 from app.views.main.tabs.base import BaseTab
-from config import settings
 
 
 class Chips:
@@ -39,13 +37,18 @@ class Chips:
 
 class HomeTab(BaseTab):
     transfers = list[dict]
+    column: Column
     cards: list[Card]
     page_transfer: int = 1
     total_pages: int = 1
     filter_chips: list[Chip]
     selected_chip: str
 
-    async def get_account_row(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.selected_chip = Chips.all
+
+    async def get_account(self):
         hello_text_key = 'good_morning'
 
         return Row(
@@ -65,7 +68,7 @@ class HomeTab(BaseTab):
             ],
         )
 
-    async def get_balance_row(self):
+    async def get_balance(self):
         wallet_name = self.client.session.current_wallet.name
         value = value_to_float(value=self.client.session.current_wallet.value)
         return Container(
@@ -125,7 +128,7 @@ class HomeTab(BaseTab):
             height=150,
         )
 
-    async def get_actions_row(self):
+    async def get_actions(self):
         return Row(
             controls=[
                 StandardButton(
@@ -214,7 +217,6 @@ class HomeTab(BaseTab):
                 on_select=self.chip_select,
                 selected=True if self.selected_chip == Chips.all else False,
             ),
-
         ]
         response = await self.client.session.api.client.transfers.search(
             wallet_id=self.client.session.current_wallet.id,
@@ -228,17 +230,20 @@ class HomeTab(BaseTab):
         self.cards: list = []
         for transfer in self.transfers:
             value = value_to_float(value=transfer.value)
+            short_name = ''
             if transfer.operation == 'send':
+                short_name = transfer.account_to.short_name
                 value = f'- {value}'
             elif transfer.operation == 'receive':
+                short_name = transfer.account_from.short_name
                 value = f'+ {value}'
-            date = datetime.strptime(transfer.date, settings.datetime_format).strftime('%Y-%m-%d')
+            date = transfer.date.strftime('%Y-%m-%d')
             self.cards.append(
                 Container(
                     content=Row(
                         controls=[
                             Text(
-                                value=f'To wallet.{transfer.wallet_to}',
+                                value=f'To {short_name.upper()}',
                                 size=32,
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
@@ -271,7 +276,6 @@ class HomeTab(BaseTab):
                     padding=Padding(left=16, right=16, top=12, bottom=12),
                 )
             )
-
         return Row(
             controls=[
                 Row(
@@ -299,26 +303,26 @@ class HomeTab(BaseTab):
         )
 
     async def build(self):
-        self.selected_chip = Chips.all
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
             id_=self.client.session.current_wallet['id'],
         )
         self.scroll = ScrollMode.AUTO
+        self.column = Column(
+            controls=[
+                await self.get_account(),
+                await self.get_balance(),
+                await self.get_actions(),
+                await self.get_history(),
+                Container(
+                    content=Text(value='ACCOUNT', color=colors.BLACK),
+                    on_click=self.go_account
+                )
+            ],
+        )
         self.controls = [
             Container(
-                content=Column(
-                    controls=[
-                        await self.get_account_row(),
-                        await self.get_balance_row(),
-                        await self.get_actions_row(),
-                        await self.get_history(),
-                        Container(
-                            content=Text(value='ACCOUNT', color=colors.BLACK),
-                            on_click=self.go_account
-                        )
-                    ],
-                ),
+                content=self.column,
                 padding=10,
             ),
         ]
@@ -330,13 +334,13 @@ class HomeTab(BaseTab):
     async def change_wallet(self, event: ControlEvent):
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(id_=event.data)
-        self.controls[0].content.controls[1] = await self.get_balance_row()
-        self.controls[0].content.controls[3] = await self.get_history()
+        self.column.controls[1] = await self.get_balance()
+        self.column.controls[3] = await self.get_history()
         await self.update_async()
 
     async def chip_select(self, event: ControlEvent):
         self.selected_chip = event.control.key
-        self.controls[0].content.controls[3] = await self.get_history()
+        self.column.controls[3] = await self.get_history()
         await self.update_async()
 
     async def next_page(self, _):

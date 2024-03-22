@@ -17,28 +17,28 @@
 
 from functools import partial
 
-from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment
+from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image
 
-from app.controls.button import Chip
-from app.controls.button.actions import Action, ActionItem
+from app.controls.button import Chip, StandardButton
+from app.controls.button.actions import ActionItem
 from app.controls.information import Text, Card
 from app.controls.navigation.pagination import PaginationWidget
-from app.utils import Fonts
+from app.utils import Fonts, Icons
 from app.views.client.requests import RequestView
 from app.views.main.tabs.base import BaseTab
 from config import settings
 
 
 class Chips:
-    is_input = 'is_input'
-    is_output = 'is_output'
-    is_all = 'is_all'
+    input = 'is_input'
+    output = 'is_output'
+    all = 'is_all'
     is_finish = 'is_finish'
 
 
 class RequestTab(BaseTab):
-    exercise: list[dict] = None
     scopes: list[ActionItem]
+    column: Column
     requests = list[dict]
     page_request: int = 1
     total_pages: int = 1
@@ -48,47 +48,66 @@ class RequestTab(BaseTab):
     is_output: bool
     is_all: bool
     is_finish: bool
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.selected_chip = Chips.all
 
-    async def get_scope_row(self):
-        self.scopes = [
-            ActionItem(
-                name=await self.client.session.gtv(key=f'request_create'),
-                on_click=self.go_create,
-            ),
-            ActionItem(
-                name=await self.client.session.gtv(key=f'request_test'),
-            ),
-        ]
-        return Action(scopes=self.scopes)
+    async def get_actions(self):
+        return Row(
+            controls=[
+                StandardButton(
+                    content=Row(
+                        controls=[
+                            Image(
+                                src=Icons.ERROR,
+                                height=32,
+                                width=32,
+                            ),
+                            Text(
+                                value=await self.client.session.gtv(key=f'request_create'),
+                                size=16,
+                                font_family=Fonts.BOLD,
+                                color=colors.ON_PRIMARY,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.CENTER,
+                    ),
+                    on_click=self.request_create,
+                    expand=2,
+                    bgcolor=colors.PRIMARY,
+                ),
+            ],
+            spacing=10,
+        )
 
     async def get_history(self):
         self.filter_chips = [
             Chip(
-                name=await self.client.session.gtv(key=f'chip_{Chips.is_input}'),
-                key=Chips.is_input,
+                name=await self.client.session.gtv(key=f'chips_{Chips.input}'),
+                key=Chips.input,
                 on_select=self.chip_select,
                 selected=self.is_input,
             ),
             Chip(
-                name=await self.client.session.gtv(key=f'chip_{Chips.is_output}'),
-                key=Chips.is_output,
+                name=await self.client.session.gtv(key=f'chips_{Chips.output}'),
+                key=Chips.output,
                 on_select=self.chip_select,
                 selected=self.is_output,
             ),
             Chip(
-                name=await self.client.session.gtv(key=f'chip_{Chips.is_all}'),
-                key=Chips.is_all,
+                name=await self.client.session.gtv(key=f'chips_{Chips.all}'),
+                key=Chips.all,
                 on_select=self.chip_select,
                 selected=self.is_all,
             ),
             Chip(
-                name=await self.client.session.gtv(key=f'chip_{Chips.is_finish}'),
+                name=await self.client.session.gtv(key=f'chips_{Chips.is_finish}'),
                 key=Chips.is_finish,
                 on_select=self.chip_select,
                 selected=self.is_finish,
             ),
         ]
-        response = await self.client.session.api.client.request.search(
+        response = await self.client.session.api.client.requests.search(
             is_input=self.is_input,
             is_output=self.is_output,
             is_all=self.is_all,
@@ -176,32 +195,33 @@ class RequestTab(BaseTab):
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
             id_=self.client.session.current_wallet.id,
         )
+        self.column = Column(
+            controls=[
+                await self.get_actions(),
+                await self.get_history(),
+            ],
+        )
         self.controls = [
             Container(
-                content=Column(
-                    controls=[
-                        await self.get_scope_row(),
-                        await self.get_history(),
-                    ],
-                ),
+                content=self.column,
                 padding=10,
             ),
         ]
 
-    async def go_create(self, _):
+    async def request_create(self, _):
         from app.views.client.requests import RequestCreateView
         await self.client.change_view(view=RequestCreateView(current_wallet=self.client.session.current_wallet))
 
     async def chip_select(self, event: ControlEvent):
-        if event.control.key == Chips.is_input:
+        if event.control.key == Chips.input:
             self.is_input = True if event.data == 'true' else False
-        elif event.control.key == Chips.is_output:
+        elif event.control.key == Chips.output:
             self.is_output = True if event.data == 'true' else False
-        elif event.control.key == Chips.is_all:
+        elif event.control.key == Chips.all:
             self.is_all = True if event.data == 'true' else False
         elif event.control.key == Chips.is_finish:
             self.is_finish = True if event.data == 'true' else False
-        self.controls[0].content.controls[1] = await self.get_history()
+        self.column.controls[1] = await self.get_history()
         await self.update_async()
 
     async def next_page(self, _):

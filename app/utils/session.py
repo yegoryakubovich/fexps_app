@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+import logging
 from typing import Any
 
 from flet_core import Page
@@ -82,6 +81,8 @@ class Session:
         try:
             self.account = await self.api.client.accounts.get()
             self.language = self.account.language
+            timezone = await self.api.client.timezones.get(id_str=self.account.timezone)
+            self.api = FexpsApiClient(url=settings.url, token=self.token, deviation=timezone.deviation)
             if self.language != self.account.language:
                 await self.set_cs(key='language', value=self.language)
             self.wallets = await self.api.client.wallets.get_list()

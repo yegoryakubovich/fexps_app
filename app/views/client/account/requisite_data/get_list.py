@@ -34,7 +34,7 @@ class RequisiteDataListView(AdminBaseView):
 
     async def build(self):
         await self.set_type(loading=True)
-        self.requisites_datas = await self.client.session.api.client.requisite_data.get_list()
+        self.requisites_datas = await self.client.session.api.client.requisites_datas.get_list()
         await self.set_type(loading=False)
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(

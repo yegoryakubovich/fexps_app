@@ -137,7 +137,7 @@ class RequestCreateView(ClientBaseView):
             )
 
         async def get_output_requisite_data():
-            requisites_datas = await self.client.session.api.client.requisite_data.get_list()
+            requisites_datas = await self.client.session.api.client.requisites_datas.get_list()
             output_requisite_data_options = []
             for requisite_data in requisites_datas:
                 if requisite_data.currency.lower() != self.dd_output_currency.value.lower():
@@ -242,7 +242,7 @@ class RequestCreateView(ClientBaseView):
             value=self.tf_output_value.value, decimal=output_currency.decimal,
         ) if self.tf_output_value else None
         try:
-            request_id = await self.client.session.api.client.request.create(
+            request_id = await self.client.session.api.client.requests.create(
                 wallet_id=self.dd_wallet.value if self.dd_wallet else None,
                 type_=self.dd_type.value if self.dd_type else None,
                 input_method_id=self.dd_input_method.value if self.dd_input_method else None,

@@ -126,7 +126,7 @@ class RequisiteDataCreateView(AdminBaseView):
             if field['type'] == 'int':
                 self.fields[field['key']] = int(self.fields.get(field['key']))
         try:
-            requisite_data_id = await self.client.session.api.client.requisite_data.create(
+            requisite_data_id = await self.client.session.api.client.requisites_datas.create(
                 name=self.tf_name.value,
                 method_id=self.dd_method.value,
                 fields=self.fields,

@@ -21,6 +21,7 @@ from app.controls.information import Text
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts, Icons
 from app.utils.value import value_to_float
+from config import settings
 
 
 class TransferView(AdminBaseView):
@@ -52,7 +53,7 @@ class TransferView(AdminBaseView):
                         Row(
                             controls=[
                                 Text(
-                                    value=self.transfer.date,
+                                    value=self.transfer.date.strftime(settings.datetime_format),
                                     size=18,
                                     font_family=Fonts.SEMIBOLD,
                                     color=colors.ON_PRIMARY,

@@ -38,7 +38,7 @@ class BaseTab(Column):
         if loading:
             self.controls_last = self.controls
             self.controls = [
-                Loading(infinity=True, color='#008F12'),
+                Loading(infinity=True, color='#1D1D1D'),
             ]
             await self.update_async()
         else:
