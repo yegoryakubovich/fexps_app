@@ -53,20 +53,20 @@ class Section:
                             Image(
                                 src=Icons.CREATE,
                                 height=10,
-                                color='#FFFFFF',
+                                color=colors.ON_PRIMARY,
                             ),
                             Text(
                                 value='Create',
                                 size=13,
                                 font_family=Fonts.SEMIBOLD,
-                                color='#FFFFFF',
+                                color=colors.ON_PRIMARY,
                             ),
                         ],
                         spacing=4,
                     ),
                     padding=7,
                     border_radius=24,
-                    bgcolor='#008F12',
+                    bgcolor=colors.PRIMARY,
                     on_click=on_create_click,
                 ),
             )

@@ -17,10 +17,10 @@
 
 from functools import partial
 
-from flet_core import Row, Column, ScrollMode
+from flet_core import Row, Column, ScrollMode, colors
 from fexps_api_client.utils import ApiException
 
-from app.controls.button import FilledButton
+from app.controls.button import FilledButton, StandardButton
 from app.controls.information import Text
 from app.controls.information.card import Card
 from app.controls.information.snack_bar import SnackBar
@@ -74,17 +74,21 @@ class TextView(AdminBaseView):
                         self.snack_bar,
                         Row(
                             controls=[
-                                FilledButton(
+                                StandardButton(
                                     content=Text(
                                         value=await self.client.session.gtv(key='save'),
+                                        color=colors.ON_PRIMARY_CONTAINER,
                                     ),
                                     on_click=self.update_text,
+                                    expand=1,
                                 ),
-                                FilledButton(
+                                StandardButton(
                                     content=Text(
                                         value=await self.client.session.gtv(key='delete'),
+                                        color=colors.ON_PRIMARY_CONTAINER,
                                     ),
                                     on_click=self.delete_text,
+                                    expand=1,
                                 ),
                             ],
                         ),

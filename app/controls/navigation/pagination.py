@@ -19,7 +19,7 @@ from typing import Callable
 
 from flet_core import Container, Row, colors
 
-from app.controls.button import FilledButton
+from app.controls.button import FilledButton, StandardButton
 from app.controls.information import Text
 from app.utils import Fonts
 
@@ -43,7 +43,7 @@ class PaginationWidget(Container):
         super().__init__()
         self.content = Row(
             controls=[
-                FilledButton(
+                StandardButton(
                     content=Text(value=text_back),
                     on_click=self.on_previous,
                     disabled=self.current_page <= 1,
@@ -54,7 +54,7 @@ class PaginationWidget(Container):
                     font_family=Fonts.SEMIBOLD,
                     color=colors.ON_BACKGROUND,
                 ),
-                FilledButton(
+                StandardButton(
                     content=Text(value=text_next),
                     on_click=self.on_next,
                     disabled=self.disable_next_button and self.current_page >= self.total_pages,

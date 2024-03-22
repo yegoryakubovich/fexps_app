@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import ScrollMode
+from flet_core import ScrollMode, colors
 
 from app.controls.information import Text
 from app.controls.information.card import Card
@@ -42,30 +42,34 @@ class TextListView(AdminBaseView):
 
         self.total_pages = (len(self.texts) - 1) // self.items_per_page + 1
         self.texts = self.texts[(
-            self.page_text - 1) * self.items_per_page: self.page_text * self.items_per_page]
+                                        self.page_text - 1) * self.items_per_page: self.page_text * self.items_per_page]
 
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_text_get_list_view_title'),
             on_create_click=self.create_text,
             main_section_controls=[
-                Card(
-                    controls=[
-                        Text(
-                            value=await self.client.session.gtv(key=text['key']),
-                            size=18,
-                            font_family=Fonts.SEMIBOLD,
-                        ),
-                        Text(
-                            value=text['key'],
-                            size=10,
-                            font_family=Fonts.MEDIUM,
-                        ),
-                    ],
-                    on_click=partial(self.text_view, text['key']),
-                )
-                for text in self.texts
-            ] + [
+                *[
+                    Card(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key=text['key']),
+                                size=18,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                            Text(
+                                value=text['key'],
+                                size=10,
+                                font_family=Fonts.MEDIUM,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                        ],
+                        on_click=partial(self.text_view, text['key']),
+                        color=colors.PRIMARY_CONTAINER,
+                    )
+                    for text in self.texts
+                ],
                 PaginationWidget(
                     current_page=self.page_text,
                     total_pages=self.total_pages,
@@ -75,7 +79,7 @@ class TextListView(AdminBaseView):
                     text_next=await self.client.session.gtv(key='next'),
                 ),
             ]
-         )
+        )
 
     async def create_text(self, _):
         await self.client.change_view(view=TextCreateView())
