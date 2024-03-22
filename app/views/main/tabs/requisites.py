@@ -21,6 +21,7 @@ from app.controls.button import StandardButton, Chip
 from app.controls.information import Text
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Icons, Fonts
+from app.utils.value import value_to_float
 from app.views.main.tabs.base import BaseTab
 
 
@@ -100,7 +101,11 @@ class RequisiteTab(BaseTab):
         self.requisites = response.requisites
         cards = []
         requisite_text_name = await self.client.session.gtv(key=f'requisite')
+
         for requisite in self.requisites:
+            currency = await self.client.session.api.client.currencies.get(id_str=requisite.currency)
+            currency_value = value_to_float(value=requisite.currency_value, decimal=currency.decimal)
+            value = value_to_float(value=requisite.value)
             cards.append(
                 Container(
                     content=Row(
@@ -135,7 +140,7 @@ class RequisiteTab(BaseTab):
                                     Row(
                                         controls=[
                                             Text(
-                                                value=f'{requisite.currency_value}({requisite.currency})',
+                                                value=f'{currency_value}({currency.id_str.upper()})',
                                                 size=28,
                                                 font_family=Fonts.REGULAR,
                                                 color=colors.ON_PRIMARY_CONTAINER,
@@ -146,7 +151,7 @@ class RequisiteTab(BaseTab):
                                     Row(
                                         controls=[
                                             Text(
-                                                value=f'{requisite.value}',
+                                                value=f'{value}',
                                                 size=28,
                                                 font_family=Fonts.REGULAR,
                                                 color=colors.ON_PRIMARY_CONTAINER,

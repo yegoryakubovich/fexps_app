@@ -29,5 +29,6 @@ class RequisiteView(AdminBaseView):
 
     async def build(self):
         await self.set_type(loading=True)
-        self.requisite = await self.client.session.api.client.requisite.get(id_=self.requisite_id)
+        self.requisite = await self.client.session.api.client.requisites.get(id_=self.requisite_id)
         await self.set_type(loading=False)
+

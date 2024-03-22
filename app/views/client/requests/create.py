@@ -109,7 +109,7 @@ class RequestCreateView(ClientBaseView):
                         controls=[
                             StandardButton(
                                 text=await self.client.session.gtv(key='create_request'),
-                                on_click=self.switch_tf,
+                                on_click=self.request_create,
                                 expand=True,
                             ),
                         ],
@@ -231,7 +231,7 @@ class RequestCreateView(ClientBaseView):
     async def go_back(self, _):
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
 
-    async def switch_tf(self, _):
+    async def request_create(self, _):
         await self.set_type(loading=True)
         input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
         output_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_output_currency.value)
