@@ -17,7 +17,7 @@
 
 from fexps_api_client.utils import ApiException
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
@@ -42,13 +42,14 @@ class TextCreateView(AdminBaseView):
             main_section_controls=[
                 self.tf_key,
                 self.tf_value_default,
-                FilledButton(
+                StandardButton(
                     content=Text(
                         value=await self.client.session.gtv(key='create'),
                         size=15,
                         font_family=Fonts.REGULAR,
                     ),
                     on_click=self.create_text,
+                    expand=True,
                 ),
             ],
          )

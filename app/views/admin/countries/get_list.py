@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import Text, ScrollMode
+from flet_core import Text, ScrollMode, colors
 
 from app.controls.information.card import Card
 from app.controls.layout import AdminBaseView
@@ -43,12 +43,14 @@ class CountryListView(AdminBaseView):
                 Card(
                     controls=[
                         Text(
-                            value=await self.client.session.gtv(key=country['name_text']),
+                            value=country['name'],
                             size=18,
                             font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
                         ),
                     ],
                     on_click=partial(self.country_view, country['id_str']),
+                    color=colors.PRIMARY_CONTAINER,
                 )
                 for country in self.countries
             ],

@@ -17,7 +17,7 @@
 
 from fexps_api_client.utils import ApiException
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
@@ -37,12 +37,13 @@ class CurrencyCreateView(AdminBaseView):
             title=await self.client.session.gtv(key='admin_currency_create_view_title'),
             main_section_controls=[
                 self.tf_id_str,
-                FilledButton(
+                StandardButton(
                     content=Text(
                         value=await self.client.session.gtv(key='create'),
                         size=16,
                     ),
                     on_click=self.create_currency,
+                    expand=True,
                 ),
             ],
         )

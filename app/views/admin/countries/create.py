@@ -19,7 +19,7 @@ from flet_core import ScrollMode
 from flet_core.dropdown import Option
 from fexps_api_client.utils import ApiException
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import AdminBaseView
@@ -94,12 +94,13 @@ class CountryCreateView(AdminBaseView):
                 self.dd_language,
                 self.dd_timezone,
                 self.dd_currency,
-                FilledButton(
+                StandardButton(
                     content=Text(
                         value=await self.client.session.gtv(key='create'),
                         size=16,
                     ),
                     on_click=self.create_country,
+                    expand=True,
                 ),
             ],
         )

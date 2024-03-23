@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from flet_core import Row
 
-
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.layout import AdminBaseView
 
@@ -38,14 +38,19 @@ class LanguageView(AdminBaseView):
         self.controls = await self.get_controls(
             title=self.language['name'],
             main_section_controls=[
-                FilledButton(
-                    content=Text(
-                        value=await self.client.session.gtv(key='delete'),
-                    ),
-                    on_click=self.delete_language,
+                Row(
+                    controls=[
+                        StandardButton(
+                            content=Text(
+                                value=await self.client.session.gtv(key='delete'),
+                            ),
+                            on_click=self.delete_language,
+                            expand=True,
+                        ),
+                    ],
                 ),
             ],
-         )
+        )
 
     async def delete_language(self, _):
         await self.client.session.api.admin.languages.delete(

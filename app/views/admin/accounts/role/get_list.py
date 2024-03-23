@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import ScrollMode
+from flet_core import ScrollMode, colors
 
 from app.controls.information import Text
 from app.controls.information.card import Card
@@ -61,9 +61,11 @@ class AccountRoleListView(AdminBaseView):
                             value=await self.client.session.gtv(key=role['role']['name_text']),
                             size=18,
                             font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
                         ),
                     ],
                     on_click=partial(self.role_view, role),
+                    color=colors.PRIMARY_CONTAINER,
                 )
                 for role in self.role
             ],

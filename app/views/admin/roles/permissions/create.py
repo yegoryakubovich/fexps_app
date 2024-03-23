@@ -18,7 +18,7 @@
 from flet_core.dropdown import Option
 from fexps_api_client.utils import ApiException
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import Dropdown
 from app.controls.layout import AdminBaseView
@@ -65,12 +65,13 @@ class RolePermissionCreateView(AdminBaseView):
                 options=permissions_options,
             )
             permission_control = self.dd_permission
-            button = FilledButton(
+            button = StandardButton(
                 content=Text(
                     value=await self.client.session.gtv(key='create'),
                     size=16,
                 ),
                 on_click=self.create_permission,
+                expand=True,
             )
             controls = [permission_control, button]
         else:

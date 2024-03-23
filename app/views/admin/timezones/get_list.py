@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import Text, ScrollMode
+from flet_core import Text, ScrollMode, colors
 
 from app.controls.information.card import Card
 from app.controls.layout import AdminBaseView
@@ -46,9 +46,11 @@ class TimezoneListView(AdminBaseView):
                             value=timezone['id_str'],
                             size=18,
                             font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
                         ),
                     ],
                     on_click=partial(self.timezone_view, timezone['id_str']),
+                    color=colors.PRIMARY_CONTAINER,
                 )
                 for timezone in self.timezones
             ],

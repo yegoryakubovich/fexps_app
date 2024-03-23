@@ -20,7 +20,7 @@ from copy import deepcopy
 from flet_core import Checkbox, colors, Column, Row, ScrollMode
 from flet_core.dropdown import Option
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import AdminBaseView
@@ -97,11 +97,11 @@ class MethodCreateView(AdminBaseView):
                         font_family=Fonts.MEDIUM,
                         color=colors.ON_BACKGROUND,
                     ),
-                    FilledButton(
+                    StandardButton(
                         content=Text(value=await self.client.session.gtv(key='add_line')),
                         on_click=self.schema_fields_add_line,
                     ),
-                    FilledButton(
+                    StandardButton(
                         content=Text(value=await self.client.session.gtv(key='delete_line')),
                         on_click=self.schema_fields_delete_line,
                     ),
@@ -114,23 +114,24 @@ class MethodCreateView(AdminBaseView):
                         font_family=Fonts.MEDIUM,
                         color=colors.ON_BACKGROUND,
                     ),
-                    FilledButton(
+                    StandardButton(
                         content=Text(value=await self.client.session.gtv(key='add_line')),
                         on_click=self.schema_input_fields_add_line,
                     ),
-                    FilledButton(
+                    StandardButton(
                         content=Text(value=await self.client.session.gtv(key='delete_line')),
                         on_click=self.schema_input_fields_delete_line,
                     ),
                 ]),
                 Column(controls=self.schema_input_fields),
-                FilledButton(
+                StandardButton(
                     content=Text(
                         value=await self.client.session.gtv(key='create'),
                         size=15,
                         font_family=Fonts.REGULAR,
                     ),
                     on_click=self.create_method,
+                    expand=True,
                 ),
             ],
         )

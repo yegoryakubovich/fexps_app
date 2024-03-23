@@ -239,7 +239,7 @@ class HomeTab(BaseTab):
                 value = f'+ {value}'
             date = transfer.date.strftime('%Y-%m-%d')
             self.cards.append(
-                Container(
+                StandardButton(
                     content=Row(
                         controls=[
                             Text(
@@ -273,8 +273,9 @@ class HomeTab(BaseTab):
                     ),
                     on_click=partial(self.transfer_view, transfer.id),
                     bgcolor=colors.PRIMARY_CONTAINER,
-                    padding=Padding(left=16, right=16, top=12, bottom=12),
-                )
+                    horizontal=16,
+                    vertical=12,
+                ),
             )
         return Row(
             controls=[

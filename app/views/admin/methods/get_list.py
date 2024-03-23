@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import ScrollMode
+from flet_core import ScrollMode, colors
 
 from app.controls.information import Text
 from app.controls.information.card import Card
@@ -56,14 +56,17 @@ class MethodListView(AdminBaseView):
                                 value=await self.client.session.gtv(key=method['name_text']),
                                 size=18,
                                 font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
                             ),
                             Text(
                                 value=method['currency'],
                                 size=10,
                                 font_family=Fonts.MEDIUM,
+                                color=colors.ON_PRIMARY_CONTAINER,
                             ),
                         ],
                         on_click=partial(self.method_view, method['id']),
+                        color=colors.PRIMARY_CONTAINER,
                     )
                     for method in self.methods
                 ],

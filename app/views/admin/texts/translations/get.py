@@ -18,7 +18,7 @@
 from flet_core import Row
 from fexps_api_client.utils import ApiException
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.information.snack_bar import SnackBar
 from app.controls.input import TextField
@@ -53,17 +53,19 @@ class TextTranslationView(AdminBaseView):
                 self.snack_bar,
                 Row(
                     controls=[
-                        FilledButton(
+                        StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='save'),
                             ),
                             on_click=self.update_translation,
+                            expand=True,
                         ),
-                        FilledButton(
+                        StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='delete'),
                             ),
                             on_click=self.delete_translation,
+                            expand=True,
                         ),
                     ],
                 ),

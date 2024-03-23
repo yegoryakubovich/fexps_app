@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import Text, ScrollMode
+from flet_core import Text, ScrollMode, colors
 
 from app.controls.information.card import Card
 from app.controls.layout import AdminBaseView
@@ -43,12 +43,14 @@ class CurrencyListView(AdminBaseView):
                 Card(
                     controls=[
                         Text(
-                            value=currency['id_str'],
+                            value=currency['id_str'].upper(),
                             size=18,
                             font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
                         ),
                     ],
                     on_click=partial(self.currency_view, currency['id_str']),
+                    color=colors.PRIMARY_CONTAINER,
                 )
                 for currency in self.currencies
             ],

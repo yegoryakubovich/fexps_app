@@ -17,7 +17,7 @@
 
 from fexps_api_client.utils import ApiException
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
@@ -36,12 +36,13 @@ class RoleCreateView(AdminBaseView):
             title=await self.client.session.gtv(key='admin_role_create_view_title'),
             main_section_controls=[
                 self.tf_name,
-                FilledButton(
+                StandardButton(
                     content=Text(
                         value=await self.client.session.gtv(key='create'),
                         size=16,
                     ),
                     on_click=self.create_role,
+                    expand=True,
                 ),
             ],
         )

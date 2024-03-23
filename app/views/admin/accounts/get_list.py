@@ -48,37 +48,38 @@ class AccountListView(AdminBaseView):
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_account_get_list_view_title'),
             main_section_controls=[
-                Card(
-                    controls=[
-                        Text(
-                            value=account['username'],
-                            size=18,
-                            font_family=Fonts.SEMIBOLD,
-                            color=colors.ON_SECONDARY,
-                        ),
-                        Row(
-                            controls=[
-                                Text(
-                                    value=account['firstname'],
-                                    size=13,
-                                    font_family=Fonts.REGULAR,
-                                    color=colors.ON_SECONDARY,
-                                ),
-                                Text(
-                                    value=account['lastname'],
-                                    size=13,
-                                    font_family=Fonts.REGULAR,
-                                    color=colors.ON_SECONDARY,
-                                ),
-                            ],
-                            spacing=5,
-                        ),
-                    ],
-                    on_click=partial(self.account_view, account['id']),
-                    color=colors.GREY_400,
-                )
-                for account in self.accounts
-            ] + [
+                *[
+                    Card(
+                        controls=[
+                            Text(
+                                value=account['username'],
+                                size=18,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=account['firstname'],
+                                        size=13,
+                                        font_family=Fonts.REGULAR,
+                                        color=colors.ON_PRIMARY_CONTAINER,
+                                    ),
+                                    Text(
+                                        value=account['lastname'],
+                                        size=13,
+                                        font_family=Fonts.REGULAR,
+                                        color=colors.ON_PRIMARY_CONTAINER,
+                                    ),
+                                ],
+                                spacing=5,
+                            ),
+                        ],
+                        on_click=partial(self.account_view, account['id']),
+                        color=colors.PRIMARY_CONTAINER,
+                    )
+                    for account in self.accounts
+                ],
                 PaginationWidget(
                     current_page=self.page_account,
                     total_pages=self.total_pages,

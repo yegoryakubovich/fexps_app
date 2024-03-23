@@ -15,15 +15,13 @@
 #
 
 
-from functools import partial
-
 from flet_core import Row, colors, MaterialState, Container, Image, padding, margin, InputBorder, TextStyle
 from pyperclip import copy
 
-from app.controls.button import FilledButton
-from app.controls.information import Text, Card
+from app.controls.button import StandardButton
+from app.controls.information import Text
 from app.controls.input import TextField
-from app.controls.layout import AdminBaseView, Section
+from app.controls.layout import AdminBaseView
 from app.utils import Fonts, Icons
 from app.views.admin.accounts.role import AccountRoleListView
 
@@ -120,13 +118,13 @@ class AccountView(AdminBaseView):
                 ),
                 Row(
                     controls=[
-                        FilledButton(
+                        StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='roles'),
                             ),
                             on_click=self.role_view,
                         ),
-                        FilledButton(
+                        StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='admin_reset_user_password'),
                             ),

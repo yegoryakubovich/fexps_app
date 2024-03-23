@@ -20,7 +20,7 @@ from copy import deepcopy
 from flet_core import Row, Column, colors, Checkbox, ScrollMode
 from flet_core.dropdown import Option
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.information.snack_bar import SnackBar
 from app.controls.input import TextField, Dropdown
@@ -120,11 +120,11 @@ class MethodView(AdminBaseView):
                                 font_family=Fonts.MEDIUM,
                                 color=colors.ON_BACKGROUND,
                             ),
-                            FilledButton(
+                            StandardButton(
                                 content=Text(value=await self.client.session.gtv(key='add_line')),
                                 on_click=self.schema_fields_add_line,
                             ),
-                            FilledButton(
+                            StandardButton(
                                 content=Text(value=await self.client.session.gtv(key='remove_line')),
                                 on_click=self.schema_fields_remove_line,
                             ),
@@ -137,25 +137,26 @@ class MethodView(AdminBaseView):
                                 font_family=Fonts.MEDIUM,
                                 color=colors.ON_BACKGROUND,
                             ),
-                            FilledButton(
+                            StandardButton(
                                 content=Text(value=await self.client.session.gtv(key='add_line')),
                                 on_click=self.schema_input_fields_add_line,
                             ),
-                            FilledButton(
+                            StandardButton(
                                 content=Text(value=await self.client.session.gtv(key='remove_line')),
                                 on_click=self.schema_input_fields_remove_line,
                             ),
                         ]),
                         Column(controls=self.schema_input_fields),
                         Row(controls=[
-                            FilledButton(
-                                content=Text(
-                                    value=await self.client.session.gtv(key='save')),
+                            StandardButton(
+                                content=Text(value=await self.client.session.gtv(key='save')),
                                 on_click=self.update_method,
+                                expand=True,
                             ),
-                            FilledButton(
+                            StandardButton(
                                 content=Text(value=await self.client.session.gtv(key='delete')),
                                 on_click=self.delete_method,
+                                expand=True,
                             ),
                         ]),
                     ],

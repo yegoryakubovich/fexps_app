@@ -18,7 +18,7 @@
 from flet_core.dropdown import Option
 from fexps_api_client.utils import ApiException
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import AdminBaseView
@@ -71,12 +71,13 @@ class TextTranslationCreateView(AdminBaseView):
                 options=languages_options,
             )
             language_control = self.dd_language
-            button = FilledButton(
+            button = StandardButton(
                 content=Text(
                     value=await self.client.session.gtv(key='create'),
                     size=16,
                 ),
                 on_click=self.create_translation,
+                expand=True,
             )
             controls = [self.tf_value, language_control, button]
         else:

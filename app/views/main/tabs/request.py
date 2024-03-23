@@ -48,6 +48,7 @@ class RequestTab(BaseTab):
     is_output: bool
     is_all: bool
     is_finish: bool
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.selected_chip = Chips.all
@@ -126,46 +127,50 @@ class RequestTab(BaseTab):
                 color, value = colors.RED, request.output_value / settings.default_decimal
             elif request.type == 'all':
                 color, value = colors.GREY, f'{0} -> {0}'
-            self.cards.append(Card(
-                controls=[
-                    Row(
-                        controls=[
-                            Text(
-                                value=await self.client.session.gtv(key=f'request_type_{request.type}'),
-                                size=28,
-                                font_family=Fonts.REGULAR,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                            Text(
-                                value=value,
-                                size=32,
-                                font_family=Fonts.REGULAR,
-                                color=color,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
-                    ),
-                    Row(
-                        controls=[
-                            Text(
-                                value=await self.client.session.gtv(key=f'request_state_{request.state}'),
-                                size=16,
-                                font_family=Fonts.REGULAR,
-                                color=colors.ON_BACKGROUND,
+            self.cards.append(
 
-                            ),
-                            Text(
-                                value=request.date,
-                                size=16,
-                                font_family=Fonts.REGULAR,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
-                    ),
-                ],
-                on_click=partial(self.request_view, request.id),
-            ))
+
+                Card(
+                    controls=[
+                        Row(
+                            controls=[
+                                Text(
+                                    value=await self.client.session.gtv(key=f'request_type_{request.type}'),
+                                    size=28,
+                                    font_family=Fonts.REGULAR,
+                                    color=colors.ON_BACKGROUND,
+                                ),
+                                Text(
+                                    value=value,
+                                    size=32,
+                                    font_family=Fonts.REGULAR,
+                                    color=color,
+                                ),
+                            ],
+                            alignment=MainAxisAlignment.SPACE_BETWEEN,
+                        ),
+                        Row(
+                            controls=[
+                                Text(
+                                    value=await self.client.session.gtv(key=f'request_state_{request.state}'),
+                                    size=16,
+                                    font_family=Fonts.REGULAR,
+                                    color=colors.ON_BACKGROUND,
+
+                                ),
+                                Text(
+                                    value=request.date,
+                                    size=16,
+                                    font_family=Fonts.REGULAR,
+                                    color=colors.ON_BACKGROUND,
+                                ),
+                            ],
+                            alignment=MainAxisAlignment.SPACE_BETWEEN,
+                        ),
+                    ],
+                    on_click=partial(self.request_view, request.id),
+                )
+            )
 
         return Row(
             controls=[

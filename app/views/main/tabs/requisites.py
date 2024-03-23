@@ -106,8 +106,9 @@ class RequisiteTab(BaseTab):
             currency = await self.client.session.api.client.currencies.get(id_str=requisite.currency)
             currency_value = value_to_float(value=requisite.currency_value, decimal=currency.decimal)
             value = value_to_float(value=requisite.value)
+            type_text_name = await self.client.session.gtv(key=f'requisite_type_{requisite.type}')
             cards.append(
-                Container(
+                StandardButton(
                     content=Row(
                         controls=[
                             Column(
@@ -125,8 +126,7 @@ class RequisiteTab(BaseTab):
                                     Row(
                                         controls=[
                                             Text(
-                                                value=await self.client.session.gtv(
-                                                    key=f'requisite_type_{requisite.type}'),
+                                                value=type_text_name,
                                                 size=28,
                                                 font_family=Fonts.REGULAR,
                                                 color=colors.ON_PRIMARY_CONTAINER,
@@ -165,8 +165,10 @@ class RequisiteTab(BaseTab):
                     ),
                     on_click=partial(self.requisite_get, requisite.id),
                     bgcolor=colors.PRIMARY_CONTAINER,
-                    padding=Padding(left=16, right=16, top=12, bottom=12),
-                ))
+                    horizontal=16,
+                    vertical=12,
+                )
+            )
 
         return Row(
             controls=[

@@ -16,10 +16,12 @@
 
 
 from flet_core import Row
-from flet_core.dropdown import Option, Dropdown
+from flet_core.dropdown import Option
+
+from app.controls.input import Dropdown, TextField
 from fexps_api_client.utils import ApiException
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.information.snack_bar import SnackBar
 from app.controls.layout import AdminBaseView
@@ -31,6 +33,7 @@ class CountryView(AdminBaseView):
     languages = list[dict]
     timezones = list[dict]
     currencies = list[dict]
+    tf_name = TextField
     dd_language = Dropdown
     dd_timezone = Dropdown
     dd_currency = Dropdown
@@ -74,6 +77,10 @@ class CountryView(AdminBaseView):
                 value=await self.client.session.gtv(key='successful'),
             ),
         )
+        self.tf_name = TextField(
+            label=await self.client.session.gtv(key='name'),
+            value=self.country['name'],
+        )
         self.dd_language = Dropdown(
             label=await self.client.session.gtv(key='language'),
             value=self.country['language'],
@@ -92,23 +99,26 @@ class CountryView(AdminBaseView):
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key=self.country['name_text']),
             main_section_controls=[
+                self.tf_name,
                 self.dd_language,
                 self.dd_currency,
                 self.dd_timezone,
                 self.snack_bar,
                 Row(
                     controls=[
-                        FilledButton(
+                        StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='save'),
                             ),
                             on_click=self.update_country,
+                            expand=True,
                         ),
-                        FilledButton(
+                        StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='delete'),
                             ),
                             on_click=self.delete_country,
+                            expand=True,
                         ),
                     ],
                 ),
@@ -126,6 +136,7 @@ class CountryView(AdminBaseView):
         try:
             await self.client.session.api.admin.countries.update(
                 id_str=self.country_id_str,
+                name=self.tf_name.value,
                 language=self.dd_language.value,
                 currency=self.dd_currency.value,
                 timezone=self.dd_timezone.value,
