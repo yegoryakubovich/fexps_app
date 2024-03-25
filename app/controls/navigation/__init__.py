@@ -16,3 +16,4 @@
 
 
 from .bottom import BottomNavigation, BottomNavigationTab
+from .pagination import PaginationWidget
