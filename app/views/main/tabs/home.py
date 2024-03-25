@@ -18,14 +18,16 @@
 from functools import partial
 
 from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, TextAlign, \
-    Padding
+    Stack, alignment, Margin, Padding
 
 from app.controls.button import Chip
 from app.controls.button.standart import StandardButton
 from app.controls.information import Card, Text
+from app.controls.information.subtitle import SubTitle
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts, Icons
 from app.utils.value import value_to_float
+from app.views.client.requests import RequestView
 from app.views.main.tabs.base import BaseTab
 
 
@@ -39,9 +41,9 @@ class HomeTab(BaseTab):
     transfers = list[dict]
     column: Column
     cards: list[Card]
+    current_requests = list[dict]
     page_transfer: int = 1
     total_pages: int = 1
-    filter_chips: list[Chip]
     selected_chip: str
 
     def __init__(self, **kwargs):
@@ -55,13 +57,13 @@ class HomeTab(BaseTab):
             controls=[
                 Text(
                     value=await self.client.session.gtv(key=hello_text_key),
-                    size=32,
+                    size=48,
                     font_family=Fonts.MEDIUM,
                     color=colors.ON_BACKGROUND,
                 ),
                 Text(
                     value=f'{self.client.session.account.firstname.title()}.',
-                    size=32,
+                    size=48,
                     font_family=Fonts.SEMIBOLD,
                     color=colors.ON_BACKGROUND,
                 ),
@@ -72,57 +74,53 @@ class HomeTab(BaseTab):
         wallet_name = self.client.session.current_wallet.name
         value = value_to_float(value=self.client.session.current_wallet.value)
         return Container(
-            content=Row(
+            content=Stack(
                 controls=[
                     Column(
                         controls=[
-                            Row(
-                                controls=[
-                                    Text(
-                                        value=f'{wallet_name}',
-                                        size=24,
-                                        font_family=Fonts.REGULAR,
-                                        color=colors.ON_PRIMARY,
-                                    ),
-                                ],
-                                alignment=MainAxisAlignment.CENTER,
-                            ),
-                            Row(
-                                controls=[
-                                    Image(
-                                        src=Icons.VALUE,
-                                        width=36,
-                                        color=colors.ON_PRIMARY,
-                                    ),
-                                    Text(
-                                        value=f'{value}',
-                                        size=32,
-                                        font_family=Fonts.BOLD,
-                                        color=colors.ON_PRIMARY,
-                                    ),
-                                ],
-                                alignment=MainAxisAlignment.CENTER,
-                            ),
-
-                        ],
-                        alignment=MainAxisAlignment.CENTER,
-                        expand=True,
-                    ),
-                    Column(
-                        controls=[
                             Container(
-                                content=Image(
-                                    src=Icons.WALLET_MENU,
-                                    width=36,
-                                    color=colors.ON_BACKGROUND,
+                                content=Text(
+                                    value=f'{wallet_name}',
+                                    size=32,
+                                    font_family=Fonts.REGULAR,
+                                    color=colors.ON_PRIMARY,
                                 ),
-                                on_click=self.select_wallet_view,
-                                padding=20,
-                            )
+                                alignment=alignment.top_center,
+                                margin=Margin(left=0, right=0, top=15, bottom=0)
+                            ),
                         ],
+                    ),
+                    Container(
+                        content=Row(
+                            controls=[
+                                Image(
+                                    src=Icons.COIN,
+                                    width=28,
+                                    color=colors.ON_PRIMARY,
+                                ),
+                                Text(
+                                    value=f'{value}',
+                                    size=48,
+                                    font_family=Fonts.BOLD,
+                                    color=colors.ON_PRIMARY,
+                                ),
+                            ],
+                            alignment=MainAxisAlignment.CENTER,
+                        ),
+                        alignment=alignment.center,
+                    ),
+                    Container(
+                        content=Image(
+                            src=Icons.WALLET_MENU,
+                            width=24,
+                            color=colors.ON_PRIMARY,
+                        ),
+                        on_click=self.select_wallet_view,
+                        padding=20,
+                        alignment=alignment.top_right,
                     ),
                 ],
-                alignment=MainAxisAlignment.SPACE_BETWEEN,
+                expand=True,
             ),
             bgcolor=colors.PRIMARY,
             height=150,
@@ -156,7 +154,7 @@ class HomeTab(BaseTab):
                     content=Row(
                         controls=[
                             Image(
-                                src=Icons.SEND,
+                                src=Icons.PAYMENT,
                                 height=32,
                                 width=32,
                             ),
@@ -197,8 +195,116 @@ class HomeTab(BaseTab):
             spacing=10,
         )
 
-    async def get_history(self):
-        self.filter_chips = [
+    """
+    CURRENCY REQUESTS
+    """
+
+    async def get_currency_request_cards(self) -> list[StandardButton]:
+        response = await self.client.session.api.client.requests.search()
+        self.current_requests = response.requests
+        cards: list[StandardButton] = []
+        for request in self.current_requests:
+            state = await self.client.session.gtv(key=f'request_state_{request.state}')
+            if request.type == 'input':
+                input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
+                input_currency_value = value_to_float(
+                    value=request.input_currency_value_raw,
+                    decimal=input_currency.decimal,
+                ) if request.input_currency_value_raw else None
+                input_value = value_to_float(
+                    value=request.input_value_raw,
+                    decimal=input_currency.decimal,
+                ) if request.input_value_raw else None
+                value = f'{input_currency_value} {input_currency.id_str.upper()} -> {input_value}'
+            elif request.type == 'output':
+                output_currency = await self.client.session.api.client.currencies.get(
+                    id_str=request.output_currency)
+                output_currency_value = value_to_float(
+                    value=request.output_currency_value_raw,
+                    decimal=output_currency.decimal,
+                ) if request.output_currency_value_raw else None
+                output_value = value_to_float(
+                    value=request.output_raw,
+                    decimal=output_currency.decimal,
+                ) if request.output_raw else None
+                value = f'{output_value} -> {output_currency_value} {output_currency.id_str.upper()}'
+            else:
+                input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
+                output_currency = await self.client.session.api.client.currencies.get(
+                    id_str=request.output_currency)
+                input_currency_value = value_to_float(
+                    value=request.input_currency_value_raw,
+                    decimal=input_currency.decimal,
+                ) if request.input_currency_value_raw else None
+                output_currency_value = value_to_float(
+                    value=request.output_currency_value_raw,
+                    decimal=output_currency.decimal,
+                ) if request.output_currency_value_raw else None
+                value = (
+                    f'{input_currency_value} {input_currency.id_str.upper()}'
+                    f' -> '
+                    f'{output_currency_value} {output_currency.id_str.upper()}'
+                )
+            cards.append(
+                StandardButton(
+                    content=Row(
+                        controls=[
+                            Column(
+                                controls=[
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=value,
+                                                size=28,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY,
+                                            ),
+                                        ],
+                                    ),
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=state,
+                                                size=18,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY,
+                                            ),
+                                        ],
+                                    ),
+                                ],
+                                expand=True,
+                            ),
+                            Image(
+                                src=Icons.OPEN,
+                                height=32,
+                                color=colors.ON_PRIMARY,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    on_click=partial(self.request_view, request.id),
+                    bgcolor=colors.PRIMARY,
+                    horizontal=34,
+                    vertical=24,
+                )
+            )
+        return cards
+
+    async def get_currency_request(self):
+        return Row(
+            controls=[
+                SubTitle(value=await self.client.session.gtv(key='requests_currency_title')),
+                *await self.get_currency_request_cards(),
+            ],
+            wrap=True,
+        )
+
+    """
+    HISTORY TRANSFER
+    """
+
+    async def get_history_transfer_chips(self) -> list[Chip]:
+        return [
             Chip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.input}'),
                 key=Chips.input,
@@ -218,6 +324,8 @@ class HomeTab(BaseTab):
                 selected=True if self.selected_chip == Chips.all else False,
             ),
         ]
+
+    async def get_history_transfer_cards(self) -> list[StandardButton]:
         response = await self.client.session.api.client.transfers.search(
             wallet_id=self.client.session.current_wallet.id,
             is_sender=True if self.selected_chip in [Chips.output, Chips.all] else False,
@@ -227,23 +335,23 @@ class HomeTab(BaseTab):
         self.transfers = response.transfers
         self.total_pages = response.pages
         self.scroll = ScrollMode.AUTO
-        self.cards: list = []
+        cards: list = []
         for transfer in self.transfers:
             value = value_to_float(value=transfer.value)
             short_name = ''
             if transfer.operation == 'send':
-                short_name = transfer.account_to.short_name
+                short_name = f'To {transfer.account_to.short_name}'
                 value = f'- {value}'
             elif transfer.operation == 'receive':
-                short_name = transfer.account_from.short_name
+                short_name = f'From {transfer.account_from.short_name}'
                 value = f'+ {value}'
             date = transfer.date.strftime('%Y-%m-%d')
-            self.cards.append(
+            cards.append(
                 StandardButton(
                     content=Row(
                         controls=[
                             Text(
-                                value=f'To {short_name.upper()}',
+                                value=short_name.title(),
                                 size=32,
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
@@ -277,20 +385,14 @@ class HomeTab(BaseTab):
                     vertical=12,
                 ),
             )
+        return cards
+
+    async def get_history_transfer(self):
         return Row(
             controls=[
-                Row(
-                    controls=[
-                        Text(
-                            value=await self.client.session.gtv(key='last_transactions'),
-                            size=32,
-                            font_family=Fonts.BOLD,
-                            color=colors.ON_BACKGROUND,
-                        )
-                    ]
-                ),
-                *self.filter_chips,
-                *self.cards,
+                SubTitle(value=await self.client.session.gtv(key='last_transactions')),
+                *await self.get_history_transfer_chips(),
+                *await self.get_history_transfer_cards(),
                 PaginationWidget(
                     current_page=self.page_transfer,
                     total_pages=self.total_pages,
@@ -309,23 +411,24 @@ class HomeTab(BaseTab):
             id_=self.client.session.current_wallet['id'],
         )
         self.scroll = ScrollMode.AUTO
-        self.column = Column(
-            controls=[
-                await self.get_account(),
-                await self.get_balance(),
-                await self.get_actions(),
-                await self.get_history(),
-                Container(
-                    content=Text(value='ACCOUNT', color=colors.BLACK),
-                    on_click=self.go_account
-                )
-            ],
-        )
         self.controls = [
             Container(
-                content=self.column,
-                padding=10,
-            ),
+                content=Column(
+                    controls=[
+                        await self.get_account(),
+                        await self.get_balance(),
+                        await self.get_actions(),
+                        await self.get_currency_request(),
+                        await self.get_history_transfer(),
+                        Container(
+                            content=Text(value='ACCOUNT', color=colors.BLACK),
+                            on_click=self.go_account
+                        )
+                    ],
+                    expand=True,
+                ),
+                padding=Padding(right=48, left=48, top=0, bottom=0),
+            )
         ]
 
     async def go_account(self, _):
@@ -336,25 +439,8 @@ class HomeTab(BaseTab):
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(id_=event.data)
         self.column.controls[1] = await self.get_balance()
-        self.column.controls[3] = await self.get_history()
+        self.column.controls[3] = await self.get_history_transfer()
         await self.update_async()
-
-    async def chip_select(self, event: ControlEvent):
-        self.selected_chip = event.control.key
-        self.column.controls[3] = await self.get_history()
-        await self.update_async()
-
-    async def next_page(self, _):
-        if self.page_transfer < self.total_pages:
-            self.page_transfer += 1
-            await self.build()
-            await self.update_async()
-
-    async def previous_page(self, _):
-        if self.page_transfer > 1:
-            self.page_transfer -= 1
-            await self.build()
-            await self.update_async()
 
     async def select_wallet_view(self, _):
         from app.views.client.wallets import WalletSelectView
@@ -368,6 +454,26 @@ class HomeTab(BaseTab):
         from app.views.client.transfers import TransferCreateView
         await self.client.change_view(view=TransferCreateView())
 
+    async def request_view(self, request_id: int, _):
+        await self.client.change_view(view=RequestView(request_id=request_id))
+
     async def transfer_view(self, transfer_id: int, _):
         from app.views.client.transfers import TransferView
         await self.client.change_view(view=TransferView(transfer_id=transfer_id))
+
+    async def chip_select(self, event: ControlEvent):
+        self.selected_chip = event.control.key
+        await self.build()
+        await self.update_async()
+
+    async def next_page(self, _):
+        if self.page_transfer < self.total_pages:
+            self.page_transfer += 1
+            await self.build()
+            await self.update_async()
+
+    async def previous_page(self, _):
+        if self.page_transfer > 1:
+            self.page_transfer -= 1
+            await self.build()
+            await self.update_async()

@@ -15,10 +15,12 @@
 #
 from functools import partial
 
-from flet_core import Column, Container, ScrollMode, Image, Row, MainAxisAlignment, colors, ControlEvent, Padding
+from flet_core import Column, Container, ScrollMode, Image, Row, MainAxisAlignment, colors, ControlEvent
 
 from app.controls.button import StandardButton, Chip
 from app.controls.information import Text
+from app.controls.information.subtitle import SubTitle
+from app.controls.information.title import Title
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Icons, Fonts
 from app.utils.value import value_to_float
@@ -43,34 +45,6 @@ class RequisiteTab(BaseTab):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.selected_chip = Chips.all
-
-    async def get_actions(self):
-        return Row(
-            controls=[
-                StandardButton(
-                    content=Row(
-                        controls=[
-                            Image(
-                                src=Icons.ERROR,
-                                height=32,
-                                width=32,
-                            ),
-                            Text(
-                                value=await self.client.session.gtv(key=f'requisite_create'),
-                                size=16,
-                                font_family=Fonts.BOLD,
-                                color=colors.ON_PRIMARY,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.CENTER,
-                    ),
-                    on_click=self.requisite_create,
-                    expand=2,
-                    bgcolor=colors.PRIMARY,
-                ),
-            ],
-            spacing=10,
-        )
 
     async def get_history(self):
         filter_chips = [
@@ -172,12 +146,7 @@ class RequisiteTab(BaseTab):
 
         return Row(
             controls=[
-                Row(controls=[Text(
-                    value=await self.client.session.gtv(key='requisite_history'),
-                    size=32,
-                    font_family=Fonts.BOLD,
-                    color=colors.ON_BACKGROUND,
-                )]),
+                SubTitle(value=await self.client.session.gtv(key='requisite_history')),
                 *filter_chips,
                 *cards,
                 PaginationWidget(
@@ -194,17 +163,13 @@ class RequisiteTab(BaseTab):
 
     async def build(self):
         self.scroll = ScrollMode.AUTO
-        self.column = Column(
-            controls=[
-                await self.get_actions(),
-                await self.get_history(),
-            ],
-        )
         self.controls = [
-            Container(
-                content=self.column,
-                padding=10,
+            Title(
+                value=await self.client.session.gtv(key='requisite'),
+                create_name_text=await self.client.session.gtv(key='create'),
+                on_create=self.requisite_create,
             ),
+            await self.get_history(),
         ]
 
     # Action

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import logging
 
 from flet_core import Column, Container, ScrollMode, padding, KeyboardType, Row
 from flet_core.dropdown import Option
@@ -39,16 +39,16 @@ class RequestCreateView(ClientBaseView):
     currencies: Column
     methods = dict
 
-    dd_type: Dropdown = None
-    dd_wallet: Dropdown = None
-    dd_input_currency: Dropdown = None
-    dd_output_currency: Dropdown = None
-    dd_input_method: Dropdown = None
-    tf_input_currency_value: TextField = None
-    tf_input_value: TextField = None
-    dd_output_requisite_data: Dropdown = None
-    tf_output_currency_value: TextField = None
-    tf_output_value: TextField = None
+    dd_type = Dropdown(value=None)
+    dd_wallet = Dropdown(value=None)
+    dd_input_currency = Dropdown(value=None)
+    dd_output_currency = Dropdown(value=None)
+    dd_input_method = Dropdown(value=None)
+    tf_input_currency_value = TextField(value=None)
+    tf_input_value = TextField(value=None)
+    dd_output_requisite_data = Dropdown(value=None)
+    tf_output_currency_value = TextField(value=None)
+    tf_output_value = TextField(value=None)
 
     async def build(self):
         self.methods = await self.client.session.api.client.methods.get_list()
@@ -232,23 +232,35 @@ class RequestCreateView(ClientBaseView):
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
 
     async def request_create(self, _):
+        logging.critical(f'self.dd_wallet.value = {self.dd_wallet}')
+        logging.critical(f'self.dd_type.value = {self.dd_type}')
+        logging.critical(f'self.dd_input_currency.value = {self.dd_input_currency}')
+        logging.critical(f'self.dd_output_currency.value = {self.dd_output_currency}')
+        logging.critical(f'self.tf_input_currency_value.value = {self.tf_input_currency_value}')
+        logging.critical(f'=self.tf_input_value.value = {self.tf_input_value}')
+        logging.critical(f'self.tf_output_currency_value.value = {self.tf_output_currency_value}')
+        logging.critical(f'self.tf_output_value.value = {self.tf_output_value}')
         await self.set_type(loading=True)
-        input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
-        output_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_output_currency.value)
+        input_currency = None
+        if self.dd_input_currency.value:
+            input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
+        output_currency = None
+        if self.dd_output_currency.value:
+            output_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_output_currency.value)
         # Input values
         input_currency_value = value_to_int(
             value=self.tf_input_currency_value.value, decimal=input_currency.decimal,
-        ) if self.tf_input_currency_value else None
+        ) if self.tf_input_currency_value.value else None
         input_value = value_to_int(
             value=self.tf_input_value.value, decimal=input_currency.decimal,
-        ) if self.tf_input_value else None
+        ) if self.tf_input_value.value else None
         # Output values
         output_currency_value = value_to_int(
             value=self.tf_output_currency_value.value, decimal=output_currency.decimal,
-        ) if self.tf_output_currency_value else None
+        ) if self.tf_output_currency_value.value else None
         output_value = value_to_int(
             value=self.tf_output_value.value, decimal=output_currency.decimal,
-        ) if self.tf_output_value else None
+        ) if self.tf_output_value.value else None
         try:
             request_id = await self.client.session.api.client.requests.create(
                 wallet_id=self.dd_wallet.value if self.dd_wallet else None,
@@ -261,7 +273,7 @@ class RequestCreateView(ClientBaseView):
                 output_value=output_value,
             )
             await self.set_type(loading=False)
-            await self.client.change_view(view=RequestView(request_id=request_id), delete_current=True)
+            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
         except ApiException as exception:
             await self.set_type(loading=False)
             return await self.client.session.error(exception=exception)

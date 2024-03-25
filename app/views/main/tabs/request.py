@@ -17,171 +17,269 @@
 
 from functools import partial
 
-from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image
+from flet_core import Column, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Container, Padding, Image
 
 from app.controls.button import Chip, StandardButton
 from app.controls.button.actions import ActionItem
-from app.controls.information import Text, Card
-from app.controls.navigation.pagination import PaginationWidget
-from app.utils import Fonts, Icons
+from app.controls.information import Text, SubTitle, Title
+from app.controls.navigation import PaginationWidget
+from app.utils import Fonts, Icons, value_to_float
 from app.views.client.requests import RequestView
 from app.views.main.tabs.base import BaseTab
-from config import settings
 
 
 class Chips:
-    input = 'is_input'
-    output = 'is_output'
-    all = 'is_all'
-    is_finish = 'is_finish'
+    COMPLETED = 'completed'
+    CANCELED = 'canceled'
+    ALL = 'all'
 
 
 class RequestTab(BaseTab):
     scopes: list[ActionItem]
     column: Column
-    requests = list[dict]
+    current_requests = list[dict]
+    history_requests = list[dict]
     page_request: int = 1
     total_pages: int = 1
-    filter_chips: list[Chip]
-    cards: list[Card]
-    is_input: bool
-    is_output: bool
-    is_all: bool
-    is_finish: bool
+    selected_chip: str
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.selected_chip = Chips.all
+        self.selected_chip = Chips.COMPLETED
 
-    async def get_actions(self):
-        return Row(
-            controls=[
+    """
+    CURRENCY REQUESTS
+    """
+
+    async def get_currency_request_cards(self) -> list[StandardButton]:
+        response = await self.client.session.api.client.requests.search()
+        self.history_requests = response.requests
+        cards: list[StandardButton] = []
+        for request in self.history_requests:
+            state = await self.client.session.gtv(key=f'request_state_{request.state}')
+            if request.type == 'input':
+                input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
+                input_currency_value = value_to_float(
+                    value=request.input_currency_value_raw,
+                    decimal=input_currency.decimal,
+                ) if request.input_currency_value_raw else None
+                input_value = value_to_float(
+                    value=request.input_value_raw,
+                    decimal=input_currency.decimal,
+                ) if request.input_value_raw else None
+                value = f'{input_currency_value} {input_currency.id_str.upper()} -> {input_value}'
+            elif request.type == 'output':
+                output_currency = await self.client.session.api.client.currencies.get(
+                    id_str=request.output_currency)
+                output_currency_value = value_to_float(
+                    value=request.output_currency_value_raw,
+                    decimal=output_currency.decimal,
+                ) if request.output_currency_value_raw else None
+                output_value = value_to_float(
+                    value=request.output_raw,
+                    decimal=output_currency.decimal,
+                ) if request.output_raw else None
+                value = f'{output_value} -> {output_currency_value} {output_currency.id_str.upper()}'
+            else:
+                input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
+                output_currency = await self.client.session.api.client.currencies.get(
+                    id_str=request.output_currency)
+                input_currency_value = value_to_float(
+                    value=request.input_currency_value_raw,
+                    decimal=input_currency.decimal,
+                ) if request.input_currency_value_raw else None
+                output_currency_value = value_to_float(
+                    value=request.output_currency_value_raw,
+                    decimal=output_currency.decimal,
+                ) if request.output_currency_value_raw else None
+                value = (
+                    f'{input_currency_value} {input_currency.id_str.upper()}'
+                    f' -> '
+                    f'{output_currency_value} {output_currency.id_str.upper()}'
+                )
+            cards.append(
                 StandardButton(
                     content=Row(
                         controls=[
-                            Image(
-                                src=Icons.ERROR,
-                                height=32,
-                                width=32,
+                            Column(
+                                controls=[
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=value,
+                                                size=28,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY,
+                                            ),
+                                        ],
+                                    ),
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=state,
+                                                size=18,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY,
+                                            ),
+                                        ],
+                                    ),
+                                ],
+                                expand=True,
                             ),
-                            Text(
-                                value=await self.client.session.gtv(key=f'request_create'),
-                                size=16,
-                                font_family=Fonts.BOLD,
+                            Image(
+                                src=Icons.OPEN,
+                                height=32,
                                 color=colors.ON_PRIMARY,
                             ),
                         ],
-                        alignment=MainAxisAlignment.CENTER,
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
                     ),
-                    on_click=self.request_create,
-                    expand=2,
-                    bgcolor=colors.PRIMARY,
-                ),
-            ],
-            spacing=10,
-        )
-
-    async def get_history(self):
-        self.filter_chips = [
-            Chip(
-                name=await self.client.session.gtv(key=f'chips_{Chips.input}'),
-                key=Chips.input,
-                on_select=self.chip_select,
-                selected=self.is_input,
-            ),
-            Chip(
-                name=await self.client.session.gtv(key=f'chips_{Chips.output}'),
-                key=Chips.output,
-                on_select=self.chip_select,
-                selected=self.is_output,
-            ),
-            Chip(
-                name=await self.client.session.gtv(key=f'chips_{Chips.all}'),
-                key=Chips.all,
-                on_select=self.chip_select,
-                selected=self.is_all,
-            ),
-            Chip(
-                name=await self.client.session.gtv(key=f'chips_{Chips.is_finish}'),
-                key=Chips.is_finish,
-                on_select=self.chip_select,
-                selected=self.is_finish,
-            ),
-        ]
-        response = await self.client.session.api.client.requests.search(
-            is_input=self.is_input,
-            is_output=self.is_output,
-            is_all=self.is_all,
-            is_finish=self.is_finish,
-            page=self.page_request,
-        )
-        self.requests = response.requests
-        self.total_pages = response.pages
-        self.scroll = ScrollMode.AUTO
-        self.cards: list[Card] = []
-        for request in self.requests:
-            color, value = None, None
-            if request.type == 'input':
-                color, value = colors.GREEN, request.input_value / settings.default_decimal
-            elif request.type == 'output':
-                color, value = colors.RED, request.output_value / settings.default_decimal
-            elif request.type == 'all':
-                color, value = colors.GREY, f'{0} -> {0}'
-            self.cards.append(
-
-
-                Card(
-                    controls=[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=await self.client.session.gtv(key=f'request_type_{request.type}'),
-                                    size=28,
-                                    font_family=Fonts.REGULAR,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                                Text(
-                                    value=value,
-                                    size=32,
-                                    font_family=Fonts.REGULAR,
-                                    color=color,
-                                ),
-                            ],
-                            alignment=MainAxisAlignment.SPACE_BETWEEN,
-                        ),
-                        Row(
-                            controls=[
-                                Text(
-                                    value=await self.client.session.gtv(key=f'request_state_{request.state}'),
-                                    size=16,
-                                    font_family=Fonts.REGULAR,
-                                    color=colors.ON_BACKGROUND,
-
-                                ),
-                                Text(
-                                    value=request.date,
-                                    size=16,
-                                    font_family=Fonts.REGULAR,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                            ],
-                            alignment=MainAxisAlignment.SPACE_BETWEEN,
-                        ),
-                    ],
                     on_click=partial(self.request_view, request.id),
+                    bgcolor=colors.PRIMARY,
+                    horizontal=34,
+                    vertical=24,
                 )
             )
+        return cards
 
+    async def get_currency_request(self):
         return Row(
             controls=[
-                Row(controls=[Text(
-                    value=await self.client.session.gtv(key='requests_history'),
-                    size=32,
-                    font_family=Fonts.BOLD,
-                    color=colors.ON_BACKGROUND,
-                )]),
-                *self.filter_chips,
-                *self.cards,
+                SubTitle(value=await self.client.session.gtv(key='requests_currency_title')),
+                *await self.get_currency_request_cards(),
+            ],
+            wrap=True,
+        )
+
+    """
+    HISTORY REQUESTS
+    """
+
+    async def get_history_request_chips(self) -> list[Chip]:
+        return [
+            Chip(
+                name=await self.client.session.gtv(key=f'chips_{Chips.COMPLETED}'),
+                key=Chips.COMPLETED,
+                on_select=self.chip_select,
+                selected=True if self.selected_chip == Chips.COMPLETED else False,
+            ),
+            Chip(
+                name=await self.client.session.gtv(key=f'chips_{Chips.CANCELED}'),
+                key=Chips.CANCELED,
+                on_select=self.chip_select,
+                selected=True if self.selected_chip == Chips.CANCELED else False,
+            ),
+            Chip(
+                name=await self.client.session.gtv(key=f'chips_{Chips.ALL}'),
+                key=Chips.ALL,
+                on_select=self.chip_select,
+                selected=True if self.selected_chip == Chips.ALL else False,
+            ),
+        ]
+
+    async def get_history_request_cards(self) -> list[StandardButton]:
+        params = dict(is_completed=False, is_canceled=False)
+        if self.selected_chip in [Chips.COMPLETED, Chips.ALL]:
+            params['is_completed'] = True
+        if self.selected_chip in [Chips.CANCELED, Chips.ALL]:
+            params['is_canceled'] = True
+        response = await self.client.session.api.client.requests.search(**params, page=self.page_request)
+        self.history_requests = response.requests
+        self.total_pages = response.pages
+        cards: list[StandardButton] = []
+        for request in self.history_requests:
+            state = await self.client.session.gtv(key=f'request_state_{request.state}')
+            date = request.date.strftime('%d %b %Y, %H:%M')
+            if request.type == 'input':
+                input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
+                input_currency_value = value_to_float(
+                    value=request.input_currency_value_raw,
+                    decimal=input_currency.decimal,
+                ) if request.input_currency_value_raw else None
+                input_value = value_to_float(
+                    value=request.input_value_raw,
+                    decimal=input_currency.decimal,
+                ) if request.input_value_raw else None
+                value = f'{input_currency_value} {input_currency.id_str.upper()} -> {input_value}'
+            elif request.type == 'output':
+                output_currency = await self.client.session.api.client.currencies.get(id_str=request.output_currency)
+                output_currency_value = value_to_float(
+                    value=request.output_currency_value_raw,
+                    decimal=output_currency.decimal,
+                ) if request.output_currency_value_raw else None
+                output_value = value_to_float(
+                    value=request.output_raw,
+                    decimal=output_currency.decimal,
+                ) if request.output_raw else None
+                value = f'{output_value} -> {output_currency_value} {output_currency.id_str.upper()}'
+            else:
+                input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
+                output_currency = await self.client.session.api.client.currencies.get(id_str=request.output_currency)
+                input_currency_value = value_to_float(
+                    value=request.input_currency_value_raw,
+                    decimal=input_currency.decimal,
+                ) if request.input_currency_value_raw else None
+                output_currency_value = value_to_float(
+                    value=request.output_currency_value_raw,
+                    decimal=output_currency.decimal,
+                ) if request.output_currency_value_raw else None
+                value = (
+                    f'{input_currency_value} {input_currency.id_str.upper()}'
+                    f' -> '
+                    f'{output_currency_value} {output_currency.id_str.upper()}'
+                )
+
+            cards.append(
+                StandardButton(
+                    content=Column(
+                        controls=[
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=date,
+                                        size=12,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_PRIMARY_CONTAINER,
+                                    ),
+                                ],
+                            ),
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=value,
+                                        size=28,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_PRIMARY_CONTAINER,
+                                    ),
+                                ],
+                            ),
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=state,
+                                        size=18,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_PRIMARY_CONTAINER,
+                                    ),
+                                ],
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    on_click=partial(self.request_view, request.id),
+                    bgcolor=colors.PRIMARY_CONTAINER,
+                    horizontal=34,
+                    vertical=24,
+                )
+            )
+        return cards
+
+    async def get_history_request(self):
+        return Row(
+            controls=[
+                SubTitle(value=await self.client.session.gtv(key='requests_history_title')),
+                *await self.get_history_request_chips(),
+                *await self.get_history_request_cards(),
                 PaginationWidget(
                     current_page=self.page_request,
                     total_pages=self.total_pages,
@@ -200,33 +298,35 @@ class RequestTab(BaseTab):
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
             id_=self.client.session.current_wallet.id,
         )
-        self.column = Column(
-            controls=[
-                await self.get_actions(),
-                await self.get_history(),
-            ],
-        )
+        self.scroll = ScrollMode.AUTO
         self.controls = [
             Container(
-                content=self.column,
-                padding=10,
-            ),
+                content=Column(
+                    controls=[
+                        Title(
+                            value=await self.client.session.gtv(key='request'),
+                            create_name_text=await self.client.session.gtv(key='create'),
+                            on_create=self.request_create,
+                        ),
+                        await self.get_currency_request(),
+                        await self.get_history_request(),
+                    ],
+                    expand=True,
+                ),
+                padding=Padding(right=48, left=48, top=0, bottom=0),
+            )
         ]
 
     async def request_create(self, _):
         from app.views.client.requests import RequestCreateView
         await self.client.change_view(view=RequestCreateView(current_wallet=self.client.session.current_wallet))
 
+    async def request_view(self, request_id: int, _):
+        await self.client.change_view(view=RequestView(request_id=request_id))
+
     async def chip_select(self, event: ControlEvent):
-        if event.control.key == Chips.input:
-            self.is_input = True if event.data == 'true' else False
-        elif event.control.key == Chips.output:
-            self.is_output = True if event.data == 'true' else False
-        elif event.control.key == Chips.all:
-            self.is_all = True if event.data == 'true' else False
-        elif event.control.key == Chips.is_finish:
-            self.is_finish = True if event.data == 'true' else False
-        self.column.controls[1] = await self.get_history()
+        self.selected_chip = event.control.key
+        await self.build()
         await self.update_async()
 
     async def next_page(self, _):
@@ -240,6 +340,3 @@ class RequestTab(BaseTab):
             self.page_request -= 1
             await self.build()
             await self.update_async()
-
-    async def request_view(self, request_id: int, _):
-        await self.client.change_view(view=RequestView(request_id=request_id))
