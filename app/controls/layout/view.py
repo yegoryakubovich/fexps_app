@@ -103,7 +103,7 @@ class View(BaseView):
                                 color=colors.ON_PRIMARY,
                             ),
                             Text(
-                                value='Create',
+                                value=await self.client.session.gtv(key='create'),
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY,
                             ),
@@ -127,7 +127,7 @@ class View(BaseView):
         if loading:
             self.controls_last = self.controls
             self.controls = [
-                Loading(infinity=True, color='#008F12'),
+                Loading(infinity=True, color='#1D1D1D'),
             ]
             await self.update_async()
         else:

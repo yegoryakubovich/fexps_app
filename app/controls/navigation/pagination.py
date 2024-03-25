@@ -19,7 +19,7 @@ from typing import Callable
 
 from flet_core import Container, Row, colors
 
-from app.controls.button import FilledButton, StandardButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.utils import Fonts
 

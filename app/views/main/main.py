@@ -33,17 +33,17 @@ class Tab:
 TABS = [
     Tab(
         name='home',
-        icon=Icons.PLAN,
+        icon=Icons.HOME,
         control=HomeTab,
     ),
     Tab(
         name='exchange',
-        icon=Icons.MAKE_EXCHANGE,
+        icon=Icons.EXCHANGE,
         control=RequestTab,
     ),
     Tab(
         name='requisite',
-        icon=Icons.ERROR,
+        icon=Icons.REQUISITE,
         control=RequisiteTab,
     ),
     Tab(
