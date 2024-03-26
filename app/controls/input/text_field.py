@@ -31,7 +31,7 @@ class TextField(FletTextField):
             font_family=Fonts.REGULAR,
             color=colors.ON_PRIMARY_CONTAINER,
         )
-        self.border_color = colors.PRIMARY_CONTAINER
+        self.border_color = colors.SECONDARY
         self.text_style = text_style
         self.label_style = label_style
         self.key_question = key_question

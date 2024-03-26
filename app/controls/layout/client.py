@@ -107,6 +107,7 @@ class ClientBaseView(View):
             sections: list[ClientSection] = None,
             on_create_click: Any = None,
             back_with_restart: bool = False,
+            with_expand: bool = False,
     ) -> list:
 
         title_control = await self.get_title(
@@ -123,9 +124,11 @@ class ClientBaseView(View):
                         *main_section_controls,
                     ],
                     spacing=8,
+                    expand=with_expand,
                 ),
                 padding=10,
                 margin=margin.only(bottom=15),
+                expand=with_expand,
             ),
         ]
 

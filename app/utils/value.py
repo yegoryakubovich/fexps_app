@@ -31,3 +31,9 @@ def value_to_int(value: Optional[float], decimal: int = settings.default_decimal
 
 def value_to_float(value: Optional[int], decimal: int = settings.default_decimal) -> float:
     return round(float(value) / (10 ** decimal), 2)
+
+
+def value_to_str(value: Optional[float]) -> Optional[str]:
+    if not value:
+        return
+    return f'{float(value):,}'.replace(',', ' ')

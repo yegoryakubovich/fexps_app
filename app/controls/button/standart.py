@@ -23,8 +23,8 @@ class StandardButton(FletElevatedButton):
             self,
             bgcolor: str = colors.PRIMARY,
             color: str = colors.ON_PRIMARY,
-            horizontal: int = 12,
-            vertical: int = 12,
+            horizontal: int = 24,
+            vertical: int = 16,
             **kwargs
     ):
         super().__init__(**kwargs)

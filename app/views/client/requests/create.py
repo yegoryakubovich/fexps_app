@@ -13,16 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 import logging
 
-from flet_core import Column, Container, ScrollMode, padding, KeyboardType, Row
+from flet_core import Column, Container, padding, KeyboardType, Row, alignment
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
+from app.controls.information import SubTitle
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import ClientBaseView
 from app.utils.value import value_to_int
-from app.views.client.requests.get import RequestView
 from fexps_api_client.utils import ApiException
 
 
@@ -84,15 +86,35 @@ class RequestCreateView(ClientBaseView):
             options=wallets_options,
             value=wallets_options[0].key,
         )
+        # send
+        self.tf_input_value = TextField(
+            label=await self.client.session.gtv(key='value'),
+            keyboard_type=KeyboardType.NUMBER,
+            expand=4
+        )
         self.dd_input_currency = Dropdown(
-            label=await self.client.session.gtv(key='input_currency'),
+            label=await self.client.session.gtv(key='currency'),
             options=currency_options,
             on_change=self.change_type_or_currency,
+            expand=1,
+        )
+        self.dd_input_method = Dropdown(
+            label=await self.client.session.gtv(key='currency'),
+            on_change=self.change_type_or_currency,
+            expand=1,
+        )
+
+        # receive
+        self.tf_output_value = TextField(
+            label=await self.client.session.gtv(key='value'),
+            keyboard_type=KeyboardType.NUMBER,
+            expand=4
         )
         self.dd_output_currency = Dropdown(
-            label=await self.client.session.gtv(key='output_currency'),
+            label=await self.client.session.gtv(key='currency'),
             options=currency_options,
             on_change=self.change_type_or_currency,
+            expand=1,
         )
 
         self.currencies = Column(controls=[])
@@ -105,27 +127,48 @@ class RequestCreateView(ClientBaseView):
                     self.dd_wallet,
                     self.currencies,
                     self.optional,
-                    Row(
-                        controls=[
-                            StandardButton(
-                                text=await self.client.session.gtv(key='create_request'),
-                                on_click=self.request_create,
-                                expand=True,
-                            ),
-                        ],
-                    )
                 ],
                 spacing=10,
             ),
             padding=padding.only(bottom=15),
         )
-        controls = [
-            self.controls_container
-        ]
-        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
+            with_expand=True,
             title=await self.client.session.gtv(key='request_create'),
-            main_section_controls=controls,
+            main_section_controls=[
+                SubTitle(value=await self.client.session.gtv(key='request_create_send')),
+                Row(
+                    controls=[
+                        self.tf_input_value,
+                        self.dd_input_currency,
+                    ],
+                    spacing=16,
+                ),
+                self.dd_input_method,
+                SubTitle(value=await self.client.session.gtv(key='request_create_receive')),
+                Row(
+                    controls=[
+                        self.tf_output_value,
+                        self.dd_output_currency,
+                    ],
+                    spacing=16,
+                ),
+                self.dd_input_method,
+                SubTitle(value=await self.client.session.gtv(key='details')),
+                Container(
+                    content=Row(
+                        controls=[
+                            StandardButton(
+                                text=await self.client.session.gtv(key='create_request'),
+                                on_click=self.request_create,
+                                expand=True,
+                            )
+                        ],
+                    ),
+                    expand=True,
+                    alignment=alignment.bottom_center,
+                ),
+            ],
         )
 
     async def change_type_or_currency(self, _):
@@ -178,6 +221,7 @@ class RequestCreateView(ClientBaseView):
             self.tf_input_value = TextField(
                 label=await self.client.session.gtv(key='input_value'),
                 keyboard_type=KeyboardType.NUMBER,
+                expand=4
             )
             self.optional.controls = [
                 self.dd_input_method,

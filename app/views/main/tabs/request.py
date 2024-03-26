@@ -24,6 +24,7 @@ from app.controls.button.actions import ActionItem
 from app.controls.information import Text, SubTitle, Title
 from app.controls.navigation import PaginationWidget
 from app.utils import Fonts, Icons, value_to_float
+from app.utils.value import value_to_str
 from app.views.client.requests import RequestView
 from app.views.main.tabs.base import BaseTab
 
@@ -53,9 +54,9 @@ class RequestTab(BaseTab):
 
     async def get_currency_request_cards(self) -> list[StandardButton]:
         response = await self.client.session.api.client.requests.search()
-        self.history_requests = response.requests
+        self.current_requests = response.requests
         cards: list[StandardButton] = []
-        for request in self.history_requests:
+        for request in self.current_requests:
             state = await self.client.session.gtv(key=f'request_state_{request.state}')
             if request.type == 'input':
                 input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
@@ -67,7 +68,11 @@ class RequestTab(BaseTab):
                     value=request.input_value_raw,
                     decimal=input_currency.decimal,
                 ) if request.input_value_raw else None
-                value = f'{input_currency_value} {input_currency.id_str.upper()} -> {input_value}'
+                value_str = (
+                    f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
+                    f' -> '
+                    f'{value_to_str(value=input_value)}'
+                )
             elif request.type == 'output':
                 output_currency = await self.client.session.api.client.currencies.get(
                     id_str=request.output_currency)
@@ -79,7 +84,11 @@ class RequestTab(BaseTab):
                     value=request.output_raw,
                     decimal=output_currency.decimal,
                 ) if request.output_raw else None
-                value = f'{output_value} -> {output_currency_value} {output_currency.id_str.upper()}'
+                value_str = (
+                    f'{value_to_str(value=output_value)}'
+                    f' -> '
+                    f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
+                )
             else:
                 input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
                 output_currency = await self.client.session.api.client.currencies.get(
@@ -92,10 +101,10 @@ class RequestTab(BaseTab):
                     value=request.output_currency_value_raw,
                     decimal=output_currency.decimal,
                 ) if request.output_currency_value_raw else None
-                value = (
-                    f'{input_currency_value} {input_currency.id_str.upper()}'
+                value_str = (
+                    f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
                     f' -> '
-                    f'{output_currency_value} {output_currency.id_str.upper()}'
+                    f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
                 )
             cards.append(
                 StandardButton(
@@ -106,7 +115,7 @@ class RequestTab(BaseTab):
                                     Row(
                                         controls=[
                                             Text(
-                                                value=value,
+                                                value=value_str,
                                                 size=28,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
@@ -188,8 +197,8 @@ class RequestTab(BaseTab):
         self.total_pages = response.pages
         cards: list[StandardButton] = []
         for request in self.history_requests:
-            state = await self.client.session.gtv(key=f'request_state_{request.state}')
-            date = request.date.strftime('%d %b %Y, %H:%M')
+            state_str = await self.client.session.gtv(key=f'request_state_{request.state}')
+            date_str = request.date.strftime('%d %b %Y, %H:%M')
             if request.type == 'input':
                 input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
                 input_currency_value = value_to_float(
@@ -200,7 +209,11 @@ class RequestTab(BaseTab):
                     value=request.input_value_raw,
                     decimal=input_currency.decimal,
                 ) if request.input_value_raw else None
-                value = f'{input_currency_value} {input_currency.id_str.upper()} -> {input_value}'
+                value_str = (
+                    f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
+                    f' -> '
+                    f'{value_to_str(value=input_value)}'
+                )
             elif request.type == 'output':
                 output_currency = await self.client.session.api.client.currencies.get(id_str=request.output_currency)
                 output_currency_value = value_to_float(
@@ -211,7 +224,11 @@ class RequestTab(BaseTab):
                     value=request.output_raw,
                     decimal=output_currency.decimal,
                 ) if request.output_raw else None
-                value = f'{output_value} -> {output_currency_value} {output_currency.id_str.upper()}'
+                value_str = (
+                    f'{value_to_str(value=output_value)}'
+                    f' -> '
+                    f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
+                )
             else:
                 input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
                 output_currency = await self.client.session.api.client.currencies.get(id_str=request.output_currency)
@@ -223,45 +240,55 @@ class RequestTab(BaseTab):
                     value=request.output_currency_value_raw,
                     decimal=output_currency.decimal,
                 ) if request.output_currency_value_raw else None
-                value = (
-                    f'{input_currency_value} {input_currency.id_str.upper()}'
+                value_str = (
+                    f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
                     f' -> '
-                    f'{output_currency_value} {output_currency.id_str.upper()}'
+                    f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
                 )
 
             cards.append(
                 StandardButton(
-                    content=Column(
+                    content=Row(
                         controls=[
-                            Row(
+                            Column(
                                 controls=[
-                                    Text(
-                                        value=date,
-                                        size=12,
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=colors.ON_PRIMARY_CONTAINER,
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=date_str,
+                                                size=12,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY_CONTAINER,
+                                            ),
+                                        ],
+                                    ),
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=value_str,
+                                                size=28,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY_CONTAINER,
+                                            ),
+                                        ],
+                                    ),
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=state_str,
+                                                size=18,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY_CONTAINER,
+                                            ),
+                                        ],
                                     ),
                                 ],
+                                expand=True,
                             ),
-                            Row(
-                                controls=[
-                                    Text(
-                                        value=value,
-                                        size=28,
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=colors.ON_PRIMARY_CONTAINER,
-                                    ),
-                                ],
-                            ),
-                            Row(
-                                controls=[
-                                    Text(
-                                        value=state,
-                                        size=18,
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=colors.ON_PRIMARY_CONTAINER,
-                                    ),
-                                ],
+                            Image(
+                                src=Icons.OPEN,
+                                height=32,
+                                color=colors.ON_PRIMARY,
                             ),
                         ],
                         alignment=MainAxisAlignment.SPACE_BETWEEN,

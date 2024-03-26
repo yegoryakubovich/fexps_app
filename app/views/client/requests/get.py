@@ -15,19 +15,20 @@
 #
 
 
-import logging
 from functools import partial
 
-from flet_core import Column, colors, SnackBar, Control, FilledButton, ScrollMode, Row, MainAxisAlignment
+from flet_core import Column, colors, SnackBar, Control, ScrollMode, Row, MainAxisAlignment, Container, \
+    padding, alignment, Image, Divider
 
-from app.controls.information import Text, Card
-from app.controls.layout import AdminBaseView
-from app.utils import Fonts
+from app.controls.button import StandardButton
+from app.controls.information import Text, Card, SubTitle
+from app.controls.layout import ClientBaseView
+from app.utils import Fonts, value_to_float, Icons
 from app.views.client.requests.orders.get import OrderView
 from config import settings
 
 
-class RequestView(AdminBaseView):
+class RequestView(ClientBaseView):
     route = '/client/request/get'
     request = dict
     orders: list
@@ -104,134 +105,343 @@ class RequestView(AdminBaseView):
             wrap=True,
         )
 
+    async def get_info_card(self):
+        rate = value_to_float(
+            value=self.request.rate, decimal=self.request.rate_decimal
+        ) if self.request.rate else None
+        if self.request.type == 'input':
+            input_currency = await self.client.session.api.client.currencies.get(id_str=self.request.input_currency)
+            input_currency_value = value_to_float(
+                value=self.request.input_currency_value_raw,
+                decimal=input_currency.decimal,
+            ) if self.request.input_currency_value_raw else None
+            input_value = value_to_float(
+                value=self.request.input_value_raw,
+                decimal=input_currency.decimal,
+            ) if self.request.input_value_raw else None
+            value_str = f'{input_currency_value} {input_currency.id_str.upper()} -> {input_value}'
+            rate_str = f'{rate} {input_currency.id_str.upper()} / 1'
+        elif self.request.type == 'output':
+            output_currency = await self.client.session.api.client.currencies.get(
+                id_str=self.request.output_currency,
+            )
+            output_currency_value = value_to_float(
+                value=self.request.output_currency_value_raw,
+                decimal=output_currency.decimal,
+            ) if self.request.output_currency_value_raw else None
+            output_value = value_to_float(
+                value=self.request.output_raw,
+                decimal=output_currency.decimal,
+            ) if self.request.output_raw else None
+            value_str = f'{output_value} -> {output_currency_value} {output_currency.id_str.upper()}'
+            rate_str = f'{rate} {output_currency.id_str.upper()} / 1'
+        else:
+            input_currency = await self.client.session.api.client.currencies.get(id_str=self.request.input_currency)
+            output_currency = await self.client.session.api.client.currencies.get(
+                id_str=self.request.output_currency,
+            )
+            input_currency_value = value_to_float(
+                value=self.request.input_currency_value_raw,
+                decimal=input_currency.decimal,
+            ) if self.request.input_currency_value_raw else None
+            output_currency_value = value_to_float(
+                value=self.request.output_currency_value_raw,
+                decimal=output_currency.decimal,
+            ) if self.request.output_currency_value_raw else None
+            value_str = (
+                f'{input_currency_value} {input_currency.id_str.upper()}'
+                f' -> '
+                f'{output_currency_value} {output_currency.id_str.upper()}'
+            )
+            rate_str = f'{rate} {input_currency.id_str.upper()} / 1 {output_currency.id_str.upper()}'
+
+        return Container(
+            content=Column(
+                controls=[
+                    Row(
+                        controls=[
+                            Text(
+                                value=value_str,
+                                size=28,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                        ],
+                    ),
+                    Divider(color=colors.ON_PRIMARY_CONTAINER),
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key='request_id'),
+                                size=14,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                            Text(
+                                value=f'{self.request.id:08}',
+                                size=14,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key='state'),
+                                size=14,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                            Text(
+                                value=await self.client.session.gtv(key=f'request_state_{self.request.state}'),
+                                size=14,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key='rate'),
+                                size=14,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                            Text(
+                                value=rate_str,
+                                size=14,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key='request_receive_method'),
+                                size=14,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                            Text(
+                                value='404',
+                                size=14,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key='date'),
+                                size=14,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                            Text(
+                                value=self.request.date.strftime('%Y-%m-%d, %H:%M:%S'),
+                                size=14,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+
+                ],
+            ),
+            bgcolor=colors.PRIMARY_CONTAINER,
+            padding=padding.symmetric(vertical=32, horizontal=32),
+        )
+
+    async def get_controls_waiting(self):
+        return [
+            Container(
+                content=Row(
+                    controls=[
+                        StandardButton(
+                            content=await self.client.session.gtv(key='confirm'),
+                            on_click=self.waiting_confirm,
+                            expand=True,
+                        )
+                    ],
+                ),
+                expand=True,
+                alignment=alignment.bottom_center,
+            ),
+        ]
+
+    """
+    ORDERS SEND
+    """
+
+    async def get_orders_send_cards(self):
+        cards: list = []
+        for order in self.orders:
+            currency = await self.client.session.api.client.currencies.get(id_str=order.currency)
+            state_str = await self.client.session.gtv(key=f'request_order_state_{order.state}')
+            value = value_to_float(value=order.currency_value, decimal=currency.decimal)
+            value_str = f'{value} {currency.id_str.upper()}'
+            cards.append(
+                StandardButton(
+                    content=Row(
+                        controls=[
+                            Column(
+                                controls=[
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=state_str,
+                                                size=8,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY_CONTAINER,
+                                            ),
+                                        ],
+                                    ),
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=f'404 CARD NUMBER',
+                                                size=28,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY_CONTAINER,
+                                            ),
+                                        ],
+                                    ),
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=value_str,
+                                                size=16,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY_CONTAINER,
+                                            ),
+                                        ],
+                                    ),
+                                ],
+                                expand=True,
+                            ),
+                            Image(
+                                src=Icons.OPEN,
+                                height=32,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                        spacing=2,
+                    ),
+                    on_click=partial(self.order_view, order.id),
+                    bgcolor=colors.PRIMARY_CONTAINER,
+                ),
+            )
+        return cards
+
+    async def get_orders_send(self):
+        return Row(
+            scroll=ScrollMode.AUTO,
+            controls=[
+                SubTitle(value=await self.client.session.gtv(key='request_order_send_title')),
+                *await self.get_orders_send_cards(),
+            ],
+            wrap=True,
+        )
+
+    async def get_orders_send_help(self):
+        return [
+            SubTitle(value=await self.client.session.gtv(key='request_order_send_need_help_title')),
+            StandardButton(
+                content=Row(
+                    controls=[
+                        Row(
+                            controls=[
+                                Text(
+                                    value=await self.client.session.gtv(key='faq'),
+                                    size=28,
+                                    font_family=Fonts.SEMIBOLD,
+                                    color=colors.ON_BACKGROUND,
+                                ),
+                            ],
+                            expand=True,
+                        ),
+                        Image(
+                            src=Icons.OPEN,
+                            height=28,
+                            color=colors.ON_BACKGROUND,
+                        ),
+                    ],
+                ),
+                bgcolor=colors.BACKGROUND,
+                horizontal=0,
+                vertical=0,
+                on_click=None,
+                expand=True,
+            ),
+            StandardButton(
+                content=Row(
+                    controls=[
+                        Row(
+                            controls=[
+                                Text(
+                                    value=await self.client.session.gtv(key='telegram_contact_title'),
+                                    size=28,
+                                    font_family=Fonts.SEMIBOLD,
+                                    color=colors.ON_BACKGROUND,
+                                ),
+                            ],
+                            expand=True,
+                        ),
+                        Image(
+                            src=Icons.OPEN,
+                            height=28,
+                            color=colors.ON_BACKGROUND,
+                        ),
+                    ]
+                ),
+                bgcolor=colors.BACKGROUND,
+                horizontal=0,
+                vertical=0,
+                on_click=None,
+                expand=True,
+            ),
+        ]
+
+    async def get_controls_other(self):
+        return [
+            await self.get_orders_send(),
+            *await self.get_orders_send_help(),
+        ]
+
     async def build(self):
         await self.set_type(loading=True)
         self.request = await self.client.session.api.client.requests.get(id_=self.request_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_request(request_id=self.request_id)
-        self.custom_info = await self.get_info(request=self.request)
-        self.custom_controls = await self._get_controls(request=self.request)
         await self.set_type(loading=False)
         self.snack_bar = SnackBar(content=Text(value=await self.client.session.gtv(key='successful')))
-        self.scroll = ScrollMode.AUTO
         self.orders_list = await self.get_order_row()
+        controls = [
+            await self.get_info_card(),
+        ]
+        if self.request.state == 'loading':
+            pass
+        elif self.request.state == 'waiting':
+            controls += await self.get_controls_waiting()
+        else:
+            controls += await self.get_controls_other()
         self.controls = await self.get_controls(
-            title=f'#{self.request.id}',
-            main_section_controls=[
-                Column(
-                    controls=[
-                        Text(
-                            value='\n'.join(self.custom_info),
-                            size=24,
-                            font_family=Fonts.MEDIUM,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                        *self.custom_controls,
-                        self.orders_list,
-                    ],
-                ),
-            ],
+            with_expand=True,
+            title=f'{await self.client.session.gtv(key='request')} #{self.request.id:08}',
+            main_section_controls=controls,
         )
 
     async def order_view(self, order_id: int, _):
         await self.client.change_view(view=OrderView(order_id=order_id))
-
-    async def get_info(self, request) -> list[str]:
-        wallet = await self.client.session.api.client.wallets.get(id_=request.wallet)
-        request_type_name: str = await self.client.session.gtv(key=f'request_type_{request.type}')
-        request_state_name: str = await self.client.session.gtv(key=f'request_state_{request.state}')
-        rate_confirmed_name: str = await self.client.session.gtv(key=f'{request.rate_confirmed}'.lower())
-        result = [
-            f'{await self.client.session.gtv(key="wallet")}: #{wallet.id} {wallet.name}',
-            f'{await self.client.session.gtv(key="type")}: {request_type_name}',
-            f'{await self.client.session.gtv(key="state")}: {request_state_name}',
-            f'{await self.client.session.gtv(key="rate_confirmed")}: {rate_confirmed_name}',
-        ]
-        if request.type in ['input', 'all']:
-            input_method = await self.client.session.api.client.methods.get(id_=request.input_method)
-            input_currency = await self.client.session.api.client.currencies.get(id_str=input_method.currency)
-            if request.rate_confirmed and request.input_currency_value_raw and request.input_value_raw:
-                input_currency_value = request.input_currency_value_raw / (10 ** input_currency.decimal)
-                input_value = request.input_value_raw / (10 ** input_currency.decimal)
-            elif not request.rate_confirmed and request.input_currency_value and request.input_value:
-                input_currency_value = request.input_currency_value / (10 ** input_currency.decimal)
-                input_value = request.input_value / (10 ** input_currency.decimal)
-            else:
-                input_currency_value = None
-                input_value = None
-            result += [
-                f'{await self.client.session.gtv(key="input_currency")}: {input_currency.id_str.upper()}',
-                f'{await self.client.session.gtv(key="input_method")}: '
-                f'#{input_method.id} {await self.client.session.gtv(key=input_method.name_text)}',
-                f'{await self.client.session.gtv(key="input_currency_value")}: {input_currency_value}',
-                f'{await self.client.session.gtv(key="input_value")}: {input_value}',
-            ]
-        if request.type in ['output', 'all']:
-            output_requisite_data = await self.client.session.api.client.requisites_datas.get(
-                id_=request.output_requisite_data,
-            )
-            output_currency = await self.client.session.api.client.currencies.get(id_str=output_requisite_data.currency)
-            if request.rate_confirmed and request.output_currency_value_raw and request.output_value_raw:
-                output_currency_value = request.output_currency_value_raw / (10 ** output_currency.decimal)
-                output_value = request.output_value_raw / (10 ** output_currency.decimal)
-            elif not request.rate_confirmed and request.output_currency_value and request.output_value:
-                output_currency_value = request.output_currency_value / (10 ** output_currency.decimal)
-                output_value = request.output_value / (10 ** output_currency.decimal)
-            else:
-                output_currency_value = 0
-                output_value = 0
-            result += [
-                f'{await self.client.session.gtv(key="output_currency")}: {output_currency.id_str.upper()}',
-                f'{await self.client.session.gtv(key="output_requisite_data")}: '
-                f'#{output_requisite_data.id} {output_requisite_data.name}',
-                f'{await self.client.session.gtv(key="output_currency_value")}: {output_currency_value}',
-                f'{await self.client.session.gtv(key="output_value")}: {output_value}',
-            ]
-        rate = request.rate / (10 ** request.rate_decimal) if request.rate else None
-        result += [
-            f'{await self.client.session.gtv(key="rate")}: {rate}',
-        ]
-        return result
-
-    async def _get_controls_input_fields(self, order):
-        result = []
-        if order.requisite_fields:
-            requisite_data = [
-                await self.client.session.gtv(key="requisite_data"),
-            ]
-            for key, value in order.requisite_fields.items():
-                logging.critical(key)
-                logging.critical(value)
-
-        return result
-
-    async def _get_controls(self, request) -> list[Control]:
-        result = []
-        state_info = Text(value=None, size=24, font_family=Fonts.MEDIUM, color=colors.ON_BACKGROUND)
-        buttons = []
-        if request.state == 'loading':
-            state_info.value = await self.client.session.gtv(key='request_loading_info')
-        elif request.state == 'waiting':
-            state_info.value = await self.client.session.gtv(key='request_waiting_info')
-            buttons.append(FilledButton(
-                content=Text(value=await self.client.session.gtv(key='confirm')),
-                on_click=self.waiting_confirm,
-            ))
-        elif request.state == 'input_reservation':
-            state_info.value = await self.client.session.gtv(key='request_input_reservation_info')
-        elif request.state == 'input':
-            state_info.value = await self.client.session.gtv(key='request_input_info')
-        elif request.state == 'output_reservation':
-            state_info.value = await self.client.session.gtv(key='request_output_reservation_info')
-        elif request.state == 'output':
-            state_info.value = await self.client.session.gtv(key='request_output_info')
-        elif request.state == 'completed':
-            state_info.value = await self.client.session.gtv(key='request_completed_info')
-        elif request.state == 'canceled':
-            state_info.value = await self.client.session.gtv(key='request_canceled_info')
-        result.append(state_info)
-        if buttons:
-            result += buttons
-        return result
 
     async def waiting_confirm(self, _):
         await self.client.session.api.client.requests.update_confirmation(id_=self.request_id)

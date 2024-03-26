@@ -26,7 +26,7 @@ from app.controls.information import Card, Text
 from app.controls.information.subtitle import SubTitle
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts, Icons
-from app.utils.value import value_to_float
+from app.utils.value import value_to_float, value_to_str
 from app.views.client.requests import RequestView
 from app.views.main.tabs.base import BaseTab
 
@@ -73,6 +73,7 @@ class HomeTab(BaseTab):
     async def get_balance(self):
         wallet_name = self.client.session.current_wallet.name
         value = value_to_float(value=self.client.session.current_wallet.value)
+        value_str = value_to_str(value=value)
         return Container(
             content=Stack(
                 controls=[
@@ -99,7 +100,7 @@ class HomeTab(BaseTab):
                                     color=colors.ON_PRIMARY,
                                 ),
                                 Text(
-                                    value=f'{value}',
+                                    value=f'{value_str}',
                                     size=48,
                                     font_family=Fonts.BOLD,
                                     color=colors.ON_PRIMARY,
@@ -110,13 +111,17 @@ class HomeTab(BaseTab):
                         alignment=alignment.center,
                     ),
                     Container(
-                        content=Image(
-                            src=Icons.WALLET_MENU,
-                            width=24,
-                            color=colors.ON_PRIMARY,
+                        content=StandardButton(
+                            content=Image(
+                                src=Icons.WALLET_MENU,
+                                width=24,
+                                color=colors.ON_PRIMARY,
+                            ),
+                            color=colors.PRIMARY,
+                            on_click=self.select_wallet_view,
+                            horizontal=20,
+                            vertical=20,
                         ),
-                        on_click=self.select_wallet_view,
-                        padding=20,
                         alignment=alignment.top_right,
                     ),
                 ],
@@ -215,7 +220,11 @@ class HomeTab(BaseTab):
                     value=request.input_value_raw,
                     decimal=input_currency.decimal,
                 ) if request.input_value_raw else None
-                value = f'{input_currency_value} {input_currency.id_str.upper()} -> {input_value}'
+                value_str = (
+                    f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
+                    f' -> '
+                    f'{value_to_str(value=input_value)}'
+                )
             elif request.type == 'output':
                 output_currency = await self.client.session.api.client.currencies.get(
                     id_str=request.output_currency)
@@ -227,7 +236,11 @@ class HomeTab(BaseTab):
                     value=request.output_raw,
                     decimal=output_currency.decimal,
                 ) if request.output_raw else None
-                value = f'{output_value} -> {output_currency_value} {output_currency.id_str.upper()}'
+                value_str = (
+                    f'{value_to_str(value=output_value)}'
+                    f' -> '
+                    f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
+                )
             else:
                 input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
                 output_currency = await self.client.session.api.client.currencies.get(
@@ -240,10 +253,10 @@ class HomeTab(BaseTab):
                     value=request.output_currency_value_raw,
                     decimal=output_currency.decimal,
                 ) if request.output_currency_value_raw else None
-                value = (
-                    f'{input_currency_value} {input_currency.id_str.upper()}'
+                value_str = (
+                    f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
                     f' -> '
-                    f'{output_currency_value} {output_currency.id_str.upper()}'
+                    f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
                 )
             cards.append(
                 StandardButton(
@@ -254,7 +267,7 @@ class HomeTab(BaseTab):
                                     Row(
                                         controls=[
                                             Text(
-                                                value=value,
+                                                value=value_str,
                                                 size=28,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
@@ -338,13 +351,13 @@ class HomeTab(BaseTab):
         cards: list = []
         for transfer in self.transfers:
             value = value_to_float(value=transfer.value)
-            short_name = ''
+            value_str, short_name = '', ''
             if transfer.operation == 'send':
                 short_name = f'To {transfer.account_to.short_name}'
-                value = f'- {value}'
+                value_str = f'- {value_to_str(value=value)}'
             elif transfer.operation == 'receive':
                 short_name = f'From {transfer.account_from.short_name}'
-                value = f'+ {value}'
+                value_str = f'+ {value_to_str(value=value)}'
             date = transfer.date.strftime('%Y-%m-%d')
             cards.append(
                 StandardButton(
@@ -362,7 +375,7 @@ class HomeTab(BaseTab):
                                 content=Column(
                                     controls=[
                                         Text(
-                                            value=value,
+                                            value=value_str,
                                             size=32,
                                             font_family=Fonts.BOLD,
                                             color=colors.ON_PRIMARY_CONTAINER,

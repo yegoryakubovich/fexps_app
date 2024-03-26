@@ -16,18 +16,23 @@
 
 
 import logging
+from functools import partial
 
-from flet_core import SnackBar, Control, Column, colors, FilledButton
+from flet_core import SnackBar, Control, Column, colors, Container, Row, Divider, MainAxisAlignment, \
+    padding, Image, ControlEvent
 
+from app.controls.button import StandardButton
 from app.controls.information import Text
-from app.controls.layout import AdminBaseView
-from app.utils import Fonts
-from config import settings
+from app.controls.layout import ClientBaseView
+from app.utils import Fonts, value_to_float, Icons
+from app.utils.value import value_to_str
 
 
-class OrderView(AdminBaseView):
+class OrderView(ClientBaseView):
     route = '/client/request/order/get'
     order = dict
+    request = dict
+    method = dict
     snack_bar: SnackBar
     custom_info: list
     custom_controls: list[Control]
@@ -36,81 +41,132 @@ class OrderView(AdminBaseView):
         super().__init__()
         self.order_id = order_id
 
+    async def get_info_card(self):
+        currency = await self.client.session.api.client.currencies.get(id_str=self.order.currency)
+        currency_value = value_to_float(
+            value=self.order.currency_value,
+            decimal=currency.decimal,
+        ) if self.order.currency_value else None
+        currency_value_str = f'{value_to_str(currency_value)} {currency.id_str.upper()}'
+        return Container(
+            content=Column(
+                controls=[
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key=self.method.name_text),
+                                size=28,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                        ],
+                    ),
+                    Divider(color=colors.ON_PRIMARY_CONTAINER),
+                    *[
+                        Row(
+                            controls=[
+                                Text(
+                                    value=await self.client.session.gtv(key=scheme_field.get('name_text_key')),
+                                    size=14,
+                                    font_family=Fonts.SEMIBOLD,
+                                    color=colors.ON_PRIMARY_CONTAINER,
+                                ),
+                                Row(
+                                    controls=[
+                                        Text(
+                                            value=self.order.requisite_fields.get(scheme_field.get('key'), 'None'),
+                                            size=14,
+                                            font_family=Fonts.SEMIBOLD,
+                                            color=colors.ON_PRIMARY_CONTAINER,
+                                        ),
+                                        StandardButton(
+                                            content=Image(
+                                                src=Icons.COPY,
+                                                width=18,
+                                                color=colors.ON_PRIMARY_CONTAINER,
+                                            ),
+                                            on_click=partial(
+                                                self.copy_to_clipboard,
+                                                self.order.requisite_fields.get(scheme_field.get('key')),
+                                            ),
+                                            bgcolor=colors.PRIMARY_CONTAINER,
+                                            horizontal=0,
+                                            vertical=0,
+                                        ),
+                                    ],
+                                    spacing=0,
+                                ),
+                            ],
+                            alignment=MainAxisAlignment.SPACE_BETWEEN,
+                        )
+                        for scheme_field in self.order.requisite_scheme_fields
+                    ],
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key='order_sum'),
+                                size=14,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=currency_value_str,
+                                        size=14,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_PRIMARY_CONTAINER,
+                                    ),
+                                    StandardButton(
+                                        content=Image(
+                                            src=Icons.COPY,
+                                            width=18,
+                                            color=colors.ON_PRIMARY_CONTAINER,
+                                        ),
+                                        on_click=partial(
+                                            self.copy_to_clipboard,
+                                            currency_value,
+                                        ),
+                                        bgcolor=colors.PRIMARY_CONTAINER,
+                                        horizontal=0,
+                                        vertical=0,
+                                    ),
+                                ],
+                                spacing=0,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                ],
+            ),
+            bgcolor=colors.PRIMARY_CONTAINER,
+            padding=padding.symmetric(vertical=32, horizontal=32),
+        )
+
     async def build(self):
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
-        self.custom_info = await self.get_info(order=self.order)
-        self.custom_controls = await self._get_controls(order=self.order)
+        self.request = await self.client.session.api.client.requests.get(id_=self.order.request)
+        self.method = await self.client.session.api.client.methods.get(id_=self.order.method)
         await self.set_type(loading=False)
         logging.critical(self.order)
-        self.controls = await self.get_controls(
-            title=f'#{self.order.id}',
-            main_section_controls=[
-                Column(
-                    controls=[
-                        Text(
-                            value='\n'.join(self.custom_info),
-                            size=24,
-                            font_family=Fonts.MEDIUM,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                        *self.custom_controls,
-                    ],
-                ),
-            ],
-        )
-
-    async def get_info(self, order):
-        order_type_name: str = await self.client.session.gtv(key=f'order_type_{order.type}')
-        order_state_name: str = await self.client.session.gtv(key=f'order_state_{order.state}')
-        currency = await self.client.session.api.client.currencies.get(id_str=order.currency)
-        currency_value = order.currency_value / (10 ** currency.decimal)
-        rate = order.rate / (10 ** currency.rate_decimal)
-        value = order.value / (10 ** settings.default_decimal)
-        result = [
-            f'{await self.client.session.gtv(key="type")}: {order_type_name}',
-            f'{await self.client.session.gtv(key="state")}: {order_state_name}',
-            f'{await self.client.session.gtv(key="request")}: #{order.request}',
-            f'{await self.client.session.gtv(key="requisite")}: #{order.requisite}',
-            f'{await self.client.session.gtv(key="currency")}: {currency.id_str.upper()}',
-            f'{await self.client.session.gtv(key="currency_value")}: {currency_value}',
-            f'{await self.client.session.gtv(key="value")}: {value}',
-            f'{await self.client.session.gtv(key="rate")}: {rate}',
+        controls = [
+            await self.get_info_card(),
         ]
-        if order.state == 'canceled' and order.canceled_reason:
-            canceled_reason_name: str = await self.client.session.gtv(key=f'canceled_reason_{order.canceled_reason}')
-            result += [
-                f'{await self.client.session.gtv(key="canceled_reason")}: {canceled_reason_name}',
-            ]
-        return result
-
-    async def _get_controls(self, order) -> list[Control]:
-        state_info = Text(value=None, size=24, font_family=Fonts.MEDIUM, color=colors.ON_BACKGROUND)
-        controls, buttons = [], []
-        if order.state == 'waiting':
-            state_info.value = await self.client.session.gtv(key='order_waiting_info')
-        elif order.state == 'payment':
-            if order.type == 'input':
-                state_info.value = await self.client.session.gtv(key='order_input_payment_info')
-                controls += [
-
-                ]
-                buttons.append(FilledButton(
-                    content=Text(value=await self.client.session.gtv(key='payment_confirm')),
-                    on_click=self.payment_confirm,
-                ))
-            elif order.type == 'output':
-                state_info.value = await self.client.session.gtv(key='order_output_payment_info')
-        elif order.state == 'confirmation':
-            if order.type == 'input':
-                state_info.value = await self.client.session.gtv(key='order_input_confirmation_info')
-            elif order.type == 'output':
-                state_info.value = await self.client.session.gtv(key='order_output_confirmation_info')
-        elif order.state == 'completed':
-            state_info.value = await self.client.session.gtv(key='order_completed_info')
-        elif order.state == 'canceled':
-            state_info.value = await self.client.session.gtv(key='order_canceled_info')
-        return [state_info] + controls + buttons
+        if self.request.state == 'loading':
+            pass
+        elif self.request.state == 'waiting':
+            pass
+        else:
+            pass
+        self.controls = await self.get_controls(
+            title=await self.client.session.gtv(key='order'),
+            with_expand=True,
+            main_section_controls=controls,
+        )
 
     async def payment_confirm(self, _):
         pass
+
+    async def copy_to_clipboard(self, data, _):
+        await self.client.page.set_clipboard_async(str(data))
