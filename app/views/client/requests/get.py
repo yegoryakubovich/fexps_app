@@ -353,9 +353,9 @@ class RequestView(ClientBaseView):
             wrap=True,
         )
 
-    async def get_orders_send_help(self):
+    async def get_help_cards(self) -> list[Control]:
         return [
-            SubTitle(value=await self.client.session.gtv(key='request_order_send_need_help_title')),
+            SubTitle(value=await self.client.session.gtv(key='help_card_title')),
             StandardButton(
                 content=Row(
                     controls=[
@@ -381,7 +381,6 @@ class RequestView(ClientBaseView):
                 horizontal=0,
                 vertical=0,
                 on_click=None,
-                expand=True,
             ),
             StandardButton(
                 content=Row(
@@ -389,7 +388,7 @@ class RequestView(ClientBaseView):
                         Row(
                             controls=[
                                 Text(
-                                    value=await self.client.session.gtv(key='telegram_contact_title'),
+                                    value=await self.client.session.gtv(key='help_telegram_contact_title'),
                                     size=28,
                                     font_family=Fonts.SEMIBOLD,
                                     color=colors.ON_BACKGROUND,
@@ -408,14 +407,13 @@ class RequestView(ClientBaseView):
                 horizontal=0,
                 vertical=0,
                 on_click=None,
-                expand=True,
             ),
         ]
 
     async def get_controls_other(self):
         return [
             await self.get_orders_send(),
-            *await self.get_orders_send_help(),
+            *await self.get_help_cards(),
         ]
 
     async def build(self):
