@@ -304,7 +304,7 @@ class RequestTab(BaseTab):
     async def get_history_request(self):
         return Row(
             controls=[
-                SubTitle(value=await self.client.session.gtv(key='requests_history_title')),
+                SubTitle(value=await self.client.session.gtv(key='requests_currency_title')),
                 *await self.get_history_request_chips(),
                 *await self.get_history_request_cards(),
                 PaginationWidget(
@@ -320,7 +320,6 @@ class RequestTab(BaseTab):
         )
 
     async def build(self):
-        self.is_input, self.is_output, self.is_all, self.is_finish = True, True, True, False
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
             id_=self.client.session.current_wallet.id,

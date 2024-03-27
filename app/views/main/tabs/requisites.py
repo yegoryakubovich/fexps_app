@@ -13,28 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
 from functools import partial
 
-from flet_core import Column, Container, ScrollMode, Image, Row, MainAxisAlignment, colors, ControlEvent
+from flet_core import Column, ScrollMode, Row, ControlEvent, colors, Image, MainAxisAlignment
 
-from app.controls.button import StandardButton, Chip
+from app.controls.button import Chip, StandardButton
 from app.controls.information import Text
 from app.controls.information.subtitle import SubTitle
 from app.controls.information.title import Title
-from app.controls.navigation.pagination import PaginationWidget
-from app.utils import Icons, Fonts
-from app.utils.value import value_to_float
+from app.controls.navigation import PaginationWidget
+from app.utils import value_to_float, Fonts, Icons
 from app.views.main.tabs.base import BaseTab
 
 
 class Chips:
-    input = 'input'
-    output = 'output'
-    all = 'all'
+    INPUT = 'input'
+    OUTPUT = 'output'
+    ALL = 'all'
 
 
 class RequisiteTab(BaseTab):
     requisites = list[dict]
+    history_requests = dict
     column: Column
 
     # History
@@ -44,43 +45,56 @@ class RequisiteTab(BaseTab):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.selected_chip = Chips.all
+        self.selected_chip = Chips.ALL
 
-    async def get_history(self):
-        filter_chips = [
+    """
+    REQUISITE HISTORY
+    """
+
+    async def get_requisite_history_chips(self) -> list[Chip]:
+        return [
             Chip(
-                name=await self.client.session.gtv(key=f'chips_{Chips.input}'),
-                key=Chips.input,
+                name=await self.client.session.gtv(key=f'chips_{Chips.INPUT}'),
+                key=Chips.INPUT,
                 on_select=self.chip_select,
-                selected=True if self.selected_chip == Chips.input else False,
+                selected=True if self.selected_chip == Chips.INPUT else False,
             ),
             Chip(
-                name=await self.client.session.gtv(key=f'chips_{Chips.output}'),
-                key=Chips.output,
+                name=await self.client.session.gtv(key=f'chips_{Chips.OUTPUT}'),
+                key=Chips.OUTPUT,
                 on_select=self.chip_select,
-                selected=True if self.selected_chip == Chips.output else False,
+                selected=True if self.selected_chip == Chips.OUTPUT else False,
             ),
             Chip(
-                name=await self.client.session.gtv(key=f'chips_{Chips.all}'),
-                key=Chips.all,
+                name=await self.client.session.gtv(key=f'chips_{Chips.ALL}'),
+                key=Chips.ALL,
                 on_select=self.chip_select,
-                selected=True if self.selected_chip == Chips.all else False,
+                selected=True if self.selected_chip == Chips.ALL else False,
             ),
         ]
-        response = await self.client.session.api.client.requisites.search(
-            is_output=True if self.selected_chip in [Chips.output, Chips.all] else False,
-            is_input=True if self.selected_chip in [Chips.input, Chips.all] else False,
-            page=self.page_requisites,
-        )
-        self.requisites = response.requisites
-        cards = []
-        requisite_text_name = await self.client.session.gtv(key=f'requisite')
 
-        for requisite in self.requisites:
+    async def get_requisite_history_cards(self) -> list[StandardButton]:
+        params = dict(is_input=False, is_output=False)
+        if self.selected_chip in [Chips.INPUT, Chips.ALL]:
+            params['is_input'] = True
+        if self.selected_chip in [Chips.OUTPUT, Chips.ALL]:
+            params['is_output'] = True
+        response = await self.client.session.api.client.requisites.search(**params, page=1)
+        self.history_requests = response.requisites
+        cards: list[StandardButton] = []
+        for requisite in self.history_requests:
             currency = await self.client.session.api.client.currencies.get(id_str=requisite.currency)
+            if requisite.type == 'input':
+                method = await self.client.session.api.client.methods.get(id_=requisite.input_method)
+            else:
+                method = await self.client.session.api.client.methods.get(id_=requisite.output_method)
+            type_ = await self.client.session.gtv(key=f'requisite_type_{requisite.type}')
+            method = await self.client.session.gtv(key=method.name_text)
+            type_str = f'{type_} {method}'
+            name_str = f'No Name'
             currency_value = value_to_float(value=requisite.currency_value, decimal=currency.decimal)
-            value = value_to_float(value=requisite.value)
-            type_text_name = await self.client.session.gtv(key=f'requisite_type_{requisite.type}')
+            total_currency_value = value_to_float(value=requisite.total_currency_value, decimal=currency.decimal)
+            currency_value_str = f'{currency_value}/{total_currency_value} {currency.id_str.upper()} '
             cards.append(
                 StandardButton(
                     content=Row(
@@ -90,9 +104,9 @@ class RequisiteTab(BaseTab):
                                     Row(
                                         controls=[
                                             Text(
-                                                value=f'{requisite_text_name} #{requisite.id}',
-                                                size=28,
-                                                font_family=Fonts.REGULAR,
+                                                value=type_str,
+                                                size=12,
+                                                font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY_CONTAINER,
                                             ),
                                         ],
@@ -100,55 +114,48 @@ class RequisiteTab(BaseTab):
                                     Row(
                                         controls=[
                                             Text(
-                                                value=type_text_name,
+                                                value=name_str,
                                                 size=28,
-                                                font_family=Fonts.REGULAR,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY_CONTAINER,
+                                            ),
+                                        ],
+                                    ),
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=currency_value_str,
+                                                size=18,
+                                                font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY_CONTAINER,
                                             ),
                                         ],
                                     ),
                                 ],
+                                expand=True,
                             ),
-                            Column(
-                                controls=[
-                                    Row(
-                                        controls=[
-                                            Text(
-                                                value=f'{currency_value}({currency.id_str.upper()})',
-                                                size=28,
-                                                font_family=Fonts.REGULAR,
-                                                color=colors.ON_PRIMARY_CONTAINER,
-
-                                            )
-                                        ],
-                                    ),
-                                    Row(
-                                        controls=[
-                                            Text(
-                                                value=f'{value}',
-                                                size=28,
-                                                font_family=Fonts.REGULAR,
-                                                color=colors.ON_PRIMARY_CONTAINER,
-                                            ),
-                                        ],
-                                    ),
-                                ],
+                            Image(
+                                src=Icons.OPEN,
+                                height=32,
+                                color=colors.ON_PRIMARY,
                             ),
                         ],
                         alignment=MainAxisAlignment.SPACE_BETWEEN,
                     ),
-                    on_click=partial(self.requisite_get, requisite.id),
+                    on_click=partial(self.requisite_view, requisite.id),
                     bgcolor=colors.PRIMARY_CONTAINER,
-                    horizontal=16,
-                    vertical=12,
+                    horizontal=34,
+                    vertical=24,
                 )
             )
+        return cards
 
+    async def get_requisite_history(self):
         return Row(
             controls=[
-                SubTitle(value=await self.client.session.gtv(key='requisite_history')),
-                *filter_chips,
-                *cards,
+                SubTitle(value=await self.client.session.gtv(key='requisites_history_title')),
+                *await self.get_requisite_history_chips(),
+                *await self.get_requisite_history_cards(),
                 PaginationWidget(
                     current_page=self.page_requisites,
                     total_pages=self.total_pages,
@@ -169,21 +176,19 @@ class RequisiteTab(BaseTab):
                 create_name_text=await self.client.session.gtv(key='create'),
                 on_create=self.requisite_create,
             ),
-            await self.get_history(),
+            await self.get_requisite_history(),
         ]
 
-    # Action
     async def requisite_create(self, _: ControlEvent):
         from app.views.client.requisites import RequisiteCreateView
         await self.client.change_view(view=RequisiteCreateView())
 
-    # History
     async def chip_select(self, event: ControlEvent):
         self.selected_chip = event.control.key
         await self.build()
         await self.update_async()
 
-    async def requisite_get(self, requisite_id: int, _: ControlEvent):
+    async def requisite_view(self, requisite_id: int, _: ControlEvent):
         from app.views.client.requisites import RequisiteView
         await self.client.change_view(view=RequisiteView(requisite_id=requisite_id))
 

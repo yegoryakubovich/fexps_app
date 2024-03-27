@@ -29,7 +29,9 @@ def value_to_int(value: Optional[float], decimal: int = settings.default_decimal
     return round(float(value) * (10 ** decimal))
 
 
-def value_to_float(value: Optional[int], decimal: int = settings.default_decimal) -> float:
+def value_to_float(value: Optional[int], decimal: int = settings.default_decimal) -> Optional[float]:
+    if value is None:
+        return None
     return round(float(value) / (10 ** decimal), 2)
 
 
