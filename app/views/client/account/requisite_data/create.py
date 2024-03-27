@@ -102,8 +102,9 @@ class RequisiteDataCreateView(AdminBaseView):
         self.method = await self.client.session.api.client.methods.get(id_=event.data)
         controls = []
         for field in self.method['schema_fields']:
-            type_ = await self.client.session.gtv(key=field["type"])
-            name_list = [await self.client.session.gtv(key=field[f'name_text_key']), f'({type_})']
+            type_ = field["type"]
+            type_str = await self.client.session.gtv(key=type_)
+            name_list = [await self.client.session.gtv(key=field[f'name_text_key']), f'({type_str})']
             if not field['optional']:
                 name_list.append('*')
             controls.append(TextField(
