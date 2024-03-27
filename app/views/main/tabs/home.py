@@ -433,20 +433,12 @@ class HomeTab(BaseTab):
                         await self.get_actions(),
                         await self.get_currency_request(),
                         await self.get_history_transfer(),
-                        Container(
-                            content=Text(value='ACCOUNT', color=colors.BLACK),
-                            on_click=self.go_account
-                        )
                     ],
                     expand=True,
                 ),
                 padding=Padding(right=48, left=48, top=0, bottom=0),
             )
         ]
-
-    async def go_account(self, _):
-        from app.views.client.account import AccountView
-        await self.client.change_view(view=AccountView())
 
     async def change_wallet(self, event: ControlEvent):
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()

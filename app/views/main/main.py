@@ -63,7 +63,6 @@ class MainView(View):
     async def change_tab(self, tab: BottomNavigationTab):
         if not tab.name != self.tab_selected.name:
             return
-
         await self.tab_selected.set_state(activated=False)
         self.tab_selected = tab
         await self.tab_selected.set_state(activated=True)
