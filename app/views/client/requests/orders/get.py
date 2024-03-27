@@ -48,6 +48,8 @@ class OrderView(ClientBaseView):
             decimal=currency.decimal,
         ) if self.order.currency_value else None
         currency_value_str = f'{value_to_str(currency_value)} {currency.id_str.upper()}'
+        color = self.method.color
+
         return Container(
             content=Column(
                 controls=[
@@ -57,11 +59,11 @@ class OrderView(ClientBaseView):
                                 value=await self.client.session.gtv(key=self.method.name_text),
                                 size=28,
                                 font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
+                                color=self.method.color,
                             ),
                         ],
                     ),
-                    Divider(color=colors.ON_PRIMARY_CONTAINER),
+                    Divider(color=self.method.color),
                     *[
                         Row(
                             controls=[
@@ -69,7 +71,7 @@ class OrderView(ClientBaseView):
                                     value=await self.client.session.gtv(key=scheme_field.get('name_text_key')),
                                     size=14,
                                     font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_PRIMARY_CONTAINER,
+                                    color=self.method.color,
                                 ),
                                 Row(
                                     controls=[
@@ -77,19 +79,19 @@ class OrderView(ClientBaseView):
                                             value=self.order.requisite_fields.get(scheme_field.get('key'), 'None'),
                                             size=14,
                                             font_family=Fonts.SEMIBOLD,
-                                            color=colors.ON_PRIMARY_CONTAINER,
+                                            color=self.method.color,
                                         ),
                                         StandardButton(
                                             content=Image(
                                                 src=Icons.COPY,
                                                 width=18,
-                                                color=colors.ON_PRIMARY_CONTAINER,
+                                                color=self.method.color,
                                             ),
                                             on_click=partial(
                                                 self.copy_to_clipboard,
                                                 self.order.requisite_fields.get(scheme_field.get('key')),
                                             ),
-                                            bgcolor=colors.PRIMARY_CONTAINER,
+                                            bgcolor=self.method.bgcolor,
                                             horizontal=0,
                                             vertical=0,
                                         ),
@@ -107,7 +109,7 @@ class OrderView(ClientBaseView):
                                 value=await self.client.session.gtv(key='order_sum'),
                                 size=14,
                                 font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
+                                color=self.method.color,
                             ),
                             Row(
                                 controls=[
@@ -115,19 +117,19 @@ class OrderView(ClientBaseView):
                                         value=currency_value_str,
                                         size=14,
                                         font_family=Fonts.SEMIBOLD,
-                                        color=colors.ON_PRIMARY_CONTAINER,
+                                        color=self.method.color,
                                     ),
                                     StandardButton(
                                         content=Image(
                                             src=Icons.COPY,
                                             width=18,
-                                            color=colors.ON_PRIMARY_CONTAINER,
+                                            color=self.method.color,
                                         ),
                                         on_click=partial(
                                             self.copy_to_clipboard,
                                             currency_value,
                                         ),
-                                        bgcolor=colors.PRIMARY_CONTAINER,
+                                        bgcolor=self.method.bgcolor,
                                         horizontal=0,
                                         vertical=0,
                                     ),
@@ -139,7 +141,7 @@ class OrderView(ClientBaseView):
                     ),
                 ],
             ),
-            bgcolor=colors.PRIMARY_CONTAINER,
+            bgcolor=self.method.bgcolor,
             padding=padding.symmetric(vertical=32, horizontal=32),
         )
 

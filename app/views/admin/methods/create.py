@@ -17,7 +17,7 @@
 
 from copy import deepcopy
 
-from flet_core import Checkbox, colors, Column, Row, ScrollMode
+from flet_core import Checkbox, colors, Column, Row, ScrollMode, Divider
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -40,6 +40,8 @@ class MethodCreateView(AdminBaseView):
     tf_name: TextField
     schema_fields: list[Column]
     schema_input_fields: list[Column]
+    tf_color: TextField
+    tf_bgcolor: TextField
 
     async def build(self):
         await self.set_type(loading=True)
@@ -59,12 +61,7 @@ class MethodCreateView(AdminBaseView):
         ]
         self.schema = Column(
             controls=[
-                Text(
-                    value='------------------------------------------',
-                    size=24,
-                    font_family=Fonts.MEDIUM,
-                    color=colors.ON_BACKGROUND,
-                ),
+                Divider(color=colors.ON_BACKGROUND),
                 TextField(label=await self.client.session.gtv(key='key')),
                 TextField(label=await self.client.session.gtv(key='name')),
                 Dropdown(label=await self.client.session.gtv(key='type')),
@@ -78,6 +75,16 @@ class MethodCreateView(AdminBaseView):
         self.tf_name = TextField(
             label=await self.client.session.gtv(key='name'),
         )
+        self.tf_color = TextField(
+            label=await self.client.session.gtv(key='method_color'),
+            value='#1D1D1D',
+        )
+        self.tf_bgcolor = TextField(
+            label=await self.client.session.gtv(key='method_bgcolor'),
+            value='#FFFCEF',
+        )
+
+
         schema_field_column = deepcopy(self.schema)
         schema_field_column.controls[3].options = deepcopy(self.schema_type_options)
         self.schema_fields = [schema_field_column]
@@ -90,6 +97,8 @@ class MethodCreateView(AdminBaseView):
             main_section_controls=[
                 self.dd_currency,
                 self.tf_name,
+                self.tf_color,
+                self.tf_bgcolor,
                 Row(controls=[
                     Text(
                         value=await self.client.session.gtv(key="schema_fields"),
@@ -180,6 +189,8 @@ class MethodCreateView(AdminBaseView):
                 name=self.tf_name.value,
                 fields=fields,
                 input_fields=input_fields,
+                color=self.tf_color.value,
+                bgcolor=self.tf_bgcolor.value,
             )
             await self.client.session.get_text_pack()
             await self.set_type(loading=False)
