@@ -457,7 +457,7 @@ class HomeTab(BaseTab):
 
     async def select_wallet_view(self, _):
         from app.views.client.wallets import WalletSelectView
-        await self.client.change_view(view=WalletSelectView())
+        await self.client.change_view(view=WalletSelectView(current_wallet_id=self.client.session.current_wallet.id))
 
     async def request_create(self, _):
         from app.views.client.requests import RequestCreateView
