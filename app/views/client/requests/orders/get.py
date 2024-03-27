@@ -19,13 +19,14 @@ import logging
 from functools import partial
 
 from flet_core import SnackBar, Control, Column, Container, Row, Divider, MainAxisAlignment, \
-    padding, Image, colors, alignment
+    padding, Image, colors, alignment, AlertDialog, TextButton, TextField, KeyboardType, ControlEvent
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons
 from app.utils.value import value_to_str
+from fexps_api_client.utils import ApiException
 
 
 class OrderView(ClientBaseView):
@@ -37,6 +38,9 @@ class OrderView(ClientBaseView):
     snack_bar: SnackBar
     custom_info: list
     custom_controls: list[Control]
+    input_field_dialog: AlertDialog
+    input_scheme_fields: list[TextField]
+    input_fields: dict
 
     def __init__(self, order_id: int):
         super().__init__()
@@ -226,6 +230,47 @@ class OrderView(ClientBaseView):
             ),
         ]
 
+    """ INPUT PAYMENT"""
+
+    async def create_input_payment_dialog(self):
+        self.input_scheme_fields = []
+        for input_scheme_field in self.order.input_scheme_fields:
+            type_ = input_scheme_field["type"]
+            type_str = await self.client.session.gtv(key=type_)
+            name_list = [await self.client.session.gtv(key=input_scheme_field['name_text_key']), f'({type_str})']
+            if not input_scheme_field['optional']:
+                name_list.append('*')
+            self.input_scheme_fields.append(
+                TextField(
+                    label=' '.join(name_list),
+                    on_change=partial(self.change_input_fields, input_scheme_field['key']),
+                    keyboard_type=KeyboardType.NUMBER if type_ == 'int' else None,
+                )
+            )
+        self.input_field_dialog = AlertDialog(
+            content=Container(
+                content=Column(
+                    controls=self.input_scheme_fields,
+                ),
+                height=220,
+            ),
+            actions=[
+                Row(
+                    controls=[
+                        TextButton(
+                            content=Text(
+                                value=await self.client.session.gtv(key="confirm"),
+                                size=16,
+                            ),
+                            on_click=self.input_field_dialog_confirm,
+                        ),
+                    ],
+                    alignment=MainAxisAlignment.END,
+                ),
+            ],
+            modal=False,
+        )
+
     async def get_input_payment_button(self) -> StandardButton:
         currency_value = value_to_float(
             value=self.order.currency_value,
@@ -235,12 +280,12 @@ class OrderView(ClientBaseView):
         return StandardButton(
             content=Text(
                 value=f'{await self.client.session.gtv(key='order_payment_confirm')} {currency_value_str}',
-                size=28,
+                size=20,
                 font_family=Fonts.SEMIBOLD,
                 color=colors.ON_PRIMARY,
             ),
             bgcolor=colors.PRIMARY,
-            on_click=self.input_payment_confirm,
+            on_click=self.input_field_dialog_open,
             expand=2,
         )
 
@@ -255,7 +300,7 @@ class OrderView(ClientBaseView):
                     ),
                     Text(
                         value=await self.client.session.gtv(key='chat_button'),
-                        size=28,
+                        size=20,
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -268,6 +313,8 @@ class OrderView(ClientBaseView):
         )
 
     async def build(self):
+        self.input_fields = {}
+        self.input_field_dialog = AlertDialog()
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
         self.currency = await self.client.session.api.client.currencies.get(id_str=self.order.currency)
@@ -284,6 +331,7 @@ class OrderView(ClientBaseView):
             if self.order.state == 'waiting':
                 pass
             elif self.order.state == 'payment':
+                await self.create_input_payment_dialog()
                 buttons += [
                     await self.get_input_payment_button(),
                     await self.get_chat_button(),
@@ -309,6 +357,7 @@ class OrderView(ClientBaseView):
                 pass
         if buttons:
             controls += [
+                self.input_field_dialog,
                 Container(
                     content=Row(
                         controls=buttons,
@@ -332,5 +381,32 @@ class OrderView(ClientBaseView):
     async def chat_open(self, _):
         pass
 
-    async def input_payment_confirm(self, _):
-        pass
+    async def input_field_dialog_open(self, _):
+        self.input_field_dialog.open = True
+        await self.update_async()
+
+    async def change_input_fields(self, key: str, event: ControlEvent):
+        self.input_fields[key] = event.data
+
+    async def input_field_dialog_close(self, _):
+        await self.set_type(loading=True)
+        for input_scheme_field in self.order.input_scheme_fields:
+            if not self.input_fields.get(input_scheme_field['key']):
+                continue
+            if input_scheme_field['type'] == 'int':
+                self.input_fields[input_scheme_field['key']] = int(self.input_fields[input_scheme_field['key']])
+        self.input_field_dialog.open = False
+        try:
+            await self.client.session.api.client.orders.updates.confirmation(
+                id_=self.order_id,
+                input_fields=self.input_fields,
+            )
+            await self.client.session.get_text_pack()
+            await self.set_type(loading=False)
+            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)
+
+    async def input_field_dialog_confirm(self, _):
+        await self.input_field_dialog_close(_)
