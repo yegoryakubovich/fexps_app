@@ -90,7 +90,7 @@ class RequisiteTab(BaseTab):
                 method = await self.client.session.api.client.methods.get(id_=requisite.output_method)
             type_ = await self.client.session.gtv(key=f'requisite_type_{requisite.type}')
             method = await self.client.session.gtv(key=method.name_text)
-            type_str = f'{type_} {method}'
+            type_str = f'{type_} ({method})'
             name_str = f'No Name'
             currency_value = value_to_float(value=requisite.currency_value, decimal=currency.decimal)
             total_currency_value = value_to_float(value=requisite.total_currency_value, decimal=currency.decimal)

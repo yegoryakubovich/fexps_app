@@ -50,7 +50,7 @@ class OrderView(ClientBaseView):
         currency_value = value_to_float(
             value=self.order.currency_value,
             decimal=self.currency.decimal,
-        ) if self.order.currency_value else None
+        )
         currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
         return Container(
             content=Column(
@@ -275,7 +275,7 @@ class OrderView(ClientBaseView):
         currency_value = value_to_float(
             value=self.order.currency_value,
             decimal=self.currency.decimal,
-        ) if self.order.currency_value else None
+        )
         currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
         return StandardButton(
             content=Text(

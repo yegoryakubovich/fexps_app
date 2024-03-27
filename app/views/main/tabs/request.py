@@ -63,11 +63,11 @@ class RequestTab(BaseTab):
                 input_currency_value = value_to_float(
                     value=request.input_currency_value_raw,
                     decimal=input_currency.decimal,
-                ) if request.input_currency_value_raw else None
+                )
                 input_value = value_to_float(
                     value=request.input_value_raw,
                     decimal=input_currency.decimal,
-                ) if request.input_value_raw else None
+                )
                 value_str = (
                     f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
                     f' -> '
@@ -79,11 +79,11 @@ class RequestTab(BaseTab):
                 output_currency_value = value_to_float(
                     value=request.output_currency_value_raw,
                     decimal=output_currency.decimal,
-                ) if request.output_currency_value_raw else None
+                )
                 output_value = value_to_float(
                     value=request.output_raw,
                     decimal=output_currency.decimal,
-                ) if request.output_raw else None
+                )
                 value_str = (
                     f'{value_to_str(value=output_value)}'
                     f' -> '
@@ -96,11 +96,11 @@ class RequestTab(BaseTab):
                 input_currency_value = value_to_float(
                     value=request.input_currency_value_raw,
                     decimal=input_currency.decimal,
-                ) if request.input_currency_value_raw else None
+                )
                 output_currency_value = value_to_float(
                     value=request.output_currency_value_raw,
                     decimal=output_currency.decimal,
-                ) if request.output_currency_value_raw else None
+                )
                 value_str = (
                     f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
                     f' -> '
@@ -204,11 +204,11 @@ class RequestTab(BaseTab):
                 input_currency_value = value_to_float(
                     value=request.input_currency_value_raw,
                     decimal=input_currency.decimal,
-                ) if request.input_currency_value_raw else None
+                )
                 input_value = value_to_float(
                     value=request.input_value_raw,
                     decimal=input_currency.decimal,
-                ) if request.input_value_raw else None
+                )
                 value_str = (
                     f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
                     f' -> '
@@ -219,11 +219,11 @@ class RequestTab(BaseTab):
                 output_currency_value = value_to_float(
                     value=request.output_currency_value_raw,
                     decimal=output_currency.decimal,
-                ) if request.output_currency_value_raw else None
+                )
                 output_value = value_to_float(
                     value=request.output_raw,
                     decimal=output_currency.decimal,
-                ) if request.output_raw else None
+                )
                 value_str = (
                     f'{value_to_str(value=output_value)}'
                     f' -> '
@@ -235,11 +235,11 @@ class RequestTab(BaseTab):
                 input_currency_value = value_to_float(
                     value=request.input_currency_value_raw,
                     decimal=input_currency.decimal,
-                ) if request.input_currency_value_raw else None
+                )
                 output_currency_value = value_to_float(
                     value=request.output_currency_value_raw,
                     decimal=output_currency.decimal,
-                ) if request.output_currency_value_raw else None
+                )
                 value_str = (
                     f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
                     f' -> '

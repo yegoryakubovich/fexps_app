@@ -108,17 +108,17 @@ class RequestView(ClientBaseView):
     async def get_info_card(self):
         rate = value_to_float(
             value=self.request.rate, decimal=self.request.rate_decimal
-        ) if self.request.rate else None
+        )
         if self.request.type == 'input':
             input_currency = await self.client.session.api.client.currencies.get(id_str=self.request.input_currency)
             input_currency_value = value_to_float(
                 value=self.request.input_currency_value_raw,
                 decimal=input_currency.decimal,
-            ) if self.request.input_currency_value_raw else None
+            )
             input_value = value_to_float(
                 value=self.request.input_value_raw,
                 decimal=input_currency.decimal,
-            ) if self.request.input_value_raw else None
+            )
             value_str = f'{input_currency_value} {input_currency.id_str.upper()} -> {input_value}'
             rate_str = f'{rate} {input_currency.id_str.upper()} / 1'
         elif self.request.type == 'output':
@@ -128,11 +128,11 @@ class RequestView(ClientBaseView):
             output_currency_value = value_to_float(
                 value=self.request.output_currency_value_raw,
                 decimal=output_currency.decimal,
-            ) if self.request.output_currency_value_raw else None
+            )
             output_value = value_to_float(
                 value=self.request.output_raw,
                 decimal=output_currency.decimal,
-            ) if self.request.output_raw else None
+            )
             value_str = f'{output_value} -> {output_currency_value} {output_currency.id_str.upper()}'
             rate_str = f'{rate} {output_currency.id_str.upper()} / 1'
         else:
@@ -143,11 +143,11 @@ class RequestView(ClientBaseView):
             input_currency_value = value_to_float(
                 value=self.request.input_currency_value_raw,
                 decimal=input_currency.decimal,
-            ) if self.request.input_currency_value_raw else None
+            )
             output_currency_value = value_to_float(
                 value=self.request.output_currency_value_raw,
                 decimal=output_currency.decimal,
-            ) if self.request.output_currency_value_raw else None
+            )
             value_str = (
                 f'{input_currency_value} {input_currency.id_str.upper()}'
                 f' -> '

@@ -306,7 +306,7 @@ class RequestCreateView(ClientBaseView):
             value=self.tf_output_value.value, decimal=output_currency.decimal,
         ) if self.tf_output_value.value else None
         try:
-            request_id = await self.client.session.api.client.requests.create(
+            await self.client.session.api.client.requests.create(
                 wallet_id=self.dd_wallet.value if self.dd_wallet else None,
                 type_=self.dd_type.value if self.dd_type else None,
                 input_method_id=self.dd_input_method.value if self.dd_input_method else None,
