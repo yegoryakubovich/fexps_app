@@ -83,27 +83,27 @@ class AccountTab(BaseTab):
                 name='my_account',
                 settings_=[
                     Setting(
-                        name='notifications',
+                        name='account_notifications',
                         icon=Icons.NOTIFICATIONS,
                         on_click=on_click_coming_soon,
                     ),
                     Setting(
-                        name='security',
+                        name='account_security',
                         icon=Icons.SECURITY,
                         on_click=self.change_password,
                     ),
                     Setting(
-                        name='requisite_data',
+                        name='account_requisite_data',
                         icon=Icons.RELOAD,
                         on_click=self.requisite_data,
                     ),
                     Setting(
-                        name='language',
+                        name='account_language',
                         icon=Icons.LANGUAGE,
                         on_click=self.update_language,
                     ),
                     Setting(
-                        name='logout',
+                        name='account_logout',
                         icon=Icons.LOGOUT,
                         on_click=on_click_logout,
                     ),
@@ -171,7 +171,7 @@ class AccountTab(BaseTab):
             Container(
                 content=Column(
                     controls=[
-                        Title(value=await self.client.session.gtv(key='account')),
+                        Title(value=await self.client.session.gtv(key='account_tab_title')),
                         Container(
                             content=Column(
                                 controls=[

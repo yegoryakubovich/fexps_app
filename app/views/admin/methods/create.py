@@ -51,12 +51,12 @@ class MethodCreateView(AdminBaseView):
         ) for currency in await self.client.session.api.client.currencies.get_list()]
         await self.set_type(loading=False)
         self.schema_type_options = [
-            Option(key='int', text=await self.client.session.gtv(key='integer')),
-            Option(key='str', text=await self.client.session.gtv(key='string')),
+            Option(key='int', text=await self.client.session.gtv(key='int')),
+            Option(key='str', text=await self.client.session.gtv(key='str')),
         ]
         self.schema_input_type_options = [
-            Option(key='int', text=await self.client.session.gtv(key='integer')),
-            Option(key='str', text=await self.client.session.gtv(key='string')),
+            Option(key='int', text=await self.client.session.gtv(key='int')),
+            Option(key='str', text=await self.client.session.gtv(key='str')),
             Option(key='image', text=await self.client.session.gtv(key='image')),
         ]
         self.schema = Column(
@@ -65,7 +65,10 @@ class MethodCreateView(AdminBaseView):
                 TextField(label=await self.client.session.gtv(key='key')),
                 TextField(label=await self.client.session.gtv(key='name')),
                 Dropdown(label=await self.client.session.gtv(key='type')),
-                Checkbox(label=await self.client.session.gtv(key='optional')),
+                Row(controls=[
+                    Checkbox(),
+                    Text(value=await self.client.session.gtv(key='optional'), color=colors.ON_BACKGROUND),
+                ]),
             ],
         )
         self.dd_currency = Dropdown(
@@ -76,15 +79,13 @@ class MethodCreateView(AdminBaseView):
             label=await self.client.session.gtv(key='name'),
         )
         self.tf_color = TextField(
-            label=await self.client.session.gtv(key='method_color'),
+            label=await self.client.session.gtv(key='admin_method_color'),
             value='#1D1D1D',
         )
         self.tf_bgcolor = TextField(
-            label=await self.client.session.gtv(key='method_bgcolor'),
+            label=await self.client.session.gtv(key='admin_method_bgcolor'),
             value='#FFFCEF',
         )
-
-
         schema_field_column = deepcopy(self.schema)
         schema_field_column.controls[3].options = deepcopy(self.schema_type_options)
         self.schema_fields = [schema_field_column]
@@ -93,7 +94,7 @@ class MethodCreateView(AdminBaseView):
         self.schema_input_fields = [schema_input_field_column]
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='admin_text_create_view_title'),
+            title=await self.client.session.gtv(key='admin_method_create_view_title'),
             main_section_controls=[
                 self.dd_currency,
                 self.tf_name,
@@ -101,7 +102,7 @@ class MethodCreateView(AdminBaseView):
                 self.tf_bgcolor,
                 Row(controls=[
                     Text(
-                        value=await self.client.session.gtv(key="schema_fields"),
+                        value=await self.client.session.gtv(key="admin_method_schema_fields"),
                         size=24,
                         font_family=Fonts.MEDIUM,
                         color=colors.ON_BACKGROUND,
@@ -118,7 +119,7 @@ class MethodCreateView(AdminBaseView):
                 Column(controls=self.schema_fields),
                 Row(controls=[
                     Text(
-                        value=await self.client.session.gtv(key="schema_input_fields"),
+                        value=await self.client.session.gtv(key="admin_method_input_schema_fields"),
                         size=24,
                         font_family=Fonts.MEDIUM,
                         color=colors.ON_BACKGROUND,
@@ -140,7 +141,6 @@ class MethodCreateView(AdminBaseView):
                         font_family=Fonts.REGULAR,
                     ),
                     on_click=self.create_method,
-                    expand=True,
                 ),
             ],
         )
@@ -173,7 +173,7 @@ class MethodCreateView(AdminBaseView):
                 'key': column.controls[1].value,
                 'name': column.controls[2].value,
                 'type': column.controls[3].value,
-                'optional': column.controls[4].value,
+                'optional': column.controls[4].controls[0].value,
             })
         input_fields = []
         for column in self.schema_input_fields:
@@ -181,7 +181,7 @@ class MethodCreateView(AdminBaseView):
                 'key': column.controls[1].value,
                 'name': column.controls[2].value,
                 'type': column.controls[3].value,
-                'optional': column.controls[4].value,
+                'optional': column.controls[4].controls[0].value,
             })
         try:
             method_id = await self.client.session.api.admin.methods.create(

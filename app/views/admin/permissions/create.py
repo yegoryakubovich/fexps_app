@@ -13,15 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
-from fexps_api_client.utils import ApiException
+from flet_core import Row
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
 from app.utils.error import Error
+from fexps_api_client.utils import ApiException
 
 
 class PermissionCreateView(AdminBaseView):
@@ -41,16 +40,20 @@ class PermissionCreateView(AdminBaseView):
             main_section_controls=[
                 self.tf_id_str,
                 self.tf_name,
-                StandardButton(
-                    content=Text(
-                        value=await self.client.session.gtv(key='create'),
-                        size=16,
-                    ),
-                    on_click=self.create_permission,
-                    expand=True,
+                Row(
+                    controls=[
+                        StandardButton(
+                            content=Text(
+                                value=await self.client.session.gtv(key='create'),
+                                size=16,
+                            ),
+                            on_click=self.create_permission,
+                            expand=True,
+                        ),
+                    ],
                 ),
             ],
-         )
+        )
 
     async def create_permission(self, _):
         await self.set_type(loading=True)

@@ -167,19 +167,19 @@ class RequestTab(BaseTab):
     async def get_history_request_chips(self) -> list[Chip]:
         return [
             Chip(
-                name=await self.client.session.gtv(key=f'chips_{Chips.COMPLETED}'),
+                name=await self.client.session.gtv(key=f'chip_{Chips.COMPLETED}'),
                 key=Chips.COMPLETED,
                 on_select=self.chip_select,
                 selected=True if self.selected_chip == Chips.COMPLETED else False,
             ),
             Chip(
-                name=await self.client.session.gtv(key=f'chips_{Chips.CANCELED}'),
+                name=await self.client.session.gtv(key=f'chip_{Chips.CANCELED}'),
                 key=Chips.CANCELED,
                 on_select=self.chip_select,
                 selected=True if self.selected_chip == Chips.CANCELED else False,
             ),
             Chip(
-                name=await self.client.session.gtv(key=f'chips_{Chips.ALL}'),
+                name=await self.client.session.gtv(key=f'chip_{Chips.ALL}'),
                 key=Chips.ALL,
                 on_select=self.chip_select,
                 selected=True if self.selected_chip == Chips.ALL else False,
@@ -304,7 +304,7 @@ class RequestTab(BaseTab):
     async def get_history_request(self):
         return Row(
             controls=[
-                SubTitle(value=await self.client.session.gtv(key='requests_currency_title')),
+                SubTitle(value=await self.client.session.gtv(key='request_history_title')),
                 *await self.get_history_request_chips(),
                 *await self.get_history_request_cards(),
                 PaginationWidget(
@@ -330,7 +330,7 @@ class RequestTab(BaseTab):
                 content=Column(
                     controls=[
                         Title(
-                            value=await self.client.session.gtv(key='request'),
+                            value=await self.client.session.gtv(key='request_tab_title'),
                             create_name_text=await self.client.session.gtv(key='create'),
                             on_create=self.request_create,
                         ),

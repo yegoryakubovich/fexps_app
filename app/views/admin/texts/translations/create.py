@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+from flet_core import Row
 from flet_core.dropdown import Option
 from fexps_api_client.utils import ApiException
 
@@ -71,14 +70,18 @@ class TextTranslationCreateView(AdminBaseView):
                 options=languages_options,
             )
             language_control = self.dd_language
-            button = StandardButton(
-                content=Text(
-                    value=await self.client.session.gtv(key='create'),
-                    size=16,
+            button =                 Row(
+                   controls=[
+                       StandardButton(
+                           content=Text(
+                               value=await self.client.session.gtv(key='create'),
+                               size=16,
+                           ),
+                           on_click=self.create_translation,
+                           expand=True,
+                       )
+                   ],
                 ),
-                on_click=self.create_translation,
-                expand=True,
-            )
             controls = [self.tf_value, language_control, button]
         else:
             self.tf_not_language = Text(

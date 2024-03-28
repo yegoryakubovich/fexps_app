@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from flet_core import Row
 
 from fexps_api_client.utils import ApiException
 
@@ -41,13 +41,17 @@ class LanguageCreateView(AdminBaseView):
             main_section_controls=[
                 self.tf_id_str,
                 self.tf_name,
-                StandardButton(
-                    content=Text(
-                        value=await self.client.session.gtv(key='create'),
-                        size=16,
-                    ),
-                    on_click=self.create_language,
-                    expand=True,
+                Row(
+                    controls=[
+                        StandardButton(
+                            content=Text(
+                                value=await self.client.session.gtv(key='create'),
+                                size=16,
+                            ),
+                            on_click=self.create_language,
+                            expand=True,
+                        ),
+                    ],
                 ),
             ],
          )

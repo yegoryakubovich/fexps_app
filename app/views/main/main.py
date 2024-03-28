@@ -32,22 +32,22 @@ class Tab:
 
 TABS = [
     Tab(
-        name='home',
+        name='tab_home',
         icon=Icons.HOME,
         control=HomeTab,
     ),
     Tab(
-        name='exchange',
+        name='tab_request',
         icon=Icons.EXCHANGE,
         control=RequestTab,
     ),
     Tab(
-        name='requisite',
+        name='tab_requisite',
         icon=Icons.REQUISITE,
         control=RequisiteTab,
     ),
     Tab(
-        name='account',
+        name='tab_account',
         icon=Icons.ACCOUNT,
         control=AccountTab,
     ),

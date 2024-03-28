@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from flet_core import Row
 
 from fexps_api_client.utils import ApiException
 
@@ -37,13 +37,17 @@ class CurrencyCreateView(AdminBaseView):
             title=await self.client.session.gtv(key='admin_currency_create_view_title'),
             main_section_controls=[
                 self.tf_id_str,
-                StandardButton(
-                    content=Text(
-                        value=await self.client.session.gtv(key='create'),
-                        size=16,
-                    ),
-                    on_click=self.create_currency,
-                    expand=True,
+                Row(
+                    controls=[
+                        StandardButton(
+                            content=Text(
+                                value=await self.client.session.gtv(key='create'),
+                                size=16,
+                            ),
+                            on_click=self.create_currency,
+                            expand=True,
+                        ),
+                    ],
                 ),
             ],
         )

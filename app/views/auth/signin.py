@@ -68,7 +68,7 @@ class AuthenticationView(AuthView):
                                         color=colors.ON_BACKGROUND,
                                     ),
                                     Text(
-                                        value=await self.client.session.gtv(key='signup'),
+                                        value=await self.client.session.gtv(key='sign_up'),
                                         size=16,
                                         font_family=Fonts.SEMIBOLD,
                                         color=colors.ON_BACKGROUND,

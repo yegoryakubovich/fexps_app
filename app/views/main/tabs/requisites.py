@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
+
 from functools import partial
 
-from flet_core import Column, ScrollMode, Row, ControlEvent, colors, Image, MainAxisAlignment
+from flet_core import Column, ScrollMode, Row, ControlEvent, colors, Image, MainAxisAlignment, Container, Padding
 
 from app.controls.button import Chip, StandardButton
 from app.controls.information import Text
@@ -54,19 +55,19 @@ class RequisiteTab(BaseTab):
     async def get_requisite_history_chips(self) -> list[Chip]:
         return [
             Chip(
-                name=await self.client.session.gtv(key=f'chips_{Chips.INPUT}'),
+                name=await self.client.session.gtv(key=f'chip_{Chips.INPUT}'),
                 key=Chips.INPUT,
                 on_select=self.chip_select,
                 selected=True if self.selected_chip == Chips.INPUT else False,
             ),
             Chip(
-                name=await self.client.session.gtv(key=f'chips_{Chips.OUTPUT}'),
+                name=await self.client.session.gtv(key=f'chip_{Chips.OUTPUT}'),
                 key=Chips.OUTPUT,
                 on_select=self.chip_select,
                 selected=True if self.selected_chip == Chips.OUTPUT else False,
             ),
             Chip(
-                name=await self.client.session.gtv(key=f'chips_{Chips.ALL}'),
+                name=await self.client.session.gtv(key=f'chip_{Chips.ALL}'),
                 key=Chips.ALL,
                 on_select=self.chip_select,
                 selected=True if self.selected_chip == Chips.ALL else False,
@@ -153,7 +154,7 @@ class RequisiteTab(BaseTab):
     async def get_requisite_history(self):
         return Row(
             controls=[
-                SubTitle(value=await self.client.session.gtv(key='requisites_history_title')),
+                SubTitle(value=await self.client.session.gtv(key='requisite_history_title')),
                 *await self.get_requisite_history_chips(),
                 *await self.get_requisite_history_cards(),
                 PaginationWidget(
@@ -170,13 +171,22 @@ class RequisiteTab(BaseTab):
 
     async def build(self):
         self.scroll = ScrollMode.AUTO
+        self.scroll = ScrollMode.AUTO
         self.controls = [
-            Title(
-                value=await self.client.session.gtv(key='requisite'),
-                create_name_text=await self.client.session.gtv(key='create'),
-                on_create=self.requisite_create,
-            ),
-            await self.get_requisite_history(),
+            Container(
+                content=Column(
+                    controls=[
+                        Title(
+                            value=await self.client.session.gtv(key='requisite_tab_title'),
+                            create_name_text=await self.client.session.gtv(key='create'),
+                            on_create=self.requisite_create,
+                        ),
+                        await self.get_requisite_history(),
+                    ],
+                    expand=True,
+                ),
+                padding=Padding(right=48, left=48, top=0, bottom=0),
+            )
         ]
 
     async def requisite_create(self, _: ControlEvent):

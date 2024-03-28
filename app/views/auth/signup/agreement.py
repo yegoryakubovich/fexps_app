@@ -15,7 +15,7 @@
 #
 
 
-from flet_core import Column
+from flet_core import Column, Row
 
 from app import InitView
 from app.controls.button import ListItemButton, StandardButton
@@ -25,7 +25,6 @@ from app.utils import Icons
 
 
 class AgreementRegistrationView(AuthView):
-
     async def build(self):
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='registration_account_create_view_title'),
@@ -44,16 +43,20 @@ class AgreementRegistrationView(AuthView):
                         ),
                         ListItemButton(
                             icon=Icons.FILE,
-                            name=await self.client.session.gtv(key='contact_informations'),
+                            name=await self.client.session.gtv(key='contact_information'),
                             url=None,
                         ),
-                        StandardButton(
-                            content=Text(
-                                value=await self.client.session.gtv(key='create_account'),
-                            ),
-                            on_click=self.change_view,
-                            horizontal=54,
-                            expand=True,
+                        Row(
+                            controls=[
+                                StandardButton(
+                                    content=Text(
+                                        value=await self.client.session.gtv(key='create_account'),
+                                    ),
+                                    on_click=self.change_view,
+                                    horizontal=54,
+                                    expand=True,
+                                ),
+                            ],
                         ),
                     ],
                     spacing=20,

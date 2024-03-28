@@ -64,7 +64,7 @@ class BottomNavigationTab(Container):
             font_family=Fonts.MEDIUM,
             value=self.name,
             size=12,
-            color=colors.PRIMARY_CONTAINER,
+            color=colors.SECONDARY,
         )
 
         self.content = Container(

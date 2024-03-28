@@ -56,12 +56,12 @@ class MethodView(AdminBaseView):
         await self.set_type(loading=False)
         self.snack_bar = SnackBar(content=Text(value=await self.client.session.gtv(key='successful')))
         self.schema_type_options = [
-            Option(key='int', text=await self.client.session.gtv(key='integer')),
-            Option(key='str', text=await self.client.session.gtv(key='string')),
+            Option(key='int', text=await self.client.session.gtv(key='int')),
+            Option(key='str', text=await self.client.session.gtv(key='str')),
         ]
         self.schema_input_type_options = [
-            Option(key='int', text=await self.client.session.gtv(key='integer')),
-            Option(key='str', text=await self.client.session.gtv(key='string')),
+            Option(key='int', text=await self.client.session.gtv(key='int')),
+            Option(key='str', text=await self.client.session.gtv(key='str')),
             Option(key='image', text=await self.client.session.gtv(key='image')),
         ]
         self.schema = Column(
@@ -79,11 +79,11 @@ class MethodView(AdminBaseView):
             value=self.method.currency,
         )
         self.tf_color = TextField(
-            label=await self.client.session.gtv(key='method_color'),
+            label=await self.client.session.gtv(key='admin_method_color'),
             value=self.method.color,
         )
         self.tf_bgcolor = TextField(
-            label=await self.client.session.gtv(key='method_bgcolor'),
+            label=await self.client.session.gtv(key='admin_method_bgcolor'),
             value=self.method.bgcolor,
         )
         self.schema_fields = []
@@ -124,7 +124,7 @@ class MethodView(AdminBaseView):
                         self.tf_bgcolor,
                         Row(controls=[
                             Text(
-                                value=await self.client.session.gtv(key="schema_fields"),
+                                value=await self.client.session.gtv(key="admin_method_schema_fields"),
                                 size=24,
                                 font_family=Fonts.MEDIUM,
                                 color=colors.ON_BACKGROUND,
@@ -141,7 +141,7 @@ class MethodView(AdminBaseView):
                         Column(controls=self.schema_fields),
                         Row(controls=[
                             Text(
-                                value=await self.client.session.gtv(key="schema_input_fields"),
+                                value=await self.client.session.gtv(key="admin_method_input_schema_fields"),
                                 size=24,
                                 font_family=Fonts.MEDIUM,
                                 color=colors.ON_BACKGROUND,
@@ -185,19 +185,16 @@ class MethodView(AdminBaseView):
 
     async def schema_fields_remove_line(self, _):
         self.schema_fields.pop()
-        # self.controls[1].content.controls[1].controls[3].controls = self.schema_fields
         await self.update_async()
 
     async def schema_input_fields_add_line(self, _):
         column = deepcopy(self.schema)
         column.controls[3].options = deepcopy(self.schema_input_type_options)
         self.schema_input_fields.append(column)
-        # self.controls[1].content.controls[1].controls[5].controls = self.schema_input_fields
         await self.update_async()
 
     async def schema_input_fields_remove_line(self, _):
         self.schema_input_fields.pop()
-        # self.controls[1].content.controls[1].controls[5].controls = self.schema_input_fields
         await self.update_async()
 
     async def update_method(self, _):

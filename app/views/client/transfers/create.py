@@ -33,11 +33,11 @@ class TransferCreateView(ClientBaseView):
     async def build(self):
         # self.client.session.account
         self.wallet_to_id_tf = TextField(
-            label=await self.client.session.gtv(key='actions_send_wallet_to_id'),
+            label=await self.client.session.gtv(key='send_money_wallet_to_id'),
             keyboard_type=KeyboardType.NUMBER,
         )
         self.value_tf = TextField(
-            label=await self.client.session.gtv(key='actions_send_value'),
+            label=await self.client.session.gtv(key='send_money_value'),
             keyboard_type=KeyboardType.NUMBER,
         )
         self.controls_container = Container(

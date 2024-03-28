@@ -91,14 +91,14 @@ class WalletSelectView(ClientBaseView):
                         Row(
                             controls=[
                                 StandardButton(
-                                    text=await self.client.session.gtv(key='edit_name'),
+                                    text=await self.client.session.gtv(key='wallet_edit_name'),
                                     on_click=self.dialog_edit_name_open,
                                     expand=True,
                                     color=colors.ON_PRIMARY_CONTAINER,
                                     bgcolor=colors.PRIMARY_CONTAINER,
                                 ),
                                 StandardButton(
-                                    text=await self.client.session.gtv(key='permissions'),
+                                    text=await self.client.session.gtv(key='wallet_permissions'),
                                     on_click=None,
                                     expand=True,
                                     color=colors.ON_PRIMARY_CONTAINER,
@@ -110,7 +110,7 @@ class WalletSelectView(ClientBaseView):
                         Row(
                             controls=[
                                 StandardButton(
-                                    text=await self.client.session.gtv(key='create_new_wallet'),
+                                    text=await self.client.session.gtv(key='wallet_new_create'),
                                     on_click=self.dialog_create_open,
                                     expand=True,
                                     color=colors.ON_PRIMARY_CONTAINER,
@@ -121,7 +121,7 @@ class WalletSelectView(ClientBaseView):
                         Row(
                             controls=[
                                 StandardButton(
-                                    text=await self.client.session.gtv(key='select'),
+                                    text=await self.client.session.gtv(key='wallet_select'),
                                     on_click=self.switch_wallet,
                                     expand=True,
                                 ),
@@ -133,7 +133,7 @@ class WalletSelectView(ClientBaseView):
             )
         ]
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='wallets'),
+            title=await self.client.session.gtv(key='wallet_select_title'),
             main_section_controls=controls,
         )
 
@@ -197,7 +197,7 @@ class WalletSelectView(ClientBaseView):
             Row(
                 controls=[
                     StandardButton(
-                        text=await self.client.session.gtv(key='edit_name'),
+                        text=await self.client.session.gtv(key='wallet_edit_name'),
                         on_click=partial(self.wallet_edit_name, self.selected_wallet_id),
                         expand=True,
                     ),

@@ -99,9 +99,7 @@ class RequestCreateView(ClientBaseView):
             expand=1,
         )
         self.dd_input_method = Dropdown(
-            label=await self.client.session.gtv(key='currency'),
-            on_change=self.change_type_or_currency,
-            expand=1,
+            label=await self.client.session.gtv(key='request_input_method'),
         )
 
         # receive
@@ -116,10 +114,11 @@ class RequestCreateView(ClientBaseView):
             on_change=self.change_type_or_currency,
             expand=1,
         )
-
+        self.dd_output_method = Dropdown(
+            label=await self.client.session.gtv(key='request_output_method'),
+        )
         self.currencies = Column(controls=[])
         self.optional = Column(controls=[])
-
         self.controls_container = Container(
             content=Column(
                 controls=[
@@ -134,7 +133,7 @@ class RequestCreateView(ClientBaseView):
         )
         self.controls = await self.get_controls(
             with_expand=True,
-            title=await self.client.session.gtv(key='request_create'),
+            title=await self.client.session.gtv(key='request_create_title'),
             main_section_controls=[
                 SubTitle(value=await self.client.session.gtv(key='request_create_send')),
                 Row(
@@ -153,13 +152,13 @@ class RequestCreateView(ClientBaseView):
                     ],
                     spacing=16,
                 ),
-                self.dd_input_method,
-                SubTitle(value=await self.client.session.gtv(key='details')),
+                self.dd_output_method,
+                SubTitle(value=await self.client.session.gtv(key='request_details')),
                 Container(
                     content=Row(
                         controls=[
                             StandardButton(
-                                text=await self.client.session.gtv(key='create_request'),
+                                text=await self.client.session.gtv(key='create'),
                                 on_click=self.request_create,
                                 expand=True,
                             )

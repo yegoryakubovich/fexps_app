@@ -44,10 +44,10 @@ class RequisiteDataCreateView(AdminBaseView):
         method_options = []
         await self.set_type(loading=True)
         self.methods = await self.client.session.api.client.methods.get_list()
-        currency_options = [Option(
-            text=currency.id_str.upper(),
-            key=currency.id_str,
-        ) for currency in await self.client.session.api.client.currencies.get_list()]
+        currency_options = [
+            Option(text=currency.id_str.upper(), key=currency.id_str)
+            for currency in await self.client.session.api.client.currencies.get_list()
+        ]
         await self.set_type(loading=False)
         self.tf_name = TextField(label=await self.client.session.gtv(key='name'))
         self.dd_currency = Dropdown(

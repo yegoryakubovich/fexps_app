@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+import logging
 from functools import partial
 
 from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, TextAlign, \
@@ -51,12 +50,12 @@ class HomeTab(BaseTab):
         self.selected_chip = Chips.all
 
     async def get_account(self):
-        hello_text_key = 'good_morning'
-
+        hello_text_str = await self.client.session.gtv(key='good_morning')
+        hello_text_str = f'{hello_text_str},'
         return Row(
             controls=[
                 Text(
-                    value=await self.client.session.gtv(key=hello_text_key),
+                    value=hello_text_str,
                     size=48,
                     font_family=Fonts.MEDIUM,
                     color=colors.ON_BACKGROUND,
@@ -396,7 +395,7 @@ class HomeTab(BaseTab):
     async def get_history_transfer(self):
         return Row(
             controls=[
-                SubTitle(value=await self.client.session.gtv(key='last_transactions')),
+                SubTitle(value=await self.client.session.gtv(key='last_transfers_title')),
                 *await self.get_history_transfer_chips(),
                 *await self.get_history_transfer_cards(),
                 PaginationWidget(
