@@ -12,7 +12,7 @@ class Title(Row):
                 value=value,
                 size=48,
                 font_family=Fonts.BOLD,
-                color=colors.ON_PRIMARY,
+                color=colors.ON_BACKGROUND,
             ),
         ]
         if on_create:
