@@ -49,8 +49,8 @@ themes = Themes(
     ),
     dark=Theme(
         color_scheme=ColorScheme(
-            background='#FFFCEF',
-            on_background='#1D1D1D',
+            background='#383838',
+            on_background='#FFFFFF',
             primary='#FFE500',
             on_primary='#1D1D1D',
             primary_container='#D8D8D8',
@@ -59,7 +59,7 @@ themes = Themes(
             on_secondary='#1D1D1D',
             secondary_container='#1D1D1D',
             on_secondary_container='#FFFFFF',
-            shadow='#DDDDDD',
+            shadow='#292929',
         ),
         page_transitions=page_transitions,
     ),

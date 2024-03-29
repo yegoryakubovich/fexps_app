@@ -23,15 +23,13 @@ from app.utils import Fonts
 class TextField(FletTextField):
     def __init__(self, key_question=None, **kwargs):
         super().__init__(**kwargs)
-        text_style = TextStyle(
+        self.border_color = colors.SECONDARY
+        self.text_style = TextStyle(
             font_family=Fonts.REGULAR,
             color=colors.ON_BACKGROUND,
         )
-        label_style = TextStyle(
+        self.label_style = TextStyle(
             font_family=Fonts.REGULAR,
-            color=colors.ON_PRIMARY_CONTAINER,
+            color=colors.ON_BACKGROUND,
         )
-        self.border_color = colors.SECONDARY
-        self.text_style = text_style
-        self.label_style = label_style
         self.key_question = key_question
