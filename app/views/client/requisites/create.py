@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
 
 from flet_core import padding, ScrollMode, Row, Column, Container, KeyboardType
 from flet_core.dropdown import Option
@@ -23,7 +23,6 @@ from app.controls.button import StandardButton
 from app.controls.input import Dropdown, TextField
 from app.controls.layout import ClientBaseView
 from app.utils.value import value_to_int
-from app.views.client.requisites.get import RequisiteView
 from fexps_api_client.utils import ApiException
 
 
@@ -239,22 +238,7 @@ class RequisiteCreateView(ClientBaseView):
             value=self.tf_rate.value, decimal=currency.rate_decimal,
         ) if self.tf_rate.value else None
         try:
-            logging.critical(
-                dict(
-                    wallet_id=self.dd_wallet.value,
-                    type_=self.dd_type.value,
-                    input_method_id=self.dd_input_method.value if self.dd_input_method else None,
-                    output_requisite_data_id=self.dd_output_requisite_data.value if self.dd_output_requisite_data else None,
-                    currency_value=currency_value,
-                    currency_value_min=currency_value_min,
-                    currency_value_max=currency_value_max,
-                    value=value,
-                    value_min=value_min,
-                    value_max=value_max,
-                    rate=rate,
-                )
-            )
-            requisite_id = await self.client.session.api.client.requisites.create(
+            await self.client.session.api.client.requisites.create(
                 wallet_id=self.dd_wallet.value,
                 type_=self.dd_type.value,
                 input_method_id=self.dd_input_method.value if self.dd_input_method else None,
@@ -268,7 +252,7 @@ class RequisiteCreateView(ClientBaseView):
                 rate=rate,
             )
             await self.set_type(loading=False)
-            await self.client.change_view(view=RequisiteView(requisite_id=requisite_id), delete_current=True)
+            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
         except ApiException as exception:
             await self.set_type(loading=False)
             return await self.client.session.error(exception=exception)

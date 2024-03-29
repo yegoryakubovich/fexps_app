@@ -16,8 +16,9 @@
 
 
 import logging
+from functools import partial
 
-from flet_core import Column, Container, padding, KeyboardType, Row, alignment
+from flet_core import Column, Container, KeyboardType, Row, alignment, Control
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -29,64 +30,53 @@ from fexps_api_client.utils import ApiException
 
 
 class RequestTypes:
-    input = 'input'
-    output = 'output'
-    all = 'all'
+    INPUT = 'input'
+    OUTPUT = 'output'
+    ALL = 'all'
 
 
 class RequestCreateView(ClientBaseView):
     route = '/client/request/create'
     controls_container: Container
     optional: Column
-    currencies: Column
     methods = dict
+    currencies = list[dict]
 
-    dd_type = Dropdown(value=None)
-    dd_wallet = Dropdown(value=None)
-    dd_input_currency = Dropdown(value=None)
-    dd_output_currency = Dropdown(value=None)
-    dd_input_method = Dropdown(value=None)
-    tf_input_currency_value = TextField(value=None)
+    # input
     tf_input_value = TextField(value=None)
-    dd_output_requisite_data = Dropdown(value=None)
-    tf_output_currency_value = TextField(value=None)
+    dd_input_currency = Dropdown(value=None)
+    dd_input_method = Dropdown(value=None)
+
+    # output
     tf_output_value = TextField(value=None)
+    dd_output_currency = Dropdown(value=None)
+    dd_output_method = Dropdown(value=None)
+    dd_output_requisite_data = Dropdown(value=None)
 
-    async def build(self):
-        self.methods = await self.client.session.api.client.methods.get_list()
+    """
+    SEND
+    """
 
-        type_options = [
-            Option(
-                text=await self.client.session.gtv(key=f'request_type_{type_}'),
-                key=type_,
-            )
-            for type_ in [RequestTypes.input, RequestTypes.output, RequestTypes.all]
-        ]
-        wallets_options = [
-            Option(
-                key=wallet.id, text=f'#{wallet.id} - {wallet.name}'
-            )
-            for wallet in await self.client.session.api.client.wallets.get_list()
-        ]
-        currency_options = [
-            Option(
-                text=currency.id_str.upper(),
-                key=currency.id_str,
-            )
-            for currency in await self.client.session.api.client.currencies.get_list()
-        ]
+    async def get_currency_options(self, exclude_currency: str = None) -> list[Option]:
+        options = [Option(text='ECOIN', key='ecoin')] if exclude_currency != 'ecoin' else []
+        for currency in self.currencies:
+            if currency.id_str == exclude_currency:
+                continue
+            options.append(Option(text=currency.id_str.upper(), key=currency.id_str))
+        return options
 
-        self.dd_type = Dropdown(
-            label=await self.client.session.gtv(key='type'),
-            options=type_options,
-            on_change=self.change_type_or_currency,
-        )
-        self.dd_wallet = Dropdown(
-            label=await self.client.session.gtv(key='wallet'),
-            options=wallets_options,
-            value=wallets_options[0].key,
-        )
-        # send
+    async def get_method_options(self, currency: str) -> list[Option]:
+        options = []
+        for method in self.methods:
+            if method.currency.upper() != currency.upper():
+                continue
+            options.append(Option(
+                text=f'{await self.client.session.gtv(key=method.name_text)} ({method.id})',
+                key=method.id,
+            ))
+        return options
+
+    async def get_input(self) -> list[Control]:
         self.tf_input_value = TextField(
             label=await self.client.session.gtv(key='value'),
             keyboard_type=KeyboardType.NUMBER,
@@ -94,15 +84,31 @@ class RequestCreateView(ClientBaseView):
         )
         self.dd_input_currency = Dropdown(
             label=await self.client.session.gtv(key='currency'),
-            options=currency_options,
-            on_change=self.change_type_or_currency,
+            options=await self.get_currency_options(),
+            on_change=partial(self.change_currency, 'input'),
             expand=1,
         )
         self.dd_input_method = Dropdown(
-            label=await self.client.session.gtv(key='request_input_method'),
+            label=await self.client.session.gtv(key='request_create_input_method'),
+            disabled=True,
         )
+        return [
+            SubTitle(value=await self.client.session.gtv(key='request_create_input')),
+            Row(
+                controls=[
+                    self.tf_input_value,
+                    self.dd_input_currency,
+                ],
+                spacing=16,
+            ),
+            self.dd_input_method,
+        ]
 
-        # receive
+    """
+    RECEIVE
+    """
+
+    async def get_output(self) -> list[Control]:
         self.tf_output_value = TextField(
             label=await self.client.session.gtv(key='value'),
             keyboard_type=KeyboardType.NUMBER,
@@ -110,55 +116,48 @@ class RequestCreateView(ClientBaseView):
         )
         self.dd_output_currency = Dropdown(
             label=await self.client.session.gtv(key='currency'),
-            options=currency_options,
-            on_change=self.change_type_or_currency,
+            options=await self.get_currency_options(),
+            on_change=partial(self.change_currency, 'output'),
             expand=1,
         )
         self.dd_output_method = Dropdown(
-            label=await self.client.session.gtv(key='request_output_method'),
+            label=await self.client.session.gtv(key='request_create_output_method'),
+            on_change=self.change_output_method,
+            disabled=True,
         )
-        self.currencies = Column(controls=[])
-        self.optional = Column(controls=[])
-        self.controls_container = Container(
-            content=Column(
+        self.dd_output_requisite_data = Dropdown(
+            label=await self.client.session.gtv(key='request_create_output_requisite_data'),
+            disabled=True,
+        )
+        return [
+            SubTitle(value=await self.client.session.gtv(key='request_create_input')),
+            Row(
                 controls=[
-                    self.dd_type,
-                    self.dd_wallet,
-                    self.currencies,
-                    self.optional,
+                    self.tf_output_value,
+                    self.dd_output_currency,
                 ],
-                spacing=10,
+                spacing=16,
             ),
-            padding=padding.only(bottom=15),
-        )
+            self.dd_output_method,
+            self.dd_output_requisite_data,
+        ]
+
+    async def build(self):
+        await self.set_type(loading=True)
+        self.methods = await self.client.session.api.client.methods.get_list()
+        self.currencies = await self.client.session.api.client.currencies.get_list()
+        await self.set_type(loading=False)
         self.controls = await self.get_controls(
             with_expand=True,
             title=await self.client.session.gtv(key='request_create_title'),
             main_section_controls=[
-                SubTitle(value=await self.client.session.gtv(key='request_create_send')),
-                Row(
-                    controls=[
-                        self.tf_input_value,
-                        self.dd_input_currency,
-                    ],
-                    spacing=16,
-                ),
-                self.dd_input_method,
-                SubTitle(value=await self.client.session.gtv(key='request_create_receive')),
-                Row(
-                    controls=[
-                        self.tf_output_value,
-                        self.dd_output_currency,
-                    ],
-                    spacing=16,
-                ),
-                self.dd_output_method,
-                SubTitle(value=await self.client.session.gtv(key='request_details')),
+                *await self.get_input(),
+                *await self.get_output(),
                 Container(
                     content=Row(
                         controls=[
                             StandardButton(
-                                text=await self.client.session.gtv(key='create'),
+                                text=await self.client.session.gtv(key='request_create_button'),
                                 on_click=self.request_create,
                                 expand=True,
                             )
@@ -170,148 +169,78 @@ class RequestCreateView(ClientBaseView):
             ],
         )
 
-    async def change_type_or_currency(self, _):
-        async def get_input_method():
-            input_method_options = []
-            for method in self.methods:
-                if method.currency.lower() != self.dd_input_currency.value.lower():
-                    continue
-                name = await self.client.session.gtv(key=method.name_text)
-                input_method_options.append(Option(
-                    text=f'{name} ({method.id})',
-                    key=method.id,
-                ))
-            return Dropdown(
-                label=await self.client.session.gtv(key='input_method'),
-                options=input_method_options,
-            )
+    async def change_currency(self, type_: str, _):
+        await self.set_type(loading=True)
+        if type_ == 'input' and self.dd_input_currency.value:
+            currency = self.dd_input_currency.value
+            self.dd_input_method.disabled = False
+            self.dd_input_method.options = await self.get_method_options(currency=currency)
+            self.dd_output_currency.options = await self.get_currency_options(exclude_currency=currency)
+        if type_ == 'output' and self.dd_output_currency.value:
+            currency = self.dd_output_currency.value
+            self.dd_output_method.disabled = False
+            self.dd_output_method.options = await self.get_method_options(currency=currency)
+            self.dd_input_currency.options = await self.get_currency_options(exclude_currency=currency)
+        await self.set_type(loading=False)
 
-        async def get_output_requisite_data():
-            requisites_datas = await self.client.session.api.client.requisites_datas.get_list()
-            output_requisite_data_options = []
-            for requisite_data in requisites_datas:
-                if requisite_data.currency.lower() != self.dd_output_currency.value.lower():
-                    continue
-                output_requisite_data_options.append(Option(
-                    text=f'{requisite_data.name}',
-                    key=requisite_data.id,
-                ))
-            return Dropdown(
-                label=await self.client.session.gtv(key='output_requisite_data'),
-                options=output_requisite_data_options,
-            )
-
-        if not self.dd_type.value:
-            self.currencies.controls = []
-            self.optional.controls = []
-            await self.update_async()
-            return
-        if self.dd_type.value == RequestTypes.input:
-            self.currencies.controls = [self.dd_input_currency]
-            if not self.dd_input_currency.value:
-                self.optional.controls = []
-                await self.update_async()
-                return
-            self.dd_input_method = await get_input_method()
-            self.tf_input_currency_value = TextField(
-                label=await self.client.session.gtv(key='input_currency_value'),
-                keyboard_type=KeyboardType.NUMBER,
-            )
-            self.tf_input_value = TextField(
-                label=await self.client.session.gtv(key='input_value'),
-                keyboard_type=KeyboardType.NUMBER,
-                expand=4
-            )
-            self.optional.controls = [
-                self.dd_input_method,
-                self.tf_input_currency_value,
-                self.tf_input_value,
-            ]
-        elif self.dd_type.value == RequestTypes.output:
-            self.currencies.controls = [self.dd_output_currency]
-            if not self.dd_output_currency.value:
-                self.optional.controls = []
-                await self.update_async()
-                return
-            self.dd_output_requisite_data = await get_output_requisite_data()
-            self.tf_output_currency_value = TextField(
-                label=await self.client.session.gtv(key='output_currency_value'),
-                keyboard_type=KeyboardType.NUMBER,
-            )
-            self.tf_output_value = TextField(
-                label=await self.client.session.gtv(key='output_value'),
-                keyboard_type=KeyboardType.NUMBER,
-            )
-            self.optional.controls = [
-                self.dd_output_requisite_data,
-                self.tf_output_currency_value,
-                self.tf_output_value,
-            ]
-        elif self.dd_type.value == RequestTypes.all:
-            self.currencies.controls = [self.dd_input_currency, self.dd_output_currency]
-            if not self.dd_input_currency.value or not self.dd_output_currency.value:
-                self.optional.controls = []
-                await self.update_async()
-                return
-            self.dd_input_method = await get_input_method()
-            self.dd_output_requisite_data = await get_output_requisite_data()
-            self.tf_input_currency_value = TextField(
-                label=await self.client.session.gtv(key='input_currency_value'),
-                keyboard_type=KeyboardType.NUMBER,
-            )
-            self.tf_output_currency_value = TextField(
-                label=await self.client.session.gtv(key='output_currency_value'),
-                keyboard_type=KeyboardType.NUMBER,
-            )
-            self.optional.controls = [
-                self.dd_input_method,
-                self.dd_output_requisite_data,
-                self.tf_input_currency_value,
-                self.tf_output_currency_value,
-            ]
-        await self.update_async()
+    async def change_output_method(self, _):
+        await self.set_type(loading=True)
+        requisites_datas = await self.client.session.api.client.requisites_datas.get_list()
+        options = []
+        for requisite_data in requisites_datas:
+            if int(requisite_data.method) != int(self.dd_output_method.value):
+                continue
+            options.append(Option(
+                text=f'{requisite_data.name}',
+                key=requisite_data.id,
+            ))
+        self.dd_output_requisite_data.disabled = False
+        self.dd_output_requisite_data.options = options
+        await self.set_type(loading=False)
 
     async def go_back(self, _):
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
 
     async def request_create(self, _):
-        logging.critical(f'self.dd_wallet.value = {self.dd_wallet}')
-        logging.critical(f'self.dd_type.value = {self.dd_type}')
-        logging.critical(f'self.dd_input_currency.value = {self.dd_input_currency}')
-        logging.critical(f'self.dd_output_currency.value = {self.dd_output_currency}')
-        logging.critical(f'self.tf_input_currency_value.value = {self.tf_input_currency_value}')
-        logging.critical(f'=self.tf_input_value.value = {self.tf_input_value}')
-        logging.critical(f'self.tf_output_currency_value.value = {self.tf_output_currency_value}')
-        logging.critical(f'self.tf_output_value.value = {self.tf_output_value}')
+        if self.tf_input_value.value and self.tf_output_value.value:
+            self.tf_output_value.error_text = await self.client.session.gtv(key='request_create_error_only_one_fields')
+            await self.update_async()
+            return
+        if len(self.client.session.wallets) == 1:
+            return await self.go_request_create(wallet_id=self.client.session.wallets[0]['id'])
+
+    async def go_request_create(self, wallet_id: int):
+        input_method_id, input_currency_value, input_value = None, None, None
+        output_requisite_data_id, output_currency_value, output_value = None, None, None
         await self.set_type(loading=True)
-        input_currency = None
-        if self.dd_input_currency.value:
+        if self.dd_output_currency.value == 'ecoin':
             input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
-        output_currency = None
-        if self.dd_output_currency.value:
+            type_ = RequestTypes.INPUT
+            input_method_id = self.dd_input_method.value
+            input_currency_value = value_to_int(value=self.tf_input_value.value, decimal=input_currency.decimal)
+            input_value = value_to_int(value=self.tf_output_value.value)
+        elif self.dd_input_currency.value == 'ecoin':
             output_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_output_currency.value)
-        # Input values
-        input_currency_value = value_to_int(
-            value=self.tf_input_currency_value.value, decimal=input_currency.decimal,
-        ) if self.tf_input_currency_value.value else None
-        input_value = value_to_int(
-            value=self.tf_input_value.value, decimal=input_currency.decimal,
-        ) if self.tf_input_value.value else None
-        # Output values
-        output_currency_value = value_to_int(
-            value=self.tf_output_currency_value.value, decimal=output_currency.decimal,
-        ) if self.tf_output_currency_value.value else None
-        output_value = value_to_int(
-            value=self.tf_output_value.value, decimal=output_currency.decimal,
-        ) if self.tf_output_value.value else None
+            type_ = RequestTypes.OUTPUT
+            output_requisite_data_id = self.dd_output_requisite_data.value
+            output_currency_value = value_to_int(value=self.tf_output_value.value, decimal=output_currency.decimal)
+            output_value = value_to_int(value=self.tf_input_value.value)
+        else:
+            input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
+            output_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_output_currency.value)
+            type_ = RequestTypes.ALL
+            input_method_id = self.dd_input_method.value
+            input_currency_value = value_to_int(value=self.tf_input_value.value, decimal=input_currency.decimal)
+            output_requisite_data_id = self.dd_output_requisite_data.value
+            output_currency_value = value_to_int(value=self.tf_output_value.value, decimal=output_currency.decimal)
         try:
             await self.client.session.api.client.requests.create(
-                wallet_id=self.dd_wallet.value if self.dd_wallet else None,
-                type_=self.dd_type.value if self.dd_type else None,
-                input_method_id=self.dd_input_method.value if self.dd_input_method else None,
+                wallet_id=wallet_id,
+                type_=type_,
+                input_method_id=input_method_id,
                 input_currency_value=input_currency_value,
                 input_value=input_value,
-                output_requisite_data_id=self.dd_output_requisite_data.value if self.dd_output_requisite_data else None,
+                output_requisite_data_id=output_requisite_data_id,
                 output_currency_value=output_currency_value,
                 output_value=output_value,
             )

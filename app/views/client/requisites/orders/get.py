@@ -32,7 +32,7 @@ from fexps_api_client.utils import ApiException
 class OrderView(ClientBaseView):
     route = '/client/request/order/get'
     order = dict
-    request = dict
+    requisite = dict
     method = dict
     currency = dict
     snack_bar: SnackBar
@@ -108,7 +108,7 @@ class OrderView(ClientBaseView):
                     Row(
                         controls=[
                             Text(
-                                value=await self.client.session.gtv(key='sum'),
+                                value=await self.client.session.gtv(key='order_sum'),
                                 size=14,
                                 font_family=Fonts.SEMIBOLD,
                                 color=self.method.color,
@@ -149,7 +149,7 @@ class OrderView(ClientBaseView):
 
     async def get_help_cards(self) -> list[Control]:
         return [
-            SubTitle(value=await self.client.session.gtv(key='help_card_title')),
+            SubTitle(value=await self.client.session.gtv(key='request_order_help_title')),
             StandardButton(
                 content=Row(
                     controls=[
@@ -318,7 +318,7 @@ class OrderView(ClientBaseView):
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
         self.currency = await self.client.session.api.client.currencies.get(id_str=self.order.currency)
-        self.request = await self.client.session.api.client.requests.get(id_=self.order.request)
+        self.requisite = await self.client.session.api.client.requisites.get(id_=self.order.requisite)
         self.method = await self.client.session.api.client.methods.get(id_=self.order.method)
         await self.set_type(loading=False)
         logging.critical(self.order)
@@ -367,7 +367,7 @@ class OrderView(ClientBaseView):
                 )
             ]
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='order'),
+            title=await self.client.session.gtv(key='request_order_title'),
             with_expand=True,
             main_section_controls=controls,
         )

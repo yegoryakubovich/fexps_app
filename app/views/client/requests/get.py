@@ -17,93 +17,26 @@
 
 from functools import partial
 
-from flet_core import Column, colors, SnackBar, Control, ScrollMode, Row, MainAxisAlignment, Container, \
+from flet_core import Column, colors, Control, ScrollMode, Row, MainAxisAlignment, Container, \
     padding, alignment, Image, Divider
 
 from app.controls.button import StandardButton
-from app.controls.information import Text, Card, SubTitle
+from app.controls.information import Text, SubTitle
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons
 from app.views.client.requests.orders.get import OrderView
-from config import settings
 
 
 class RequestView(ClientBaseView):
     route = '/client/request/get'
     request = dict
     orders: list
-    snack_bar: SnackBar
     custom_info: list
     custom_controls: list[Control]
-    orders_list: Row
 
     def __init__(self, request_id: int):
         super().__init__()
         self.request_id = request_id
-
-    async def get_order_row(self):
-        cards = []
-        for order in self.orders:
-            currency = await self.client.session.api.client.currencies.get(id_str=order.currency)
-            currency_value = order["currency_value"] / (10 ** currency['decimal'])
-            value = order["value"] / (10 ** settings.default_decimal)
-            cards.append(
-                Card(
-                    controls=[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=f'#{order["id"]}',
-                                    size=18,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_PRIMARY,
-                                ),
-                                Text(
-                                    value=f'{currency_value}({currency.id_str.upper()})->{value}',
-                                    size=18,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.GREY,
-                                ),
-                            ],
-                            alignment=MainAxisAlignment.SPACE_BETWEEN,
-                        ),
-                        Row(
-                            controls=[
-                                Text(
-                                    value=order['type'],
-                                    size=18,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_PRIMARY,
-                                ),
-                                Text(
-                                    value=order['state'],
-                                    size=18,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_PRIMARY,
-                                ),
-                            ],
-                            alignment=MainAxisAlignment.SPACE_BETWEEN,
-                        ),
-                    ],
-                    on_click=partial(self.order_view, order['id']),
-                )
-            )
-        return Row(
-            controls=[
-                Row(
-                    controls=[
-                        Text(
-                            value=await self.client.session.gtv(key='orders'),
-                            size=32,
-                            font_family=Fonts.BOLD,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                    ],
-                ),
-                *cards,
-            ],
-            wrap=True,
-        )
 
     async def get_info_card(self):
         rate = value_to_float(
@@ -154,7 +87,6 @@ class RequestView(ClientBaseView):
                 f'{output_currency_value} {output_currency.id_str.upper()}'
             )
             rate_str = f'{rate} {input_currency.id_str.upper()} / 1 {output_currency.id_str.upper()}'
-
         return Container(
             content=Column(
                 controls=[
@@ -223,7 +155,7 @@ class RequestView(ClientBaseView):
                     Row(
                         controls=[
                             Text(
-                                value=await self.client.session.gtv(key='request_receive_method'),
+                                value=await self.client.session.gtv(key='request_output_method'),
                                 size=14,
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
@@ -254,7 +186,6 @@ class RequestView(ClientBaseView):
                         ],
                         alignment=MainAxisAlignment.SPACE_BETWEEN,
                     ),
-
                 ],
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
@@ -267,7 +198,7 @@ class RequestView(ClientBaseView):
                 content=Row(
                     controls=[
                         StandardButton(
-                            content=await self.client.session.gtv(key='confirm'),
+                            text=await self.client.session.gtv(key='confirm'),
                             on_click=self.waiting_confirm,
                             expand=True,
                         )
@@ -343,11 +274,11 @@ class RequestView(ClientBaseView):
             )
         return cards
 
-    async def get_orders_send(self):
+    async def get_orders_send(self) -> Row:
         return Row(
             scroll=ScrollMode.AUTO,
             controls=[
-                SubTitle(value=await self.client.session.gtv(key='request_order_send_title')),
+                SubTitle(value=await self.client.session.gtv(key='request_order_input_title')),
                 *await self.get_orders_send_cards(),
             ],
             wrap=True,
@@ -355,7 +286,7 @@ class RequestView(ClientBaseView):
 
     async def get_help_cards(self) -> list[Control]:
         return [
-            SubTitle(value=await self.client.session.gtv(key='help_card_title')),
+            SubTitle(value=await self.client.session.gtv(key='request_order_help_title')),
             StandardButton(
                 content=Row(
                     controls=[
@@ -410,7 +341,7 @@ class RequestView(ClientBaseView):
             ),
         ]
 
-    async def get_controls_other(self):
+    async def get_controls_other(self) -> list[Control]:
         return [
             await self.get_orders_send(),
             *await self.get_help_cards(),
@@ -421,8 +352,6 @@ class RequestView(ClientBaseView):
         self.request = await self.client.session.api.client.requests.get(id_=self.request_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_request(request_id=self.request_id)
         await self.set_type(loading=False)
-        self.snack_bar = SnackBar(content=Text(value=await self.client.session.gtv(key='successful')))
-        self.orders_list = await self.get_order_row()
         controls = [
             await self.get_info_card(),
         ]
@@ -434,7 +363,7 @@ class RequestView(ClientBaseView):
             controls += await self.get_controls_other()
         self.controls = await self.get_controls(
             with_expand=True,
-            title=f'{await self.client.session.gtv(key='request')} #{self.request.id:08}',
+            title=f'{await self.client.session.gtv(key='request_get_title')} #{self.request.id:08}',
             main_section_controls=controls,
         )
 

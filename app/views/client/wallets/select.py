@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import Column, Container, padding, colors, Row, MainAxisAlignment, AlertDialog, TextField
+from flet_core import Column, Container, colors, Row, MainAxisAlignment, AlertDialog, TextField, alignment
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -49,30 +49,35 @@ class WalletSelectView(ClientBaseView):
             if self.selected_wallet_id == wallet.id:
                 bgcolor = colors.PRIMARY
                 color = colors.ON_PRIMARY
-            wallets_list.append(Row(controls=[StandardButton(
-                content=Row(
+            wallets_list.append(
+                Row(
                     controls=[
-                        Text(
-                            value=f'{wallet.name}',
-                            size=28,
-                            font_family=Fonts.SEMIBOLD,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                        Text(
-                            value=f'{value}',
-                            size=28,
-                            font_family=Fonts.SEMIBOLD,
-                            color=colors.ON_BACKGROUND,
+                        StandardButton(
+                            content=Row(
+                                controls=[
+                                    Text(
+                                        value=f'{wallet.name}',
+                                        size=28,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=color,
+                                    ),
+                                    Text(
+                                        value=f'{value}',
+                                        size=28,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=color,
+                                    ),
+                                ],
+                                alignment=MainAxisAlignment.SPACE_BETWEEN,
+                            ),
+                            bgcolor=bgcolor,
+                            vertical=24,
+                            on_click=partial(self.select_wallet, wallet.id),
+                            expand=True,
                         ),
                     ],
-                    alignment=MainAxisAlignment.SPACE_BETWEEN,
-                ),
-                color=color,
-                bgcolor=bgcolor,
-                vertical=24,
-                on_click=partial(self.select_wallet, wallet.id),
-                expand=True,
-            )]))
+                )
+            )
         return wallets_list
 
     async def build(self):
@@ -82,63 +87,95 @@ class WalletSelectView(ClientBaseView):
         self.wallet = await self.client.session.api.client.wallets.get(id_=self.client.session.current_wallet.id)
         self.wallets_column = Column(controls=await self.get_wallet_list())
         await self.set_type(loading=False)
-        controls = [
-            self.dialog,
-            Container(
-                content=Column(
-                    controls=[
-                        self.wallets_column,
-                        Row(
-                            controls=[
-                                StandardButton(
-                                    text=await self.client.session.gtv(key='wallet_edit_name'),
-                                    on_click=self.dialog_edit_name_open,
-                                    expand=True,
-                                    color=colors.ON_PRIMARY_CONTAINER,
-                                    bgcolor=colors.PRIMARY_CONTAINER,
-                                ),
-                                StandardButton(
-                                    text=await self.client.session.gtv(key='wallet_permissions'),
-                                    on_click=None,
-                                    expand=True,
-                                    color=colors.ON_PRIMARY_CONTAINER,
-                                    bgcolor=colors.PRIMARY_CONTAINER,
-                                ),
-                            ],
-                            spacing=16,
-                        ),
-                        Row(
-                            controls=[
-                                StandardButton(
-                                    text=await self.client.session.gtv(key='wallet_new_create'),
-                                    on_click=self.dialog_create_open,
-                                    expand=True,
-                                    color=colors.ON_PRIMARY_CONTAINER,
-                                    bgcolor=colors.PRIMARY_CONTAINER,
-                                ),
-                            ],
-                        ),
-                        Row(
-                            controls=[
-                                StandardButton(
-                                    text=await self.client.session.gtv(key='wallet_select'),
-                                    on_click=self.switch_wallet,
-                                    expand=True,
-                                ),
-                            ],
-                        ),
-                    ],
-                ),
-                padding=padding.only(bottom=15),
-            )
-        ]
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='wallet_select_title'),
-            main_section_controls=controls,
-        )
+            with_expand=True,
+            main_section_controls=[
+                self.dialog,
+                self.wallets_column,
+                Container(
+                    content=Row(
+                        controls=[
+                            Container(
+                                content=Row(
+                                    controls=[
+                                        StandardButton(
+                                            text=await self.client.session.gtv(key='request_create_button'),
+                                            on_click=self.go_back,
+                                            expand=True,
+                                        ),
+                                        StandardButton(
+                                            text=await self.client.session.gtv(key='request_create_button'),
+                                            on_click=self.go_back,
+                                            expand=True,
+                                        ),
+                                    ],
+                                ),
+                                expand=True,
+                            ),
+                            Container(
+                                content=StandardButton(
+                                    text=await self.client.session.gtv(key='request_create_button'),
+                                    on_click=self.go_back,
+                                    expand=True,
+                                ),
+                                expand=True,
+                            ),
+                        ],
+                    ),
+                    expand=True,
+                    alignment=alignment.bottom_center,
+                ),
 
-    async def go_back(self, _):
-        await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+                # Container(
+                #     content=Row(
+                #         controls=[
+                #             Row(
+                #                 controls=[
+                #                     StandardButton(
+                #                         text=await self.client.session.gtv(key='wallet_edit_name'),
+                #                         on_click=self.dialog_edit_name_open,
+                #                         expand=True,
+                #                         color=colors.ON_PRIMARY_CONTAINER,
+                #                         bgcolor=colors.PRIMARY_CONTAINER,
+                #                     ),
+                #                     StandardButton(
+                #                         text=await self.client.session.gtv(key='wallet_permissions'),
+                #                         on_click=None,
+                #                         expand=True,
+                #                         color=colors.ON_PRIMARY_CONTAINER,
+                #                         bgcolor=colors.PRIMARY_CONTAINER,
+                #                     ),
+                #                 ],
+                #                 spacing=16,
+                #             ),
+                #             Row(
+                #                 controls=[
+                #                     StandardButton(
+                #                         text=await self.client.session.gtv(key='wallet_new_create'),
+                #                         on_click=self.dialog_create_open,
+                #                         expand=True,
+                #                         color=colors.ON_PRIMARY_CONTAINER,
+                #                         bgcolor=colors.PRIMARY_CONTAINER,
+                #                     ),
+                #                 ],
+                #             ),
+                #             Row(
+                #                 controls=[
+                #                     StandardButton(
+                #                         text=await self.client.session.gtv(key='wallet_select'),
+                #                         on_click=self.switch_wallet,
+                #                         expand=True,
+                #                     ),
+                #                 ],
+                #             ),
+                #         ],
+                #     ),
+                #     expand=True,
+                #     alignment=alignment.bottom_center,
+                # ),
+            ],
+        )
 
     async def select_wallet(self, wallet_id: int, _):
         self.selected_wallet_id = wallet_id
