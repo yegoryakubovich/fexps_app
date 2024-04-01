@@ -152,10 +152,13 @@ class RequestTab(BaseTab):
         return cards
 
     async def get_currency_request(self):
+        cards = await self.get_currency_request_cards()
+        if not cards:
+            return Row()
         return Row(
             controls=[
                 SubTitle(value=await self.client.session.gtv(key='requests_currency_title')),
-                *await self.get_currency_request_cards(),
+                *cards,
             ],
             wrap=True,
         )
