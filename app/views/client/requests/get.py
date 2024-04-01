@@ -24,7 +24,7 @@ from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons
-from app.views.client.requests.orders.get import OrderView
+from app.views.client.requests.orders.get import RequestOrderView
 
 
 class RequestView(ClientBaseView):
@@ -63,7 +63,7 @@ class RequestView(ClientBaseView):
                 decimal=output_currency.decimal,
             )
             output_value = value_to_float(
-                value=self.request.output_raw,
+                value=self.request.output_value_raw,
                 decimal=output_currency.decimal,
             )
             value_str = f'{output_value} -> {output_currency_value} {output_currency.id_str.upper()}'
@@ -193,12 +193,27 @@ class RequestView(ClientBaseView):
         )
 
     async def get_controls_waiting(self):
+        confirm_str = await self.client.session.gtv(key='request_confirm')
+        time_str = ''
+        if self.request.waiting_delta:
+            time_delta = self.request.waiting_delta
+            minutes = 0
+            while time_delta >= 60:
+                time_delta -= 60
+                minutes += 1
+            seconds = int(time_delta)
+            time_str = f'{minutes:02}:{seconds:02}'
+        button_str = f'{confirm_str} {time_str}'
         return [
             Container(
                 content=Row(
                     controls=[
                         StandardButton(
-                            text=await self.client.session.gtv(key='confirm'),
+                            content=Text(
+                                value=button_str,
+                                size=16,
+                                font_family=Fonts.BOLD,
+                            ),
                             on_click=self.waiting_confirm,
                             expand=True,
                         )
@@ -217,9 +232,12 @@ class RequestView(ClientBaseView):
         cards: list = []
         for order in self.orders:
             currency = await self.client.session.api.client.currencies.get(id_str=order.currency)
-            state_str = await self.client.session.gtv(key=f'request_order_state_{order.state}')
+            state_str = await self.client.session.gtv(key=f'request_order_{order.type}_{order.state}')
             value = value_to_float(value=order.currency_value, decimal=currency.decimal)
             value_str = f'{value} {currency.id_str.upper()}'
+            color, bgcolor = colors.ON_PRIMARY, colors.PRIMARY
+            if order.state in ['completed', 'canceled']:
+                color, bgcolor = colors.ON_PRIMARY_CONTAINER, colors.PRIMARY_CONTAINER
             cards.append(
                 StandardButton(
                     content=Row(
@@ -230,9 +248,9 @@ class RequestView(ClientBaseView):
                                         controls=[
                                             Text(
                                                 value=state_str,
-                                                size=8,
+                                                size=12,
                                                 font_family=Fonts.SEMIBOLD,
-                                                color=colors.ON_PRIMARY_CONTAINER,
+                                                color=color,
                                             ),
                                         ],
                                     ),
@@ -242,7 +260,7 @@ class RequestView(ClientBaseView):
                                                 value=f'404 CARD NUMBER',
                                                 size=28,
                                                 font_family=Fonts.SEMIBOLD,
-                                                color=colors.ON_PRIMARY_CONTAINER,
+                                                color=color,
                                             ),
                                         ],
                                     ),
@@ -252,7 +270,7 @@ class RequestView(ClientBaseView):
                                                 value=value_str,
                                                 size=16,
                                                 font_family=Fonts.SEMIBOLD,
-                                                color=colors.ON_PRIMARY_CONTAINER,
+                                                color=color,
                                             ),
                                         ],
                                     ),
@@ -262,14 +280,14 @@ class RequestView(ClientBaseView):
                             Image(
                                 src=Icons.OPEN,
                                 height=32,
-                                color=colors.ON_PRIMARY_CONTAINER,
+                                color=color,
                             ),
                         ],
                         alignment=MainAxisAlignment.SPACE_BETWEEN,
                         spacing=2,
                     ),
                     on_click=partial(self.order_view, order.id),
-                    bgcolor=colors.PRIMARY_CONTAINER,
+                    bgcolor=bgcolor,
                 ),
             )
         return cards
@@ -368,7 +386,7 @@ class RequestView(ClientBaseView):
         )
 
     async def order_view(self, order_id: int, _):
-        await self.client.change_view(view=OrderView(order_id=order_id))
+        await self.client.change_view(view=RequestOrderView(order_id=order_id))
 
     async def waiting_confirm(self, _):
         await self.client.session.api.client.requests.update_confirmation(id_=self.request_id)

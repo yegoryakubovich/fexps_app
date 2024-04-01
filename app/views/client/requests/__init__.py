@@ -17,4 +17,4 @@
 
 from .create import RequestCreateView
 from .get import RequestView
-from .orders import OrderView
+from .orders import RequestOrderView

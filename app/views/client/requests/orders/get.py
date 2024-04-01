@@ -29,7 +29,7 @@ from app.utils.value import value_to_str
 from fexps_api_client.utils import ApiException
 
 
-class OrderView(ClientBaseView):
+class RequestOrderView(ClientBaseView):
     route = '/client/request/order/get'
     order = dict
     request = dict
@@ -277,15 +277,35 @@ class OrderView(ClientBaseView):
             decimal=self.currency.decimal,
         )
         currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
+        input_payment_confirm = await self.client.session.gtv(key='request_order_input_payment_button')
         return StandardButton(
             content=Text(
-                value=f'{await self.client.session.gtv(key='order_payment_confirm')} {currency_value_str}',
+                value=f'{input_payment_confirm} {currency_value_str}',
                 size=20,
                 font_family=Fonts.SEMIBOLD,
                 color=colors.ON_PRIMARY,
             ),
             bgcolor=colors.PRIMARY,
             on_click=self.input_field_dialog_open,
+            expand=2,
+        )
+
+    async def get_output_confirmation_button(self) -> StandardButton:
+        currency_value = value_to_float(
+            value=self.order.currency_value,
+            decimal=self.currency.decimal,
+        )
+        currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
+        output_confirmation = await self.client.session.gtv(key='request_order_output_confirmation_button')
+        return StandardButton(
+            content=Text(
+                value=f'{output_confirmation} {currency_value_str}',
+                size=20,
+                font_family=Fonts.SEMIBOLD,
+                color=colors.ON_PRIMARY,
+            ),
+            bgcolor=colors.PRIMARY,
+            on_click=self.output_confirmation_confirm,
             expand=2,
         )
 
@@ -342,7 +362,7 @@ class OrderView(ClientBaseView):
                 ]
             else:  # completed, canceled
                 pass
-        elif self.order.state == 'output':
+        elif self.order.type == 'output':
             if self.order.state == 'waiting':
                 pass
             elif self.order.state == 'payment':
@@ -351,6 +371,7 @@ class OrderView(ClientBaseView):
                 ]
             elif self.order.state == 'confirmation':
                 buttons += [
+                    await self.get_output_confirmation_button(),
                     await self.get_chat_button(),
                 ]
             else:  # completed, canceled
@@ -381,6 +402,10 @@ class OrderView(ClientBaseView):
     async def chat_open(self, _):
         pass
 
+    """
+    INPUT
+    """
+
     async def input_field_dialog_open(self, _):
         self.input_field_dialog.open = True
         await self.update_async()
@@ -401,6 +426,17 @@ class OrderView(ClientBaseView):
                 id_=self.order_id,
                 input_fields=self.input_fields,
             )
+            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
+
+    """
+    OUTPUT
+    """
+
+    async def output_confirmation_confirm(self, _):
+        try:
+            await self.client.session.api.client.orders.updates.completed(id_=self.order_id)
             await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
         except ApiException as exception:
             return await self.client.session.error(exception=exception)

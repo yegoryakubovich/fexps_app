@@ -81,7 +81,7 @@ class RequestTab(BaseTab):
                     decimal=output_currency.decimal,
                 )
                 output_value = value_to_float(
-                    value=request.output_raw,
+                    value=request.output_value_raw,
                     decimal=output_currency.decimal,
                 )
                 value_str = (
@@ -224,7 +224,7 @@ class RequestTab(BaseTab):
                     decimal=output_currency.decimal,
                 )
                 output_value = value_to_float(
-                    value=request.output_raw,
+                    value=request.output_value_raw,
                     decimal=output_currency.decimal,
                 )
                 value_str = (
