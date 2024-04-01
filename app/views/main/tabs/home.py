@@ -205,6 +205,7 @@ class HomeTab(BaseTab):
 
     async def get_currency_request_cards(self) -> list[StandardButton]:
         response = await self.client.session.api.client.requests.search()
+        logging.critical(response)
         self.current_requests = response.requests
         cards: list[StandardButton] = []
         for request in self.current_requests:
@@ -227,7 +228,7 @@ class HomeTab(BaseTab):
                     value=request.output_currency_value_raw,
                     decimal=output_currency.decimal,
                 )
-                output_value = value_to_float(value=request.output_raw, decimal=output_currency.decimal)
+                output_value = value_to_float(value=request.output_value_raw, decimal=output_currency.decimal)
                 value_str = (
                     f'{value_to_str(value=output_value)}'
                     f' -> '
