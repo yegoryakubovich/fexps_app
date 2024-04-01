@@ -17,4 +17,4 @@
 
 from .create import RequisiteCreateView, RequisiteTypes
 from .get import RequisiteView
-from .orders import OrderView
+from .orders import RequisiteOrderView

@@ -15,4 +15,4 @@
 #
 
 
-from .get import OrderView
+from .get import RequisiteOrderView
