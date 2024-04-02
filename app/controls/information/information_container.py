@@ -15,13 +15,14 @@
 #
 
 
-from .bottom_sheet import BottomSheet
-from .card import Card
-from .information_container import InformationContainer
-from .loading import Loading
-from .request_info import RequestInfo
-from .snack_bar import SnackBar
-from .subtitle import SubTitle
-from .text import Text
-from .title import Title
-from .transfer_info import TransferInfo
+from flet_core import Container as FletContainer, colors, ContinuousRectangleBorder, BoxShape
+
+
+class InformationContainer(FletContainer):
+    def __init__(self, content, color=colors.ON_PRIMARY, bgcolor=colors.PRIMARY, on_click=None, **kwargs):
+        super().__init__(**kwargs)
+        self.border_radius = 10
+        self.content = content
+        self.color = color
+        self.bgcolor = bgcolor
+        self.on_click = on_click

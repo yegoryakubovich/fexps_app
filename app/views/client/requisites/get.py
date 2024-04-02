@@ -105,7 +105,7 @@ class RequisiteView(ClientBaseView):
     async def get_order_row(self) -> Row:
         return Row(
             controls=[
-                SubTitle(value=await self.client.session.gtv(key='requisite_order_title')),
+                SubTitle(value=await self.client.session.gtv(key='requisite_orders_title')),
                 *await self.get_orders_cards(),
             ],
             wrap=True,

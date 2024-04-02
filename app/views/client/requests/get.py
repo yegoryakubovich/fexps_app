@@ -21,7 +21,7 @@ from flet_core import Column, colors, Control, ScrollMode, Row, MainAxisAlignmen
     padding, alignment, Image, Divider
 
 from app.controls.button import StandardButton
-from app.controls.information import Text, SubTitle
+from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons
 from app.views.client.requests.orders.get import RequestOrderView
@@ -87,7 +87,7 @@ class RequestView(ClientBaseView):
                 f'{output_currency_value} {output_currency.id_str.upper()}'
             )
             rate_str = f'{rate} {input_currency.id_str.upper()} / 1 {output_currency.id_str.upper()}'
-        return Container(
+        return InformationContainer(
             content=Column(
                 controls=[
                     Row(
@@ -296,7 +296,7 @@ class RequestView(ClientBaseView):
         return Row(
             scroll=ScrollMode.AUTO,
             controls=[
-                SubTitle(value=await self.client.session.gtv(key='request_order_input_title')),
+                SubTitle(value=await self.client.session.gtv(key='request_orders_input_title')),
                 *await self.get_orders_send_cards(),
             ],
             wrap=True,

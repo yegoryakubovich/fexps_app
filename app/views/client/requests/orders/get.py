@@ -22,7 +22,7 @@ from flet_core import SnackBar, Control, Column, Container, Row, Divider, MainAx
     padding, Image, colors, alignment, AlertDialog, TextButton, TextField, KeyboardType, ControlEvent
 
 from app.controls.button import StandardButton
-from app.controls.information import Text, SubTitle
+from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons
 from app.utils.value import value_to_str
@@ -52,7 +52,7 @@ class RequestOrderView(ClientBaseView):
             decimal=self.currency.decimal,
         )
         currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
-        return Container(
+        return InformationContainer(
             content=Column(
                 controls=[
                     Row(
@@ -388,7 +388,7 @@ class RequestOrderView(ClientBaseView):
                 )
             ]
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='order'),
+            title=await self.client.session.gtv(key='request_order_title'),
             with_expand=True,
             main_section_controls=controls,
         )

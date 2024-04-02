@@ -22,7 +22,7 @@ from flet_core import SnackBar, Control, Column, Container, Row, Divider, MainAx
     padding, Image, colors, alignment, AlertDialog, TextButton, TextField, KeyboardType, ControlEvent
 
 from app.controls.button import StandardButton
-from app.controls.information import Text, SubTitle
+from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons
 from app.utils.value import value_to_str
@@ -52,7 +52,7 @@ class RequisiteOrderView(ClientBaseView):
             decimal=self.currency.decimal,
         )
         currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
-        return Container(
+        return InformationContainer(
             content=Column(
                 controls=[
                     Row(
@@ -149,7 +149,7 @@ class RequisiteOrderView(ClientBaseView):
 
     async def get_help_cards(self) -> list[Control]:
         return [
-            SubTitle(value=await self.client.session.gtv(key='request_order_help_title')),
+            SubTitle(value=await self.client.session.gtv(key='help_card_title')),
             StandardButton(
                 content=Row(
                     controls=[
@@ -395,7 +395,7 @@ class RequisiteOrderView(ClientBaseView):
                 )
             ]
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='request_order_title'),
+            title=await self.client.session.gtv(key='requisite_order_title'),
             with_expand=True,
             main_section_controls=controls,
         )

@@ -13,15 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
+
 from functools import partial
 
 from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, TextAlign, \
-    Stack, alignment, Margin, Padding
+    Stack, alignment, Padding
 
 from app.controls.button import Chip
 from app.controls.button.standart import StandardButton
-from app.controls.information import Card, Text
+from app.controls.information import Card, Text, InformationContainer
 from app.controls.information.subtitle import SubTitle
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts, Icons
@@ -73,41 +74,40 @@ class HomeTab(BaseTab):
         wallet_name = self.client.session.current_wallet.name
         value = value_to_float(value=self.client.session.current_wallet.value)
         value_str = value_to_str(value=value)
-        return Container(
+        return InformationContainer(
             content=Stack(
                 controls=[
                     Column(
                         controls=[
-                            Container(
-                                content=Text(
-                                    value=f'{wallet_name}',
-                                    size=32,
-                                    font_family=Fonts.REGULAR,
-                                    color=colors.ON_PRIMARY,
-                                ),
-                                alignment=alignment.top_center,
-                                margin=Margin(left=0, right=0, top=15, bottom=0)
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=f'{wallet_name}',
+                                        size=32,
+                                        font_family=Fonts.REGULAR,
+                                        color=colors.ON_PRIMARY,
+                                    )
+                                ],
+                                alignment=MainAxisAlignment.CENTER,
+                            ),
+                            Row(
+                                controls=[
+                                    Image(
+                                        src=Icons.COIN,
+                                        width=28,
+                                        color=colors.ON_PRIMARY,
+                                    ),
+                                    Text(
+                                        value=f'{value_str}',
+                                        size=48,
+                                        font_family=Fonts.BOLD,
+                                        color=colors.ON_PRIMARY,
+                                    ),
+                                ],
+                                alignment=MainAxisAlignment.CENTER,
                             ),
                         ],
-                    ),
-                    Container(
-                        content=Row(
-                            controls=[
-                                Image(
-                                    src=Icons.COIN,
-                                    width=28,
-                                    color=colors.ON_PRIMARY,
-                                ),
-                                Text(
-                                    value=f'{value_str}',
-                                    size=48,
-                                    font_family=Fonts.BOLD,
-                                    color=colors.ON_PRIMARY,
-                                ),
-                            ],
-                            alignment=MainAxisAlignment.CENTER,
-                        ),
-                        alignment=alignment.center,
+                        alignment=MainAxisAlignment.CENTER,
                     ),
                     Container(
                         content=StandardButton(
@@ -126,7 +126,6 @@ class HomeTab(BaseTab):
                 ],
                 expand=True,
             ),
-            bgcolor=colors.PRIMARY,
             height=150,
         )
 
@@ -205,7 +204,6 @@ class HomeTab(BaseTab):
 
     async def get_currency_request_cards(self) -> list[StandardButton]:
         response = await self.client.session.api.client.requests.search()
-        logging.critical(response)
         self.current_requests = response.requests
         cards: list[StandardButton] = []
         for request in self.current_requests:
