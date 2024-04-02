@@ -96,35 +96,35 @@ class WalletSelectView(ClientBaseView):
                 Container(
                     content=Row(
                         controls=[
-                            Container(
-                                content=Row(
-                                    controls=[
-                                        StandardButton(
-                                            text=await self.client.session.gtv(key='request_create_button'),
-                                            on_click=self.go_back,
-                                            expand=True,
-                                        ),
-                                        StandardButton(
-                                            text=await self.client.session.gtv(key='request_create_button'),
-                                            on_click=self.go_back,
-                                            expand=True,
-                                        ),
-                                    ],
-                                ),
+                            StandardButton(
+                                text=await self.client.session.gtv(key='wallet_edit_name'),
+                                on_click=self.dialog_edit_name_open,
                                 expand=True,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                                bgcolor=colors.PRIMARY_CONTAINER,
                             ),
-                            Container(
-                                content=StandardButton(
-                                    text=await self.client.session.gtv(key='request_create_button'),
-                                    on_click=self.go_back,
-                                    expand=True,
-                                ),
+                            StandardButton(
+                                text=await self.client.session.gtv(key='wallet_permissions'),
+                                on_click=None,
                                 expand=True,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                                bgcolor=colors.PRIMARY_CONTAINER,
                             ),
                         ],
                     ),
                     expand=True,
                     alignment=alignment.bottom_center,
+                ),
+                Container(
+                    content=Row(
+                        controls=[
+                            StandardButton(
+                                text=await self.client.session.gtv(key='wallet_select'),
+                                on_click=self.switch_wallet,
+                                expand=True,
+                            ),
+                        ],
+                    ),
                 ),
 
                 # Container(
@@ -176,6 +176,9 @@ class WalletSelectView(ClientBaseView):
                 # ),
             ],
         )
+
+    async def go_back(self, _):
+        await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
 
     async def select_wallet(self, wallet_id: int, _):
         self.selected_wallet_id = wallet_id
