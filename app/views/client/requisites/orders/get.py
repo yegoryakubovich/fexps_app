@@ -142,6 +142,7 @@ class RequisiteOrderView(ClientBaseView):
                         alignment=MainAxisAlignment.SPACE_BETWEEN,
                     ),
                 ],
+                spacing=-50,
             ),
             bgcolor=self.method.bgcolor,
             padding=padding.symmetric(vertical=32, horizontal=32),

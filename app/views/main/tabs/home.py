@@ -207,7 +207,7 @@ class HomeTab(BaseTab):
         self.current_requests = response.requests
         cards: list[StandardButton] = []
         for request in self.current_requests:
-            state = await self.client.session.gtv(key=f'request_state_{request.state}')
+            state_str = await self.client.session.gtv(key=f'request_state_{request.state}')
             if request.type == 'input':
                 input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
                 input_currency_value = value_to_float(
@@ -268,7 +268,7 @@ class HomeTab(BaseTab):
                                     Row(
                                         controls=[
                                             Text(
-                                                value=state,
+                                                value=state_str,
                                                 size=18,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,

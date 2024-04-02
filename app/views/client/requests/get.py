@@ -87,6 +87,7 @@ class RequestView(ClientBaseView):
                 f'{output_currency_value} {output_currency.id_str.upper()}'
             )
             rate_str = f'{rate} {input_currency.id_str.upper()} / 1 {output_currency.id_str.upper()}'
+        state_row = await self.client.session.gtv(key=f'request_{self.request.type}_{self.request.state}')
         return InformationContainer(
             content=Column(
                 controls=[
@@ -127,7 +128,7 @@ class RequestView(ClientBaseView):
                                 color=colors.ON_PRIMARY_CONTAINER,
                             ),
                             Text(
-                                value=await self.client.session.gtv(key=f'request_state_{self.request.state}'),
+                                value=state_row,
                                 size=14,
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
@@ -187,6 +188,7 @@ class RequestView(ClientBaseView):
                         alignment=MainAxisAlignment.SPACE_BETWEEN,
                     ),
                 ],
+                spacing=-50,
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
             padding=padding.symmetric(vertical=32, horizontal=32),

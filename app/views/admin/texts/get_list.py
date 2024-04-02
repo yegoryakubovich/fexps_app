@@ -33,7 +33,7 @@ class TextListView(AdminBaseView):
     texts: list[dict]
     page_text: int = 1
     total_pages: int = 1
-    items_per_page: int = 6
+    items_per_page: int = 10
 
     async def build(self):
         await self.set_type(loading=True)
