@@ -15,6 +15,7 @@
 #
 
 
+import asyncio
 import logging
 from functools import partial
 
@@ -426,18 +427,22 @@ class RequisiteOrderView(ClientBaseView):
         self.input_fields[key] = event.data
 
     async def output_field_dialog_confirm(self, _):
+        self.output_field_dialog.open = False
+        await self.update_async()
+        await asyncio.sleep(0.1)
+        await self.set_type(loading=True)
         for input_scheme_field in self.order.input_scheme_fields:
             if not self.input_fields.get(input_scheme_field['key']):
                 continue
             if input_scheme_field['type'] == 'int':
                 self.input_fields[input_scheme_field['key']] = int(self.input_fields[input_scheme_field['key']])
-        self.output_field_dialog.open = False
-        await self.update_async()
         try:
             await self.client.session.api.client.orders.updates.confirmation(
                 id_=self.order_id,
                 input_fields=self.input_fields,
             )
+            await self.set_type(loading=False)
             await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
         except ApiException as exception:
+            await self.set_type(loading=False)
             return await self.client.session.error(exception=exception)

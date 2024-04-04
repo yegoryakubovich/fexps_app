@@ -126,54 +126,6 @@ class WalletSelectView(ClientBaseView):
                         ],
                     ),
                 ),
-
-                # Container(
-                #     content=Row(
-                #         controls=[
-                #             Row(
-                #                 controls=[
-                #                     StandardButton(
-                #                         text=await self.client.session.gtv(key='wallet_edit_name'),
-                #                         on_click=self.dialog_edit_name_open,
-                #                         expand=True,
-                #                         color=colors.ON_PRIMARY_CONTAINER,
-                #                         bgcolor=colors.PRIMARY_CONTAINER,
-                #                     ),
-                #                     StandardButton(
-                #                         text=await self.client.session.gtv(key='wallet_permissions'),
-                #                         on_click=None,
-                #                         expand=True,
-                #                         color=colors.ON_PRIMARY_CONTAINER,
-                #                         bgcolor=colors.PRIMARY_CONTAINER,
-                #                     ),
-                #                 ],
-                #                 spacing=16,
-                #             ),
-                #             Row(
-                #                 controls=[
-                #                     StandardButton(
-                #                         text=await self.client.session.gtv(key='wallet_new_create'),
-                #                         on_click=self.dialog_create_open,
-                #                         expand=True,
-                #                         color=colors.ON_PRIMARY_CONTAINER,
-                #                         bgcolor=colors.PRIMARY_CONTAINER,
-                #                     ),
-                #                 ],
-                #             ),
-                #             Row(
-                #                 controls=[
-                #                     StandardButton(
-                #                         text=await self.client.session.gtv(key='wallet_select'),
-                #                         on_click=self.switch_wallet,
-                #                         expand=True,
-                #                     ),
-                #                 ],
-                #             ),
-                #         ],
-                #     ),
-                #     expand=True,
-                #     alignment=alignment.bottom_center,
-                # ),
             ],
         )
 
