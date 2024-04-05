@@ -15,9 +15,8 @@
 #
 
 
-from flet_core import padding, ScrollMode, Row, Column, Container, KeyboardType
+from flet_core import padding, ScrollMode, Row, Column, Container, KeyboardType, ControlEvent
 from flet_core.dropdown import Option
-from watchdog.observers.winapi import CreateEvent
 
 from app.controls.button import StandardButton
 from app.controls.input import Dropdown, TextField
@@ -120,7 +119,7 @@ class RequisiteCreateView(ClientBaseView):
             main_section_controls=controls,
         )
 
-    async def change_type_or_currency(self, _: CreateEvent):
+    async def change_type_or_currency(self, _: ControlEvent):
         async def get_input_method():
             input_method_options = []
             for method in self.methods:
