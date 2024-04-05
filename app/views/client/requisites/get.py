@@ -257,9 +257,10 @@ class RequisiteView(ClientBaseView):
             controls += await self.get_controls_input()
         elif self.requisite.type == 'output':
             controls += await self.get_controls_output()
+        title_str = await self.client.session.gtv(key='requisite_get_title')
         self.controls = await self.get_controls(
             with_expand=True,
-            title=f'{await self.client.session.gtv(key='requisite_get_title')} #{self.requisite.id:08}',
+            title=f'{title_str} #{self.requisite.id:08}',
             main_section_controls=controls,
         )
 
