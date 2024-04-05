@@ -402,7 +402,8 @@ class RequestOrderView(ClientBaseView):
         await self.client.page.set_clipboard_async(str(data))
 
     async def chat_open(self, _):
-        pass
+        from app.views.client.chat import ChatView
+        await self.client.change_view(view=ChatView(order_id=self.order_id))
 
     """
     INPUT

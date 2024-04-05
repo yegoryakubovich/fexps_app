@@ -108,12 +108,13 @@ class ClientBaseView(View):
             on_create_click: Any = None,
             back_with_restart: bool = False,
             with_expand: bool = False,
+            go_back_func: callable = None,
     ) -> list:
-
         title_control = await self.get_title(
             title=title,
             on_create_click=on_create_click,
             back_with_restart=back_with_restart,
+            go_back_func=go_back_func,
         )
 
         main_content = [

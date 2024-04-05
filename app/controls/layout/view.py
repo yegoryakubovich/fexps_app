@@ -58,7 +58,8 @@ class View(BaseView):
             title: str,
             go_back_button=True,
             on_create_click=None,
-            back_with_restart=False
+            back_with_restart=False,
+            go_back_func: callable = None,
     ):
 
         async def go_back(_):
@@ -78,7 +79,7 @@ class View(BaseView):
                             ),
                             border_radius=6,
                             ink=True,
-                            on_click=go_back,
+                            on_click=go_back_func if go_back_func else go_back,
                         ),
                         Text(
                             value=title,
