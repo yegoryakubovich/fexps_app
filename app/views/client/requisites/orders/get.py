@@ -340,6 +340,42 @@ class RequisiteOrderView(ClientBaseView):
             expand=1,
         )
 
+    async def get_value_edit_button(self) -> StandardButton:
+        return StandardButton(
+            content=Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='value_edit_button'),
+                        size=20,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.CENTER,
+            ),
+            bgcolor=colors.PRIMARY_CONTAINER,
+            on_click=self.on_dev,
+            expand=1,
+        )
+
+    async def get_cancel_button(self) -> StandardButton:
+        return StandardButton(
+            content=Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='cancel_button'),
+                        size=20,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.CENTER,
+            ),
+            bgcolor=colors.PRIMARY_CONTAINER,
+            on_click=self.on_dev,
+            expand=1,
+        )
+
     async def build(self):
         self.input_fields = {}
         self.output_field_dialog = AlertDialog()
@@ -375,6 +411,8 @@ class RequisiteOrderView(ClientBaseView):
             elif self.order.state == 'payment':
                 await self.create_output_payment_dialog()
                 buttons += [
+                    await self.get_cancel_button(),
+                    await self.get_value_edit_button(),
                     await self.get_output_payment_button(),
                     await self.get_chat_button(),
                 ]
@@ -447,3 +485,10 @@ class RequisiteOrderView(ClientBaseView):
         except ApiException as exception:
             await self.set_type(loading=False)
             return await self.client.session.error(exception=exception)
+
+    async def on_dev(self, _):
+        await self.client.session.bs_info.open_(
+            icon=Icons.CHILL,
+            title=await self.client.session.gtv(key='in_dev_title'),
+            description=await self.client.session.gtv(key='in_dev_description'),
+        )
