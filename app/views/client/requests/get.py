@@ -16,7 +16,6 @@
 
 
 import asyncio
-import logging
 from functools import partial
 
 from flet_core import Column, colors, Control, ScrollMode, Row, MainAxisAlignment, Container, \
@@ -36,7 +35,6 @@ class DynamicTimer(UserControl):
         super().__init__()
         self.running = True
         self.seconds = seconds
-        logging.critical(seconds)
 
     async def did_mount_async(self):
         asyncio.create_task(self.update_second())
@@ -54,7 +52,6 @@ class DynamicTimer(UserControl):
 
     async def update_second(self):
         while self.seconds and self.running:
-            logging.critical(self.seconds)
             self.time_text.value = self.get_time()
             await self.update_async()
             await asyncio.sleep(1)
@@ -419,7 +416,7 @@ class RequestView(ClientBaseView):
             await self.get_info_card(),
         ]
         if self.request.state == 'loading':
-            pass
+            asyncio.create_task(self.auto_reloader())
         elif self.request.state == 'waiting':
             controls += await self.get_controls_waiting()
         else:
@@ -436,3 +433,12 @@ class RequestView(ClientBaseView):
     async def waiting_confirm(self, _):
         await self.client.session.api.client.requests.update_confirmation(id_=self.request_id)
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+
+    async def auto_reloader(self):
+        await asyncio.sleep(5)
+        while True:
+            if self.request.state != 'loading':
+                return
+            await self.build()
+            await self.update_async()
+            await asyncio.sleep(3)
