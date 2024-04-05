@@ -421,9 +421,10 @@ class RequestView(ClientBaseView):
             controls += await self.get_controls_waiting()
         else:
             controls += await self.get_controls_other()
+        title_str = await self.client.session.gtv(key='request_get_title')
         self.controls = await self.get_controls(
             with_expand=True,
-            title=f'{await self.client.session.gtv(key='request_get_title')} #{self.request.id:08}',
+            title=f'{title_str} #{self.request.id:08}',
             main_section_controls=controls,
         )
 
