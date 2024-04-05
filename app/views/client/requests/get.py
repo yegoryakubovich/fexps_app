@@ -426,6 +426,7 @@ class RequestView(ClientBaseView):
             with_expand=True,
             title=f'{title_str} #{self.request.id:08}',
             main_section_controls=controls,
+            back_with_restart=True,
         )
 
     async def order_view(self, order_id: int, _):

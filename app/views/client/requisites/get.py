@@ -262,6 +262,7 @@ class RequisiteView(ClientBaseView):
             with_expand=True,
             title=f'{title_str} #{self.requisite.id:08}',
             main_section_controls=controls,
+            back_with_restart=True,
         )
 
     async def order_view(self, order_id: int, _):
