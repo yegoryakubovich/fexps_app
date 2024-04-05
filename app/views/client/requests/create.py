@@ -58,7 +58,7 @@ class RequestCreateView(ClientBaseView):
     """
 
     async def get_currency_options(self, exclude_currency: str = None) -> list[Option]:
-        options = [Option(text='ECOIN', key='ecoin')] if exclude_currency != 'ecoin' else []
+        options = [Option(text='YC', key='ecoin')] if exclude_currency != 'ecoin' else []
         for currency in self.currencies:
             if currency.id_str == exclude_currency:
                 continue
