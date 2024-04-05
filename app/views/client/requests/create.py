@@ -15,7 +15,6 @@
 #
 
 
-import logging
 from functools import partial
 
 from flet_core import Column, Container, KeyboardType, Row, alignment, Control
@@ -26,6 +25,7 @@ from app.controls.information import SubTitle
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import ClientBaseView
 from app.utils.value import value_to_int
+from app.views.client.requests.get import RequestView
 from fexps_api_client.utils import ApiException
 
 
@@ -234,7 +234,7 @@ class RequestCreateView(ClientBaseView):
             output_requisite_data_id = self.dd_output_requisite_data.value
             output_currency_value = value_to_int(value=self.tf_output_value.value, decimal=output_currency.decimal)
         try:
-            await self.client.session.api.client.requests.create(
+            request_id = await self.client.session.api.client.requests.create(
                 wallet_id=wallet_id,
                 type_=type_,
                 input_method_id=input_method_id,
@@ -245,7 +245,11 @@ class RequestCreateView(ClientBaseView):
                 output_value=output_value,
             )
             await self.set_type(loading=False)
-            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+            await self.client.change_view(
+                view=RequestView(request_id=request_id),
+                delete_current=True,
+                with_restart=True,
+            )
         except ApiException as exception:
             await self.set_type(loading=False)
             return await self.client.session.error(exception=exception)

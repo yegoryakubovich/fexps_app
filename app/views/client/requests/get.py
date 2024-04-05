@@ -15,16 +15,63 @@
 #
 
 
+import asyncio
+import logging
 from functools import partial
 
 from flet_core import Column, colors, Control, ScrollMode, Row, MainAxisAlignment, Container, \
-    padding, alignment, Image, Divider
+    padding, alignment, Image, Divider, UserControl
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons
 from app.views.client.requests.orders.get import RequestOrderView
+
+
+class DynamicTimer(UserControl):
+    time_text: Text
+
+    def __init__(self, seconds: int):
+        super().__init__()
+        self.running = True
+        self.seconds = seconds
+        logging.critical(seconds)
+
+    async def did_mount_async(self):
+        asyncio.create_task(self.update_second())
+
+    async def will_unmount_async(self):
+        self.running = False
+
+    def get_time(self):
+        seconds = self.seconds
+        minutes = 0
+        while seconds >= 60:
+            seconds -= 60
+            minutes += 1
+        return f'{minutes:02}:{seconds:02}'
+
+    async def update_second(self):
+        while self.seconds and self.running:
+            logging.critical(self.seconds)
+            self.time_text.value = self.get_time()
+            await self.update_async()
+            await asyncio.sleep(1)
+            self.seconds -= 1
+
+    def build(self):
+        Text(
+            value='',
+            size=16,
+            font_family=Fonts.BOLD,
+        )
+        self.time_text = Text(
+            value='',
+            size=16,
+            font_family=Fonts.BOLD,
+        )
+        return self.time_text
 
 
 class RequestView(ClientBaseView):
@@ -196,25 +243,21 @@ class RequestView(ClientBaseView):
 
     async def get_controls_waiting(self):
         confirm_str = await self.client.session.gtv(key='request_confirm')
-        time_str = ''
-        if self.request.waiting_delta:
-            time_delta = self.request.waiting_delta
-            minutes = 0
-            while time_delta >= 60:
-                time_delta -= 60
-                minutes += 1
-            seconds = int(time_delta)
-            time_str = f'{minutes:02}:{seconds:02}'
-        button_str = f'{confirm_str} {time_str}'
         return [
             Container(
                 content=Row(
                     controls=[
                         StandardButton(
-                            content=Text(
-                                value=button_str,
-                                size=16,
-                                font_family=Fonts.BOLD,
+                            content=Row(
+                                controls=[
+                                    Text(
+                                        value=confirm_str,
+                                        size=16,
+                                        font_family=Fonts.BOLD,
+                                    ),
+                                    DynamicTimer(seconds=self.request.waiting_delta),
+                                ],
+                                alignment=MainAxisAlignment.CENTER,
                             ),
                             on_click=self.waiting_confirm,
                             expand=True,
