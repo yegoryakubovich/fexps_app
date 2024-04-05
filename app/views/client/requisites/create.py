@@ -218,7 +218,7 @@ class RequisiteCreateView(ClientBaseView):
         ]
         await self.update_async()
 
-    async def requisite_create(self, _: CreateEvent):
+    async def requisite_create(self, _: ControlEvent):
         await self.set_type(loading=True)
         currency = await self.client.session.api.client.currencies.get(id_str=self.dd_currency.value)
         currency_value = value_to_int(
