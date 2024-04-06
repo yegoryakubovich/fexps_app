@@ -17,6 +17,7 @@
 
 import asyncio
 import json
+import logging
 
 import aiohttp
 from flet_core import Container, Row, alignment, Column, UserControl, Control, colors, MainAxisAlignment, padding, \
@@ -54,7 +55,7 @@ class Chat(UserControl):
                                 color=colors.ON_PRIMARY_CONTAINER,
                             ),
                             Text(
-                                value=message['date'].strftime(settings.datetime_format),
+                                value=message['date'],
                                 size=14,
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
@@ -120,8 +121,8 @@ class Chat(UserControl):
     async def update_chat(self):
         async for message in self.websocket:
             if message.type == aiohttp.WSMsgType.TEXT:
-                json_data = json.loads(message.data)
-                message = await self.api.client.messages.get(id_=json_data['id'])
+                message = json.loads(message.data)
+                logging.critical(message)
                 self.control_list.append(
                     self.create_message_card(account_id=self.account_id, message=message)
                 )
