@@ -19,7 +19,7 @@ import webbrowser
 from functools import partial
 from typing import Any
 
-from flet_core import Column, ScrollMode, Container, Padding, padding, colors, alignment, CrossAxisAlignment, \
+from flet_core import Column, ScrollMode, Container, padding, colors, alignment, CrossAxisAlignment, \
     CircleAvatar, Image
 
 from app.controls.button import ListItemButton
@@ -168,58 +168,50 @@ class AccountTab(BaseTab):
 
         self.scroll = ScrollMode.AUTO
         self.controls = [
+            Title(value=await self.client.session.gtv(key='account_tab_title')),
             Container(
                 content=Column(
                     controls=[
-                        Title(value=await self.client.session.gtv(key='account_tab_title')),
-                        Container(
-                            content=Column(
-                                controls=[
-                                    CircleAvatar(
-                                        content=Image(
-                                            src=Icons.ACCOUNT,
-                                            color=colors.SECONDARY,
-                                        ),
-                                        bgcolor=colors.ON_PRIMARY,
-                                        radius=38,
-                                    ),
-                                    Text(
-                                        value=f'{firstname} {lastname}',
-                                        font_family=Fonts.SEMIBOLD,
-                                        size=30,
-                                        color=colors.ON_BACKGROUND,
-                                    ),
-                                    Text(
-                                        value=f'@{username}',
-                                        font_family=Fonts.SEMIBOLD,
-                                        size=12,
-                                        color=colors.ON_BACKGROUND,
-                                    ),
-                                ],
-                                spacing=0,
-                                horizontal_alignment=CrossAxisAlignment.CENTER,
+                        CircleAvatar(
+                            content=Image(
+                                src=Icons.ACCOUNT,
+                                color=colors.SECONDARY,
                             ),
-                            padding=padding.only(top=24),
-                            alignment=alignment.center,
+                            bgcolor=colors.ON_PRIMARY,
+                            radius=38,
                         ),
-                        *sections_controls,
-                        Container(
-                            content=Text(
-                                value=f'{await self.client.session.gtv(key="version")} {settings.version}',
-                                font_family=Fonts.REGULAR,
-                                size=16,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                            alignment=alignment.center,
-                            on_click=self.go_admin,
-                            padding=padding.symmetric(vertical=4),
-                            ink=True,
+                        Text(
+                            value=f'{firstname} {lastname}',
+                            font_family=Fonts.SEMIBOLD,
+                            size=30,
+                            color=colors.ON_BACKGROUND,
+                        ),
+                        Text(
+                            value=f'@{username}',
+                            font_family=Fonts.SEMIBOLD,
+                            size=12,
+                            color=colors.ON_BACKGROUND,
                         ),
                     ],
-                    expand=True,
+                    spacing=0,
+                    horizontal_alignment=CrossAxisAlignment.CENTER,
                 ),
-                padding=Padding(right=48, left=48, top=0, bottom=0),
-            )
+                padding=padding.only(top=24),
+                alignment=alignment.center,
+            ),
+            *sections_controls,
+            Container(
+                content=Text(
+                    value=f'{await self.client.session.gtv(key="version")} {settings.version}',
+                    font_family=Fonts.REGULAR,
+                    size=16,
+                    color=colors.ON_BACKGROUND,
+                ),
+                alignment=alignment.center,
+                on_click=self.go_admin,
+                padding=padding.symmetric(vertical=4),
+                ink=True,
+            ),
         ]
 
     async def go_admin(self, _):

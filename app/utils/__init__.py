@@ -21,4 +21,4 @@ from .icons import Icons
 from .registration import Registration
 from .session import Session
 from .themes import themes
-from .value import value_to_float, value_to_int, get_decimal_places
+from .value import value_to_float, value_to_int, get_decimal_places, value_to_str

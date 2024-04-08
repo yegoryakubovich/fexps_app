@@ -15,18 +15,16 @@
 #
 
 
+from datetime import timedelta, datetime
 from functools import partial
 
 from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, TextAlign, \
-    Stack, alignment, Padding
+    Stack, alignment
 
-from app.controls.button import Chip
-from app.controls.button.standart import StandardButton
-from app.controls.information import Card, Text, InformationContainer
-from app.controls.information.subtitle import SubTitle
+from app.controls.button import Chip, StandardButton
+from app.controls.information import Card, Text, InformationContainer, SubTitle
 from app.controls.navigation.pagination import PaginationWidget
-from app.utils import Fonts, Icons
-from app.utils.value import value_to_float, value_to_str
+from app.utils import Fonts, Icons, value_to_float, value_to_str
 from app.views.client.requests import RequestView
 from app.views.main.tabs.base import BaseTab
 
@@ -51,7 +49,15 @@ class HomeTab(BaseTab):
         self.selected_chip = Chips.all
 
     async def get_account(self):
-        hello_text_str = await self.client.session.gtv(key='good_morning')
+        time_now = datetime.now().replace(tzinfo=None) + timedelta(hours=self.client.session.timezone.deviation)
+        if time_now.hour < 6:
+            hello_text_str = await self.client.session.gtv(key='good_night')
+        elif time_now.hour < 12:
+            hello_text_str = await self.client.session.gtv(key='good_morning')
+        elif time_now.hour < 18:
+            hello_text_str = await self.client.session.gtv(key='good_evening')
+        else:
+            hello_text_str = await self.client.session.gtv(key='good_afternoon')
         hello_text_str = f'{hello_text_str},'
         return Row(
             controls=[
@@ -68,6 +74,7 @@ class HomeTab(BaseTab):
                     color=colors.ON_BACKGROUND,
                 ),
             ],
+            wrap=True,
         )
 
     async def get_balance(self):
@@ -419,19 +426,11 @@ class HomeTab(BaseTab):
         )
         self.scroll = ScrollMode.AUTO
         self.controls = [
-            Container(
-                content=Column(
-                    controls=[
-                        await self.get_account(),
-                        await self.get_balance(),
-                        await self.get_actions(),
-                        await self.get_currency_request(),
-                        await self.get_history_transfer(),
-                    ],
-                    expand=True,
-                ),
-                padding=Padding(right=48, left=48, top=0, bottom=0),
-            )
+            await self.get_account(),
+            await self.get_balance(),
+            await self.get_actions(),
+            await self.get_currency_request(),
+            await self.get_history_transfer(),
         ]
 
     async def change_wallet(self, event: ControlEvent):
