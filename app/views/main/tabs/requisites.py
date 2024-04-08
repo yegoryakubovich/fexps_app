@@ -37,6 +37,7 @@ class Chips:
 class RequisiteTab(BaseTab):
     requisites = list[dict]
     history_requests = dict
+    currency_orders = dict
     column: Column
 
     # History
@@ -47,6 +48,92 @@ class RequisiteTab(BaseTab):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.selected_chip = Chips.ALL
+
+    """
+    CURRENCY ORDERS
+    """
+
+    async def get_currently_orders_cards(self) -> list[StandardButton]:
+        self.currency_orders = await self.client.session.api.client.orders.list_get.main(
+            by_request=False,
+            by_requisite=True,
+            is_active=True,
+            is_finished=False,
+        )
+        cards: list[StandardButton] = []
+        for order in self.currency_orders:
+            currency = await self.client.session.api.client.currencies.get(id_str=order.currency)
+            state_str = await self.client.session.gtv(key=f'requisite_order_state_{order.state}')
+            value = value_to_float(value=order.currency_value, decimal=currency.decimal)
+            value_str = f'{value} {currency.id_str.upper()}'
+            color, bgcolor = colors.ON_PRIMARY, colors.PRIMARY
+            if order.state in ['completed', 'canceled']:
+                color, bgcolor = colors.ON_PRIMARY_CONTAINER, colors.PRIMARY_CONTAINER
+            cards.append(
+                StandardButton(
+                    content=Row(
+                        controls=[
+                            Column(
+                                controls=[
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=state_str,
+                                                size=8,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=color,
+                                            ),
+                                        ],
+                                    ),
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=f'404 CARD NUMBER',
+                                                size=28,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=color,
+                                            ),
+                                        ],
+                                    ),
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=value_str,
+                                                size=16,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=color,
+                                            ),
+                                        ],
+                                    ),
+                                ],
+                                expand=True,
+                            ),
+                            Image(
+                                src=Icons.OPEN,
+                                height=32,
+                                color=color,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                        spacing=2,
+                    ),
+                    on_click=partial(self.order_view, order.id),
+                    bgcolor=bgcolor,
+                ),
+            )
+        return cards
+
+    async def get_currently_orders(self):
+        cards = await self.get_currently_orders_cards()
+        if not cards:
+            return Row()
+        return Row(
+            controls=[
+                SubTitle(value=await self.client.session.gtv(key='requisite_currently_orders_title')),
+                *cards,
+            ],
+            wrap=True,
+        )
 
     """
     REQUISITE HISTORY
@@ -178,12 +265,17 @@ class RequisiteTab(BaseTab):
                 create_name_text=await self.client.session.gtv(key='create'),
                 on_create=self.requisite_create,
             ),
+            await self.get_currently_orders(),
             await self.get_requisite_history(),
         ]
 
     async def requisite_create(self, _: ControlEvent):
         from app.views.client.requisites import RequisiteCreateView
         await self.client.change_view(view=RequisiteCreateView())
+
+    async def order_view(self, order_id: int, _: ControlEvent):
+        from app.views.client.requisites.orders import RequisiteOrderView
+        await self.client.change_view(view=RequisiteOrderView(order_id=order_id))
 
     async def chip_select(self, event: ControlEvent):
         self.selected_chip = event.control.key

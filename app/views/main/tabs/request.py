@@ -49,10 +49,10 @@ class RequestTab(BaseTab):
         self.selected_chip = Chips.COMPLETED
 
     """
-    CURRENCY REQUESTS
+    CURRENTLY REQUESTS
     """
 
-    async def get_currency_request_cards(self) -> list[StandardButton]:
+    async def get_currently_request_cards(self) -> list[StandardButton]:
         response = await self.client.session.api.client.requests.search()
         self.current_requests = response.requests
         cards: list[StandardButton] = []
@@ -151,13 +151,13 @@ class RequestTab(BaseTab):
             )
         return cards
 
-    async def get_currency_request(self):
-        cards = await self.get_currency_request_cards()
+    async def get_currently_request(self):
+        cards = await self.get_currently_request_cards()
         if not cards:
             return Row()
         return Row(
             controls=[
-                SubTitle(value=await self.client.session.gtv(key='requests_currency_title')),
+                SubTitle(value=await self.client.session.gtv(key='requests_currently_title')),
                 *cards,
             ],
             wrap=True,
@@ -334,7 +334,7 @@ class RequestTab(BaseTab):
                 create_name_text=await self.client.session.gtv(key='create'),
                 on_create=self.request_create,
             ),
-            await self.get_currency_request(),
+            await self.get_currently_request(),
             await self.get_history_request(),
         ]
 

@@ -206,10 +206,10 @@ class HomeTab(BaseTab):
         )
 
     """
-    CURRENCY REQUESTS
+    CURRENTLY REQUESTS
     """
 
-    async def get_currency_request_cards(self) -> list[StandardButton]:
+    async def get_currently_request_cards(self) -> list[StandardButton]:
         response = await self.client.session.api.client.requests.search()
         self.current_requests = response.requests
         cards: list[StandardButton] = []
@@ -221,19 +221,26 @@ class HomeTab(BaseTab):
                     value=request.input_currency_value_raw,
                     decimal=input_currency.decimal,
                 )
-                input_value = value_to_float(value=request.input_value_raw, decimal=input_currency.decimal)
+                input_value = value_to_float(
+                    value=request.input_value_raw,
+                    decimal=input_currency.decimal,
+                )
                 value_str = (
                     f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
                     f' -> '
                     f'{value_to_str(value=input_value)}'
                 )
             elif request.type == 'output':
-                output_currency = await self.client.session.api.client.currencies.get(id_str=request.output_currency)
+                output_currency = await self.client.session.api.client.currencies.get(
+                    id_str=request.output_currency)
                 output_currency_value = value_to_float(
                     value=request.output_currency_value_raw,
                     decimal=output_currency.decimal,
                 )
-                output_value = value_to_float(value=request.output_value_raw, decimal=output_currency.decimal)
+                output_value = value_to_float(
+                    value=request.output_value_raw,
+                    decimal=output_currency.decimal,
+                )
                 value_str = (
                     f'{value_to_str(value=output_value)}'
                     f' -> '
@@ -280,7 +287,7 @@ class HomeTab(BaseTab):
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
                                             ),
-                                        ]
+                                        ],
                                     ),
                                 ],
                                 expand=True,
@@ -301,13 +308,13 @@ class HomeTab(BaseTab):
             )
         return cards
 
-    async def get_currency_request(self):
-        cards = await self.get_currency_request_cards()
+    async def get_currently_request(self):
+        cards = await self.get_currently_request_cards()
         if not cards:
             return Row()
         return Row(
             controls=[
-                SubTitle(value=await self.client.session.gtv(key='requests_currency_title')),
+                SubTitle(value=await self.client.session.gtv(key='requests_currently_title')),
                 *cards,
             ],
             wrap=True,
@@ -429,7 +436,7 @@ class HomeTab(BaseTab):
             await self.get_account(),
             await self.get_balance(),
             await self.get_actions(),
-            await self.get_currency_request(),
+            await self.get_currently_request(),
             await self.get_history_transfer(),
         ]
 
