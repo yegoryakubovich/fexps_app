@@ -111,20 +111,16 @@ class RequisiteView(ClientBaseView):
             wrap=True,
         )
 
-    """
-    INPUT
-    """
-
-    async def get_help_cards_input(self) -> list[Control]:
+    async def get_help_cards(self) -> list[Control]:
         return [
-            SubTitle(value=await self.client.session.gtv(key='request_order_help_title')),
+            SubTitle(value=await self.client.session.gtv(key='requisite_help_title')),
             StandardButton(
                 content=Row(
                     controls=[
                         Row(
                             controls=[
                                 Text(
-                                    value=await self.client.session.gtv(key='faq'),
+                                    value=await self.client.session.gtv(key='help_faq'),
                                     size=28,
                                     font_family=Fonts.SEMIBOLD,
                                     color=colors.ON_BACKGROUND,
@@ -172,75 +168,22 @@ class RequisiteView(ClientBaseView):
             ),
         ]
 
+    """
+    INPUT
+    """
+
     async def get_controls_input(self) -> list[Control]:
         return [
-            *await self.get_help_cards_input(),
+            *await self.get_help_cards(),
         ]
 
     """
     OUTPUT
     """
 
-    async def get_help_cards_output(self) -> list[Control]:
-        return [
-            SubTitle(value=await self.client.session.gtv(key='request_order_help_title')),
-            StandardButton(
-                content=Row(
-                    controls=[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=await self.client.session.gtv(key='faq'),
-                                    size=28,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                            ],
-                            expand=True,
-                        ),
-                        Image(
-                            src=Icons.OPEN,
-                            height=28,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                    ],
-                ),
-                bgcolor=colors.BACKGROUND,
-                horizontal=0,
-                vertical=0,
-                on_click=None,
-            ),
-            StandardButton(
-                content=Row(
-                    controls=[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=await self.client.session.gtv(key='help_telegram_contact_title'),
-                                    size=28,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                            ],
-                            expand=True,
-                        ),
-                        Image(
-                            src=Icons.OPEN,
-                            height=28,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                    ]
-                ),
-                bgcolor=colors.BACKGROUND,
-                horizontal=0,
-                vertical=0,
-                on_click=None,
-            ),
-        ]
-
     async def get_controls_output(self) -> list[Control]:
         return [
-            *await self.get_help_cards_output(),
+            *await self.get_help_cards(),
         ]
 
     async def build(self):

@@ -31,7 +31,7 @@ from fexps_api_client.utils import ApiException
 
 
 class RequisiteOrderView(ClientBaseView):
-    route = '/client/request/order/get'
+    route = '/client/requisite/order/get'
     order = dict
     requisite = dict
     method = dict
@@ -151,7 +151,7 @@ class RequisiteOrderView(ClientBaseView):
 
     async def get_help_cards(self) -> list[Control]:
         return [
-            SubTitle(value=await self.client.session.gtv(key='help_card_title')),
+            SubTitle(value=await self.client.session.gtv(key='requisite_order_help_title')),
             StandardButton(
                 content=Row(
                     controls=[

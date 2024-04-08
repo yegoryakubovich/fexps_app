@@ -346,7 +346,7 @@ class RequestView(ClientBaseView):
 
     async def get_help_cards(self) -> list[Control]:
         return [
-            SubTitle(value=await self.client.session.gtv(key='request_order_help_title')),
+            SubTitle(value=await self.client.session.gtv(key='request_help_title')),
             StandardButton(
                 content=Row(
                     controls=[
