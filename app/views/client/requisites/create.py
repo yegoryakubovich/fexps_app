@@ -99,7 +99,7 @@ class RequisiteCreateView(ClientBaseView):
                     Row(
                         controls=[
                             StandardButton(
-                                text=await self.client.session.gtv(key='create_requisite'),
+                                text=await self.client.session.gtv(key='requisite_create_title'),
                                 on_click=self.requisite_create,
                                 expand=True,
                             ),
@@ -115,7 +115,7 @@ class RequisiteCreateView(ClientBaseView):
         ]
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='requisite_create'),
+            title=await self.client.session.gtv(key='requisite_create_title'),
             main_section_controls=controls,
         )
 

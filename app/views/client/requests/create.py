@@ -58,7 +58,7 @@ class RequestCreateView(ClientBaseView):
     """
 
     async def get_currency_options(self, exclude_currency: str = None) -> list[Option]:
-        options = [Option(text='YA COIN', key='ecoin')] if exclude_currency != 'ecoin' else []
+        options = [Option(text='YA COIN', key='ya_coins')] if exclude_currency != 'ya_coins' else []
         for currency in self.currencies:
             if currency.id_str == exclude_currency:
                 continue
@@ -213,13 +213,13 @@ class RequestCreateView(ClientBaseView):
         input_method_id, input_currency_value, input_value = None, None, None
         output_requisite_data_id, output_currency_value, output_value = None, None, None
         await self.set_type(loading=True)
-        if self.dd_output_currency.value == 'ecoin':
+        if self.dd_output_currency.value == 'ya_coins':
             input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
             type_ = RequestTypes.INPUT
             input_method_id = self.dd_input_method.value
             input_currency_value = value_to_int(value=self.tf_input_value.value, decimal=input_currency.decimal)
             input_value = value_to_int(value=self.tf_output_value.value)
-        elif self.dd_input_currency.value == 'ecoin':
+        elif self.dd_input_currency.value == 'ya_coins':
             output_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_output_currency.value)
             type_ = RequestTypes.OUTPUT
             output_requisite_data_id = self.dd_output_requisite_data.value
