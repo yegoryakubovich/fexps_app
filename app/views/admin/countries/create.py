@@ -17,6 +17,8 @@
 
 from flet_core import ScrollMode, Row
 from flet_core.dropdown import Option
+
+from fexps_api_client import FexpsApiClient
 from fexps_api_client.utils import ApiException
 
 from app.controls.button import StandardButton
@@ -120,9 +122,9 @@ class CountryCreateView(AdminBaseView):
             await self.client.session.api.admin.countries.create(
                 id_str=self.tf_id_str.value,
                 name=self.tf_name.value,
-                language=self.dd_language.value,
-                timezone=self.dd_timezone.value,
-                currency=self.dd_currency.value,
+                language_default=self.dd_language.value,
+                timezone_default=self.dd_timezone.value,
+                currency_default=self.dd_currency.value,
             )
             await self.set_type(loading=False)
             await self.client.change_view(go_back=True, with_restart=True, delete_current=True)

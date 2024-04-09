@@ -137,9 +137,9 @@ class CountryView(AdminBaseView):
             await self.client.session.api.admin.countries.update(
                 id_str=self.country_id_str,
                 name=self.tf_name.value,
-                language=self.dd_language.value,
-                currency=self.dd_currency.value,
-                timezone=self.dd_timezone.value,
+                language_default=self.dd_language.value,
+                currency_default=self.dd_currency.value,
+                timezone_default=self.dd_timezone.value,
             )
             await self.set_type(loading=False)
             self.snack_bar.open = True
