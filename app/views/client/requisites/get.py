@@ -42,7 +42,7 @@ class RequisiteView(ClientBaseView):
         cards: list = []
         for order in self.orders:
             currency = await self.client.session.api.client.currencies.get(id_str=order.currency)
-            state_str = await self.client.session.gtv(key=f'requisite_order_state_{order.state}')
+            state_str = await self.client.session.gtv(key=f'requisite_order_{order.type}_{order.state}')
             value = value_to_float(value=order.currency_value, decimal=currency.decimal)
             value_str = f'{value} {currency.id_str.upper()}'
             color, bgcolor = colors.ON_PRIMARY, colors.PRIMARY

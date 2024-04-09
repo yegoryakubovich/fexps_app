@@ -63,12 +63,9 @@ class RequisiteTab(BaseTab):
         cards: list[StandardButton] = []
         for order in self.currency_orders:
             currency = await self.client.session.api.client.currencies.get(id_str=order.currency)
-            state_str = await self.client.session.gtv(key=f'requisite_order_state_{order.state}')
+            state_str = await self.client.session.gtv(key=f'requisite_order_{order.type}_{order.state}')
             value = value_to_float(value=order.currency_value, decimal=currency.decimal)
             value_str = f'{value} {currency.id_str.upper()}'
-            color, bgcolor = colors.ON_PRIMARY, colors.PRIMARY
-            if order.state in ['completed', 'canceled']:
-                color, bgcolor = colors.ON_PRIMARY_CONTAINER, colors.PRIMARY_CONTAINER
             cards.append(
                 StandardButton(
                     content=Row(
@@ -81,7 +78,7 @@ class RequisiteTab(BaseTab):
                                                 value=state_str,
                                                 size=8,
                                                 font_family=Fonts.SEMIBOLD,
-                                                color=color,
+                                                color=colors.ON_PRIMARY,
                                             ),
                                         ],
                                     ),
@@ -91,7 +88,7 @@ class RequisiteTab(BaseTab):
                                                 value=f'404 CARD NUMBER',
                                                 size=28,
                                                 font_family=Fonts.SEMIBOLD,
-                                                color=color,
+                                                color=colors.ON_PRIMARY,
                                             ),
                                         ],
                                     ),
@@ -101,7 +98,7 @@ class RequisiteTab(BaseTab):
                                                 value=value_str,
                                                 size=16,
                                                 font_family=Fonts.SEMIBOLD,
-                                                color=color,
+                                                color=colors.ON_PRIMARY,
                                             ),
                                         ],
                                     ),
@@ -111,14 +108,14 @@ class RequisiteTab(BaseTab):
                             Image(
                                 src=Icons.OPEN,
                                 height=32,
-                                color=color,
+                                color=colors.ON_PRIMARY,
                             ),
                         ],
                         alignment=MainAxisAlignment.SPACE_BETWEEN,
                         spacing=2,
                     ),
                     on_click=partial(self.order_view, order.id),
-                    bgcolor=bgcolor,
+                    bgcolor=colors.PRIMARY,
                 ),
             )
         return cards
