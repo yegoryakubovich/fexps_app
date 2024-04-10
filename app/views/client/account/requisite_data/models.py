@@ -45,13 +45,13 @@ class RequisiteDataCreateModel:
             self,
             session: Session,
             update_async: callable,
-            after_clise: callable = None,
-            before_clise: callable = None,
+            after_close: callable = None,
+            before_close: callable = None,
     ):
         self.session = session
         self.update_async = update_async
-        self.after_clise = after_clise
-        self.before_clise = before_clise
+        self.after_close = after_close
+        self.before_close = before_close
 
     async def build(self):
         self.fields, self.fields_keys = {}, {}
@@ -131,8 +131,8 @@ class RequisiteDataCreateModel:
         self.fields[self.fields_keys[event.control.label]] = event.data
 
     async def create_requisite_data(self, _):
-        if self.after_clise:
-            await self.after_clise()
+        if self.before_close:
+            await self.before_close()
         for field in self.method['schema_fields']:
             if not self.fields.get(field['key']):
                 continue
@@ -146,5 +146,6 @@ class RequisiteDataCreateModel:
             )
         except ApiException as exception:
             return await self.session.error(exception=exception)
-        if self.before_clise:
-            await self.before_clise()
+        if self.after_close:
+            await self.after_close()
+

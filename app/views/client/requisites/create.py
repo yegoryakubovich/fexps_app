@@ -245,8 +245,8 @@ class RequisiteCreateView(ClientBaseView):
         self.requisite_data_model = RequisiteDataCreateModel(
             session=self.client.session,
             update_async=self.update_async,
-            after_clise=self.create_output_requisite_data_after_close,
-            before_clise=self.create_output_requisite_data_before_clise,
+            before_close=self.create_output_requisite_data_after_close,
+            after_close=self.create_output_requisite_data_before_clise,
         )
         await self.requisite_data_model.build()
         self.dialog.content = Container(
