@@ -231,8 +231,8 @@ class RequestCreateView(ClientBaseView):
         self.requisite_data_model = RequisiteDataCreateModel(
             session=self.client.session,
             update_async=self.update_async,
-            before_close=self.create_output_requisite_data_after_close,
-            after_close=self.create_output_requisite_data_before_clise,
+            before_close=self.create_output_requisite_data_before_clise,
+            after_close=self.create_output_requisite_data_after_close,
         )
         await self.requisite_data_model.build()
         self.dialog.content = Container(
@@ -245,11 +245,11 @@ class RequestCreateView(ClientBaseView):
         self.dialog.open = True
         await self.update_async()
 
-    async def create_output_requisite_data_after_close(self):
+    async def create_output_requisite_data_before_clise(self):
         self.dialog.open = False
         await self.update_async()
 
-    async def create_output_requisite_data_before_clise(self):
+    async def create_output_requisite_data_after_close(self):
         await self.change_output_method('')
         await self.update_async()
 
