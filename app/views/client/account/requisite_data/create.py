@@ -15,128 +15,34 @@
 #
 
 
-from flet_core import Column, ControlEvent, KeyboardType, Row
-from flet_core.dropdown import Option
-
-from app.controls.button import StandardButton
-from app.controls.information import Text
-from app.controls.input import TextField, Dropdown
 from app.controls.layout import AdminBaseView
-from app.utils import Fonts
 from app.views.client.account.requisite_data.get import RequisiteDataView
-from fexps_api_client.utils import ApiException
+from app.views.client.account.requisite_data.models import RequisiteDataCreateModel
 
 
 class RequisiteDataCreateView(AdminBaseView):
     route = '/client/requisite/data/create'
-    methods: list
-    method: dict
-
-    optional: Column
-    tf_name: TextField
-    dd_currency: Dropdown
-    dd_method: Dropdown
-    fields: dict
-    fields_keys: dict
+    requisite_data_model: RequisiteDataCreateModel
 
     async def build(self):
-        self.fields, self.fields_keys = {}, {}
-        method_options = []
+        self.requisite_data_model = RequisiteDataCreateModel(
+            session=self.client.session,
+            update_async=self.update_async,
+            before_clise=self.open_requisite_data,
+        )
         await self.set_type(loading=True)
-        self.methods = await self.client.session.api.client.methods.get_list()
-        currency_options = [
-            Option(text=currency.id_str.upper(), key=currency.id_str)
-            for currency in await self.client.session.api.client.currencies.get_list()
-        ]
+        await self.requisite_data_model.build()
         await self.set_type(loading=False)
-        self.tf_name = TextField(label=await self.client.session.gtv(key='name'))
-        self.dd_currency = Dropdown(
-            label=await self.client.session.gtv(key='currency'),
-            options=currency_options,
-            on_change=self.change_currency,
-        )
-        self.dd_method = Dropdown(
-            label=await self.client.session.gtv(key='method'),
-            options=method_options,
-            on_change=self.change_method,
-        )
-        self.optional = Column(controls=[])
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='requisite_data_create_view_title'),
             main_section_controls=[
-                self.tf_name,
-                self.dd_currency,
-                self.dd_method,
-                self.optional,
-                Row(
-                    controls=[
-                        StandardButton(
-                            content=Text(
-                                value=await self.client.session.gtv(key='create'),
-                                size=15,
-                                font_family=Fonts.REGULAR,
-                            ),
-                            on_click=self.create_requisite_data,
-                            expand=True,
-                        ),
-                    ],
-                )
-            ],
+                *self.requisite_data_model.controls,
+                *self.requisite_data_model.buttons,
+            ]
         )
 
-    async def change_currency(self, event: ControlEvent):
-        method_options = []
-        for method in self.methods:
-            if method.currency.lower() != event.data.lower():
-                continue
-            name = await self.client.session.gtv(key=method.name_text)
-            method_options.append(Option(
-                text=f'{name} ({method.id})',
-                key=method.id,
-            ))
-        self.dd_method.options = method_options
-        self.optional.controls = []
-        await self.update_async()
-
-    async def change_method(self, event: ControlEvent):
-        self.method = await self.client.session.api.client.methods.get(id_=event.data)
-        controls = []
-        for field in self.method['schema_fields']:
-            type_ = field["type"]
-            type_str = await self.client.session.gtv(key=type_)
-            name_list = [await self.client.session.gtv(key=field[f'name_text_key']), f'({type_str})']
-            if not field['optional']:
-                name_list.append('*')
-            controls.append(TextField(
-                label=' '.join(name_list),
-                on_change=self.change_fields,
-                keyboard_type=KeyboardType.NUMBER if type_ == 'int' else None,
-            ))
-            self.fields_keys[' '.join(name_list)] = field['key']
-        self.optional.controls = controls
-        await self.update_async()
-
-    async def change_fields(self, event: ControlEvent):
-        self.fields[self.fields_keys[event.control.label]] = event.data
-
-    async def create_requisite_data(self, _):
-        await self.set_type(loading=True)
-        for field in self.method['schema_fields']:
-            if not self.fields.get(field['key']):
-                continue
-            if field['type'] == 'int':
-                self.fields[field['key']] = int(self.fields.get(field['key']))
-        try:
-            requisite_data_id = await self.client.session.api.client.requisites_datas.create(
-                name=self.tf_name.value,
-                method_id=self.dd_method.value,
-                fields=self.fields,
-            )
-            await self.set_type(loading=False)
-            await self.client.change_view(
-                view=RequisiteDataView(requisite_data_id=requisite_data_id),
-                delete_current=True,
-            )
-        except ApiException as exception:
-            await self.set_type(loading=False)
-            return await self.client.session.error(exception=exception)
+    async def open_requisite_data(self):
+        await self.client.change_view(
+            view=RequisiteDataView(requisite_data_id=self.requisite_data_model.requisite_data_id),
+            delete_current=True,
+        )

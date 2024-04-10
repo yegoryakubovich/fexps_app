@@ -13,15 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
 
-
-from flet_core import padding, ScrollMode, Row, Column, Container, KeyboardType, ControlEvent
+from flet_core import padding, ScrollMode, Row, Column, Container, KeyboardType, ControlEvent, AlertDialog, colors, \
+    Image
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
 from app.controls.input import Dropdown, TextField
 from app.controls.layout import ClientBaseView
+from app.utils import Icons
 from app.utils.value import value_to_int
+from app.views.client.account.requisite_data.models import RequisiteDataCreateModel
 from fexps_api_client.utils import ApiException
 
 
@@ -32,8 +35,9 @@ class RequisiteTypes:
 
 class RequisiteCreateView(ClientBaseView):
     route = '/client/requisites/create'
-    # datas
+
     methods = list[dict]
+    dialog: AlertDialog
 
     # fields
     dd_type: Dropdown
@@ -41,6 +45,7 @@ class RequisiteCreateView(ClientBaseView):
     dd_currency: Dropdown
     dd_input_method: Dropdown = None
     dd_output_requisite_data: Dropdown = None
+    requisite_data_model: RequisiteDataCreateModel
     tf_currency_value: TextField
     tf_currency_value_min: TextField
     tf_currency_value_max: TextField
@@ -52,6 +57,7 @@ class RequisiteCreateView(ClientBaseView):
     optional: Column
 
     async def build(self):
+        self.dialog = AlertDialog(modal=False)
         self.methods = await self.client.session.api.client.methods.get_list()
         type_options = [
             Option(
@@ -92,6 +98,7 @@ class RequisiteCreateView(ClientBaseView):
         self.controls_container = Container(
             content=Column(
                 controls=[
+                    self.dialog,
                     self.dd_type,
                     self.dd_wallet,
                     self.dd_currency,
@@ -119,7 +126,7 @@ class RequisiteCreateView(ClientBaseView):
             main_section_controls=controls,
         )
 
-    async def change_type_or_currency(self, _: ControlEvent):
+    async def change_type_or_currency(self, _):
         async def get_input_method():
             input_method_options = []
             for method in self.methods:
@@ -148,6 +155,7 @@ class RequisiteCreateView(ClientBaseView):
             return Dropdown(
                 label=await self.client.session.gtv(key='output_requisite_data'),
                 options=output_requisite_data_options,
+                expand=True,
             )
 
         self.optional.controls = []
@@ -164,7 +172,22 @@ class RequisiteCreateView(ClientBaseView):
         elif self.dd_type.value == RequisiteTypes.output:
             self.dd_output_requisite_data = await get_output_requisite_data()
             self.optional.controls += [
-                self.dd_output_requisite_data,
+                Row(
+                    controls=[
+                        self.dd_output_requisite_data,
+                        StandardButton(
+                            content=Image(
+                                src=Icons.CREATE,
+                                height=10,
+                                color=colors.ON_PRIMARY,
+                            ),
+                            vertical=7,
+                            horizontal=7,
+                            bgcolor=colors.PRIMARY,
+                            on_click=self.create_output_requisite_data,
+                        ),
+                    ]
+                )
             ]
         self.tf_currency_value = TextField(
             label=await self.client.session.gtv(key='currency_value'),
@@ -218,6 +241,31 @@ class RequisiteCreateView(ClientBaseView):
         ]
         await self.update_async()
 
+    async def create_output_requisite_data(self, _):
+        self.requisite_data_model = RequisiteDataCreateModel(
+            session=self.client.session,
+            update_async=self.update_async,
+            after_clise=self.create_output_requisite_data_after_close,
+            before_clise=self.create_output_requisite_data_before_clise,
+        )
+        await self.requisite_data_model.build()
+        self.dialog.content = Container(
+            content=Column(
+                controls=self.requisite_data_model.controls,
+            ),
+            height=self.requisite_data_model.height,
+        )
+        self.dialog.actions = self.requisite_data_model.buttons
+        self.dialog.open = True
+        await self.update_async()
+
+    async def create_output_requisite_data_after_close(self):
+        self.dialog.open = False
+        await self.update_async()
+
+    async def create_output_requisite_data_before_clise(self):
+        await self.change_type_or_currency('')
+        await self.update_async()
     async def requisite_create(self, _: ControlEvent):
         await self.set_type(loading=True)
         currency = await self.client.session.api.client.currencies.get(id_str=self.dd_currency.value)

@@ -17,14 +17,16 @@
 
 from functools import partial
 
-from flet_core import Column, Container, KeyboardType, Row, alignment, Control
+from flet_core import Column, Container, KeyboardType, Row, alignment, Control, AlertDialog, Image, colors
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
 from app.controls.information import SubTitle
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import ClientBaseView
+from app.utils import Icons
 from app.utils.value import value_to_int
+from app.views.client.account.requisite_data.models import RequisiteDataCreateModel
 from app.views.client.requests.get import RequestView
 from fexps_api_client.utils import ApiException
 
@@ -37,10 +39,12 @@ class RequestTypes:
 
 class RequestCreateView(ClientBaseView):
     route = '/client/request/create'
+
     controls_container: Container
     optional: Column
     methods = dict
     currencies = list[dict]
+    dialog: AlertDialog
 
     # input
     tf_input_value = TextField(value=None)
@@ -52,6 +56,7 @@ class RequestCreateView(ClientBaseView):
     dd_output_currency = Dropdown(value=None)
     dd_output_method = Dropdown(value=None)
     dd_output_requisite_data = Dropdown(value=None)
+    requisite_data_model: RequisiteDataCreateModel
 
     """
     SEND
@@ -128,6 +133,7 @@ class RequestCreateView(ClientBaseView):
         self.dd_output_requisite_data = Dropdown(
             label=await self.client.session.gtv(key='request_create_output_requisite_data'),
             disabled=True,
+            expand=True,
         )
         return [
             SubTitle(value=await self.client.session.gtv(key='request_create_input')),
@@ -139,10 +145,26 @@ class RequestCreateView(ClientBaseView):
                 spacing=16,
             ),
             self.dd_output_method,
-            self.dd_output_requisite_data,
+            Row(
+                controls=[
+                    self.dd_output_requisite_data,
+                    StandardButton(
+                        content=Image(
+                            src=Icons.CREATE,
+                            height=10,
+                            color=colors.ON_PRIMARY,
+                        ),
+                        vertical=7,
+                        horizontal=7,
+                        bgcolor=colors.PRIMARY,
+                        on_click=self.create_output_requisite_data,
+                    ),
+                ]
+            )
         ]
 
     async def build(self):
+        self.dialog = AlertDialog(modal=False)
         await self.set_type(loading=True)
         self.methods = await self.client.session.api.client.methods.get_list()
         self.currencies = await self.client.session.api.client.currencies.get_list()
@@ -151,6 +173,7 @@ class RequestCreateView(ClientBaseView):
             with_expand=True,
             title=await self.client.session.gtv(key='request_create_title'),
             main_section_controls=[
+                self.dialog,
                 *await self.get_input(),
                 *await self.get_output(),
                 Container(
@@ -183,7 +206,13 @@ class RequestCreateView(ClientBaseView):
             self.dd_input_currency.options = await self.get_currency_options(exclude_currency=currency)
         await self.set_type(loading=False)
 
+    """
+    OUTPUT
+    """
+
     async def change_output_method(self, _):
+        if not self.dd_output_method or not self.dd_output_method.value:
+            return
         await self.set_type(loading=True)
         requisites_datas = await self.client.session.api.client.requisites_datas.get_list()
         options = []
@@ -197,6 +226,32 @@ class RequestCreateView(ClientBaseView):
         self.dd_output_requisite_data.disabled = False
         self.dd_output_requisite_data.options = options
         await self.set_type(loading=False)
+
+    async def create_output_requisite_data(self, _):
+        self.requisite_data_model = RequisiteDataCreateModel(
+            session=self.client.session,
+            update_async=self.update_async,
+            after_clise=self.create_output_requisite_data_after_close,
+            before_clise=self.create_output_requisite_data_before_clise,
+        )
+        await self.requisite_data_model.build()
+        self.dialog.content = Container(
+            content=Column(
+                controls=self.requisite_data_model.controls,
+            ),
+            height=self.requisite_data_model.height,
+        )
+        self.dialog.actions = self.requisite_data_model.buttons
+        self.dialog.open = True
+        await self.update_async()
+
+    async def create_output_requisite_data_after_close(self):
+        self.dialog.open = False
+        await self.update_async()
+
+    async def create_output_requisite_data_before_clise(self):
+        await self.change_output_method('')
+        await self.update_async()
 
     async def go_back(self, _):
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
