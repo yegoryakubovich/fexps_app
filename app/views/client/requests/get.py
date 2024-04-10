@@ -16,15 +16,17 @@
 
 
 import asyncio
+import logging
 from functools import partial
 
 from flet_core import Column, colors, Control, ScrollMode, Row, MainAxisAlignment, Container, \
-    padding, alignment, Image, Divider, UserControl
+    padding, alignment, Image, Divider, UserControl, AlertDialog
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons
+from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView
 
 
@@ -73,6 +75,8 @@ class DynamicTimer(UserControl):
 
 class RequestView(ClientBaseView):
     route = '/client/request/get'
+    dialog: AlertDialog
+    request_edit_name_model: RequestUpdateNameModel
     request = dict
     orders: list
     custom_info: list
@@ -131,6 +135,8 @@ class RequestView(ClientBaseView):
                 f'{output_currency_value} {output_currency.id_str.upper()}'
             )
             rate_str = f'{rate} {input_currency.id_str.upper()} / 1 {output_currency.id_str.upper()}'
+        if self.request.name:
+            value_str = f'{self.request.name} ({value_str})'
         state_row = await self.client.session.gtv(key=f'request_{self.request.type}_{self.request.state}')
         return InformationContainer(
             content=Column(
@@ -143,7 +149,18 @@ class RequestView(ClientBaseView):
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
                             ),
+                            StandardButton(
+                                content=Image(
+                                    src=Icons.EDIT,
+                                    color=colors.ON_PRIMARY_CONTAINER,
+                                ),
+                                height=48,
+                                width=48,
+                                bgcolor=colors.PRIMARY_CONTAINER,
+                                on_click=self.request_edit_name,
+                            ),
                         ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
                     ),
                     Divider(color=colors.ON_PRIMARY_CONTAINER),
                     Row(
@@ -408,11 +425,13 @@ class RequestView(ClientBaseView):
         ]
 
     async def build(self):
+        self.dialog = AlertDialog(modal=False)
         await self.set_type(loading=True)
         self.request = await self.client.session.api.client.requests.get(id_=self.request_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_request(request_id=self.request_id)
         await self.set_type(loading=False)
         controls = [
+            self.dialog,
             await self.get_info_card(),
         ]
         if self.request.state == 'loading':
@@ -428,6 +447,34 @@ class RequestView(ClientBaseView):
             main_section_controls=controls,
             back_with_restart=True,
         )
+
+    async def request_edit_name(self, _):
+        self.request_edit_name_model = RequestUpdateNameModel(
+            session=self.client.session,
+            update_async=self.update_async,
+            request_id=self.request.id,
+            request_name=self.request.get('name'),
+            before_close=self.edit_name_before,
+            after_close=self.edit_name_after,
+        )
+        await self.request_edit_name_model.build()
+        self.dialog.content = Container(
+            content=Column(
+                controls=self.request_edit_name_model.controls,
+            ),
+            height=self.request_edit_name_model.height,
+        )
+        self.dialog.actions = self.request_edit_name_model.buttons
+        self.dialog.open = True
+        await self.update_async()
+
+    async def edit_name_before(self):
+        self.dialog.open = False
+        await self.update_async()
+
+    async def edit_name_after(self):
+        await self.build()
+        await self.update_async()
 
     async def order_view(self, order_id: int, _):
         await self.client.change_view(view=RequestOrderView(order_id=order_id))

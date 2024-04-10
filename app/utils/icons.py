@@ -75,3 +75,4 @@ class Icons:
     MAKE_EXCHANGE = get_svg('make_exchange')
     PAYMENT = get_svg('payment')
     DEV = get_svg('dev')
+    EDIT = get_svg('edit')
