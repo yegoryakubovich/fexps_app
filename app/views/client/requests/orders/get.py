@@ -23,8 +23,8 @@ from functools import partial
 from io import BytesIO
 
 from flet_core import SnackBar, Control, Column, Container, Row, Divider, MainAxisAlignment, \
-    padding, Image, colors, alignment, AlertDialog, TextButton, TextField, KeyboardType, ControlEvent
     padding, Image, colors, alignment, AlertDialog, TextField, KeyboardType, ControlEvent, FilePickerUploadFile, \
+    FilePickerUploadEvent, FilledButton
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
@@ -246,14 +246,24 @@ class RequestOrderView(ClientBaseView):
             name_list = [await self.client.session.gtv(key=input_scheme_field['name_text_key']), f'({type_str})']
             if not input_scheme_field['optional']:
                 name_list.append('*')
-            self.input_scheme_fields.append(
-                TextField(
-                    label=' '.join(name_list),
-                    on_change=partial(self.change_input_fields, input_scheme_field['key']),
-                    keyboard_type=KeyboardType.NUMBER if type_ == 'int' else None,
+            if type_ == 'image':
+                self.input_scheme_fields.append(
+                    FilledButton(
+                        content=Text(
+                            value=await self.client.session.gtv(key='add_image'),
+                        ),
+                        on_click=self.add_photo,
+                        disabled=len(self.photos) > 1,
+                    )
                 )
-            )
-        self.input_field_dialog = AlertDialog(
+            else:
+                self.input_scheme_fields.append(
+                    TextField(
+                        label=' '.join(name_list),
+                        on_change=partial(self.change_input_fields, input_scheme_field['key']),
+                        keyboard_type=KeyboardType.NUMBER if type_ == 'int' else None,
+                    )
+                )
         self.dialog = AlertDialog(
             content=Container(
                 content=Column(
@@ -454,10 +464,12 @@ class RequestOrderView(ClientBaseView):
     """
 
     async def input_field_dialog_open(self, _):
-        self.input_field_dialog.open = True
-        await self.input_field_dialog.update_async()
         self.dialog.open = True
         await self.dialog.update_async()
+
+    async def upload_file(self, _):
+        logging.critical(_)
+        logging.critical(type(_))
 
     async def change_input_fields(self, key: str, event: ControlEvent):
         self.input_fields[key] = event.data
