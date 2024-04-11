@@ -17,10 +17,14 @@
 
 import asyncio
 import logging
+import os
+from base64 import b64encode
 from functools import partial
+from io import BytesIO
 
 from flet_core import SnackBar, Control, Column, Container, Row, Divider, MainAxisAlignment, \
     padding, Image, colors, alignment, AlertDialog, TextButton, TextField, KeyboardType, ControlEvent
+    padding, Image, colors, alignment, AlertDialog, TextField, KeyboardType, ControlEvent, FilePickerUploadFile, \
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
@@ -39,8 +43,8 @@ class RequestOrderView(ClientBaseView):
     snack_bar: SnackBar
     custom_info: list
     custom_controls: list[Control]
-    input_field_dialog: AlertDialog
-    input_scheme_fields: list[TextField]
+    dialog: AlertDialog
+    input_scheme_fields: list
     input_fields: dict
 
     def __init__(self, order_id: int):
@@ -151,7 +155,7 @@ class RequestOrderView(ClientBaseView):
 
     async def get_help_cards(self) -> list[Control]:
         return [
-            SubTitle(value=await self.client.session.gtv(key='request_request_help_title')),
+            SubTitle(value=await self.client.session.gtv(key='request_order_help_title')),
             StandardButton(
                 content=Row(
                     controls=[
@@ -250,6 +254,7 @@ class RequestOrderView(ClientBaseView):
                 )
             )
         self.input_field_dialog = AlertDialog(
+        self.dialog = AlertDialog(
             content=Container(
                 content=Column(
                     controls=self.input_scheme_fields,
@@ -259,12 +264,13 @@ class RequestOrderView(ClientBaseView):
             actions=[
                 Row(
                     controls=[
-                        TextButton(
+                        StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key="confirm"),
                                 size=16,
                             ),
                             on_click=self.input_field_dialog_confirm,
+                            expand=True
                         ),
                     ],
                     alignment=MainAxisAlignment.END,
@@ -339,7 +345,7 @@ class RequestOrderView(ClientBaseView):
             content=Row(
                 controls=[
                     Text(
-                        value=await self.client.session.gtv(key='value_edit_button'),
+                        value=await self.client.session.gtv(key='request_order_value_edit_button'),
                         size=20,
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
@@ -357,7 +363,7 @@ class RequestOrderView(ClientBaseView):
             content=Row(
                 controls=[
                     Text(
-                        value=await self.client.session.gtv(key='cancel_button'),
+                        value=await self.client.session.gtv(key='request_order_cancel_button'),
                         size=20,
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
@@ -366,13 +372,13 @@ class RequestOrderView(ClientBaseView):
                 alignment=MainAxisAlignment.CENTER,
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
-            on_click=self.on_dev,
+            on_click=self.request_order_cancel,
             expand=1,
         )
 
     async def build(self):
         self.input_fields = {}
-        self.input_field_dialog = AlertDialog()
+        self.dialog = AlertDialog()
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
         self.currency = await self.client.session.api.client.currencies.get(id_str=self.order.currency)
@@ -418,7 +424,7 @@ class RequestOrderView(ClientBaseView):
                 pass
         if buttons:
             controls += [
-                self.input_field_dialog,
+                self.dialog,
                 Container(
                     content=Row(
                         controls=buttons,
@@ -450,6 +456,8 @@ class RequestOrderView(ClientBaseView):
     async def input_field_dialog_open(self, _):
         self.input_field_dialog.open = True
         await self.input_field_dialog.update_async()
+        self.dialog.open = True
+        await self.dialog.update_async()
 
     async def change_input_fields(self, key: str, event: ControlEvent):
         self.input_fields[key] = event.data
@@ -483,6 +491,14 @@ class RequestOrderView(ClientBaseView):
         try:
             await self.client.session.api.client.orders.updates.completed(id_=self.order_id)
             await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
+
+    async def request_order_cancel(self, _):
+        try:
+            await self.client.session.api.client.orders.requests.create(order_id=self.order_id, type_='cancel')
+            await asyncio.sleep(0.05)
+            await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 
