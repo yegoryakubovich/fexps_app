@@ -46,7 +46,8 @@ class TransferView(AdminBaseView):
             short_name = self.transfer.account_from.short_name
             value = f'+ {value}'
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='transfer'),
+            title=await self.client.session.gtv(key='transfer_view_title'),
+            back_with_restart=False,
             main_section_controls=[
                 Column(
                     controls=[
