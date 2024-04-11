@@ -481,13 +481,11 @@ class RequestView(ClientBaseView):
 
     async def waiting_confirm(self, _):
         await self.client.session.api.client.requests.update_confirmation(id_=self.request_id)
-        await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+        await self.build()
+        await self.update_async()
 
     async def auto_reloader(self):
         await asyncio.sleep(5)
-        while True:
-            if self.request.state != 'loading':
-                return
-            await self.build()
-            await self.update_async()
-            await asyncio.sleep(3)
+        await self.build()
+        await asyncio.sleep(0.5)
+        await self.update_async()

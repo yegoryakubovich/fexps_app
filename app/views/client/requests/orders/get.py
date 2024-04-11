@@ -47,9 +47,13 @@ class RequestOrderView(ClientBaseView):
     input_scheme_fields: list
     input_fields: dict
 
+    file_name: str = None
+
     def __init__(self, order_id: int):
         super().__init__()
         self.order_id = order_id
+        self.photos = []
+        self.data_io = None
 
     async def get_info_card(self):
         currency_value = value_to_float(
@@ -283,7 +287,6 @@ class RequestOrderView(ClientBaseView):
                             expand=True
                         ),
                     ],
-                    alignment=MainAxisAlignment.END,
                 ),
             ],
             modal=False,
@@ -475,7 +478,7 @@ class RequestOrderView(ClientBaseView):
         self.input_fields[key] = event.data
 
     async def input_field_dialog_confirm(self, _):
-        self.input_field_dialog.open = False
+        self.dialog.open = False
         await self.update_async()
         await asyncio.sleep(0.1)
         await self.set_type(loading=True)
@@ -519,4 +522,42 @@ class RequestOrderView(ClientBaseView):
             icon=Icons.CHILL,
             title=await self.client.session.gtv(key='in_dev_title'),
             description=await self.client.session.gtv(key='in_dev_description'),
+        )
+
+    """FILES"""
+
+    async def on_upload_progress(self, e: FilePickerUploadEvent):
+        if e.progress is not None and e.progress < 1.0:
+            pass
+        else:
+            path = f'upload/{e.file_name}'
+            if os.path.exists(path):
+                with open(path, 'rb') as f:
+                    image_data = f.read()
+                self.data_io = BytesIO(image_data)
+                encoded_image_data = b64encode(image_data).decode()
+                self.file_name = e.file_name
+                self.photos.append(encoded_image_data)
+                await self.restart()
+            else:
+                pass
+
+    async def upload_files(self, _):
+        uf = []
+        if self.client.session.filepicker.result.files:
+            for f in self.client.session.filepicker.result.files:
+                uf.append(
+                    FilePickerUploadFile(
+                        f.name,
+                        upload_url=await self.client.session.page.get_upload_url_async(f.name, 600),
+                    )
+                )
+                await self.client.session.filepicker.upload_async([uf[-1]])
+                await self.on_upload_progress(e=FilePickerUploadEvent(file_name=f.name, progress=1.0, error=None))
+
+    async def add_photo(self, _):
+        await self.client.session.filepicker.open_(
+            on_select=self.upload_files,
+            on_upload=self.on_upload_progress,
+            allowed_extensions=['svg', 'jpg'],
         )
