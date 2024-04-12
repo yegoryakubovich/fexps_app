@@ -16,7 +16,6 @@
 
 
 import asyncio
-import logging
 from functools import partial
 
 from flet_core import Column, colors, Control, ScrollMode, Row, MainAxisAlignment, Container, \
@@ -85,6 +84,8 @@ class RequestView(ClientBaseView):
     def __init__(self, request_id: int):
         super().__init__()
         self.request_id = request_id
+        self.reload_bool = False
+        self.reload_stop = False
 
     async def get_info_card(self):
         rate = value_to_float(
@@ -137,7 +138,7 @@ class RequestView(ClientBaseView):
             rate_str = f'{rate} {input_currency.id_str.upper()} / 1 {output_currency.id_str.upper()}'
         if self.request.name:
             value_str = f'{self.request.name} ({value_str})'
-        state_row = await self.client.session.gtv(key=f'request_{self.request.type}_{self.request.state}')
+        state_row = await self.client.session.gtv(key=f'request_state_{self.request.state}')
         return InformationContainer(
             content=Column(
                 controls=[
@@ -287,9 +288,11 @@ class RequestView(ClientBaseView):
     ORDERS SEND
     """
 
-    async def get_orders_send_cards(self):
+    async def get_orders_cards(self, type_: str):
         cards: list = []
         for order in self.orders:
+            if order.type != type_:
+                continue
             currency = await self.client.session.api.client.currencies.get(id_str=order.currency)
             state_str = await self.client.session.gtv(key=f'request_order_{order.type}_{order.state}')
             value = value_to_float(value=order.currency_value, decimal=currency.decimal)
@@ -356,7 +359,9 @@ class RequestView(ClientBaseView):
             scroll=ScrollMode.AUTO,
             controls=[
                 SubTitle(value=await self.client.session.gtv(key='request_orders_input_title')),
-                *await self.get_orders_send_cards(),
+                *await self.get_orders_cards(type_='input'),
+                SubTitle(value=await self.client.session.gtv(key='request_orders_output_title')),
+                *await self.get_orders_cards(type_='output'),
             ],
             wrap=True,
         )
@@ -430,12 +435,14 @@ class RequestView(ClientBaseView):
         self.request = await self.client.session.api.client.requests.get(id_=self.request_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_request(request_id=self.request_id)
         await self.set_type(loading=False)
+        asyncio.create_task(self.auto_reloader())
         controls = [
             self.dialog,
             await self.get_info_card(),
         ]
         if self.request.state == 'loading':
-            asyncio.create_task(self.auto_reloader())
+            pass
+            # asyncio.create_task(self.auto_reloader())
         elif self.request.state == 'waiting':
             controls += await self.get_controls_waiting()
         else:
@@ -449,6 +456,7 @@ class RequestView(ClientBaseView):
         )
 
     async def request_edit_name(self, _):
+        self.reload_stop = True
         self.request_edit_name_model = RequestUpdateNameModel(
             session=self.client.session,
             update_async=self.update_async,
@@ -473,6 +481,7 @@ class RequestView(ClientBaseView):
         await self.update_async()
 
     async def edit_name_after(self):
+        self.reload_stop = False
         await self.build()
         await self.update_async()
 
@@ -485,7 +494,16 @@ class RequestView(ClientBaseView):
         await self.update_async()
 
     async def auto_reloader(self):
+        if self.reload_bool:
+            return
+        self.reload_bool = True
         await asyncio.sleep(5)
-        await self.build()
-        await asyncio.sleep(0.5)
-        await self.update_async()
+        while self.reload_bool:
+            if self.client.page.route != self.route:
+                self.reload_bool = False
+                return
+            if self.reload_stop:
+                continue
+            await self.build()
+            await self.update_async()
+            await asyncio.sleep(5)

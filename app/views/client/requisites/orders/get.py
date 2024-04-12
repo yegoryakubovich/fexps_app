@@ -45,6 +45,8 @@ class RequisiteOrderView(ClientBaseView):
 
     def __init__(self, order_id: int):
         super().__init__()
+        self.reload_bool = False
+        self.reload_stop = False
         self.order_id = order_id
 
     async def get_info_card(self):
@@ -385,6 +387,7 @@ class RequisiteOrderView(ClientBaseView):
         self.requisite = await self.client.session.api.client.requisites.get(id_=self.order.requisite)
         self.method = await self.client.session.api.client.methods.get(id_=self.order.method)
         await self.set_type(loading=False)
+        asyncio.create_task(self.auto_reloader())
         logging.critical(self.order)
         controls = [
             await self.get_info_card(),
@@ -459,6 +462,7 @@ class RequisiteOrderView(ClientBaseView):
     """OUTPUT"""
 
     async def output_field_dialog_open(self, _):
+        self.reload_stop = True
         self.output_field_dialog.open = True
         await self.update_async()
 
@@ -470,6 +474,7 @@ class RequisiteOrderView(ClientBaseView):
         await self.update_async()
         await asyncio.sleep(0.1)
         await self.set_type(loading=True)
+        self.reload_stop = False
         for input_scheme_field in self.order.input_scheme_fields:
             if not self.input_fields.get(input_scheme_field['key']):
                 continue
@@ -492,3 +497,18 @@ class RequisiteOrderView(ClientBaseView):
             title=await self.client.session.gtv(key='in_dev_title'),
             description=await self.client.session.gtv(key='in_dev_description'),
         )
+
+    async def auto_reloader(self):
+        if self.reload_bool:
+            return
+        self.reload_bool = True
+        await asyncio.sleep(5)
+        while self.reload_bool:
+            if self.client.page.route != self.route:
+                self.reload_bool = False
+                return
+            if self.reload_stop:
+                continue
+            await self.build()
+            await self.update_async()
+            await asyncio.sleep(5)

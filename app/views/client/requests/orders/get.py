@@ -51,6 +51,8 @@ class RequestOrderView(ClientBaseView):
 
     def __init__(self, order_id: int):
         super().__init__()
+        self.reload_bool = False
+        self.reload_stop = False
         self.order_id = order_id
         self.photos = []
         self.data_io = None
@@ -398,6 +400,7 @@ class RequestOrderView(ClientBaseView):
         self.request = await self.client.session.api.client.requests.get(id_=self.order.request)
         self.method = await self.client.session.api.client.methods.get(id_=self.order.method)
         await self.set_type(loading=False)
+        asyncio.create_task(self.auto_reloader())
         logging.critical(self.order)
         controls = [
             await self.get_info_card(),
@@ -467,12 +470,9 @@ class RequestOrderView(ClientBaseView):
     """
 
     async def input_field_dialog_open(self, _):
+        self.reload_stop = True
         self.dialog.open = True
         await self.dialog.update_async()
-
-    async def upload_file(self, _):
-        logging.critical(_)
-        logging.critical(type(_))
 
     async def change_input_fields(self, key: str, event: ControlEvent):
         self.input_fields[key] = event.data
@@ -487,6 +487,7 @@ class RequestOrderView(ClientBaseView):
                 continue
             if input_scheme_field['type'] == 'int':
                 self.input_fields[input_scheme_field['key']] = int(self.input_fields[input_scheme_field['key']])
+        self.reload_stop = False
         try:
             await self.client.session.api.client.orders.updates.confirmation(
                 id_=self.order_id,
@@ -561,3 +562,18 @@ class RequestOrderView(ClientBaseView):
             on_upload=self.on_upload_progress,
             allowed_extensions=['svg', 'jpg'],
         )
+
+    async def auto_reloader(self):
+        if self.reload_bool:
+            return
+        self.reload_bool = True
+        await asyncio.sleep(5)
+        while self.reload_bool:
+            if self.client.page.route != self.route:
+                self.reload_bool = False
+                return
+            if self.reload_stop:
+                continue
+            await self.build()
+            await self.update_async()
+            await asyncio.sleep(5)

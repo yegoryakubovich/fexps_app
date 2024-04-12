@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import asyncio
 import logging
 from functools import partial
 
@@ -32,6 +33,8 @@ class RequisiteView(ClientBaseView):
 
     def __init__(self, requisite_id: int):
         super().__init__()
+        self.reload_bool = False
+        self.reload_stop = False
         self.requisite_id = requisite_id
 
     """
@@ -190,6 +193,7 @@ class RequisiteView(ClientBaseView):
         await self.set_type(loading=True)
         self.requisite = await self.client.session.api.client.requisites.get(id_=self.requisite_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_requisite(requisite_id=self.requisite_id)
+        asyncio.create_task(self.auto_reloader())
         logging.critical(self.orders)
         await self.set_type(loading=False)
         controls = [
@@ -210,3 +214,18 @@ class RequisiteView(ClientBaseView):
 
     async def order_view(self, order_id: int, _):
         await self.client.change_view(view=RequisiteOrderView(order_id=order_id))
+
+    async def auto_reloader(self):
+        if self.reload_bool:
+            return
+        self.reload_bool = True
+        await asyncio.sleep(5)
+        while self.reload_bool:
+            if self.client.page.route != self.route:
+                self.reload_bool = False
+                return
+            if self.reload_stop:
+                continue
+            await self.build()
+            await self.update_async()
+            await asyncio.sleep(5)
