@@ -21,7 +21,8 @@ from flet_core import ScrollMode, Column
 
 from app.controls.layout import AdminBaseView
 from .accounts.get_list import AccountListView
-from .countries import CountryListView
+from .commissions_packs.get_list import CommissionPackListView
+from .countries.get_list import CountryListView
 from .currencies.get_list import CurrencyListView
 from .languages.get_list import LanguageListView
 from .methods import MethodListView
@@ -61,6 +62,11 @@ class AdminView(AdminBaseView):
                 name='admin_account_get_list_view_title',
                 icon=Icons.ADMIN_ACCOUNTS,
                 on_click=self.get_accounts,
+            ),
+            Setting(
+                name='admin_commissions_packs_get_list_view_title',
+                icon=Icons.ERROR,
+                on_click=self.get_commissions_packs,
             ),
             Setting(
                 name='admin_country_get_list_view_title',
@@ -132,6 +138,9 @@ class AdminView(AdminBaseView):
 
     async def get_accounts(self, _):
         await self.client.change_view(view=AccountListView())
+
+    async def get_commissions_packs(self, _):
+        await self.client.change_view(view=CommissionPackListView())
 
     async def get_countries(self, _):
         await self.client.change_view(view=CountryListView())

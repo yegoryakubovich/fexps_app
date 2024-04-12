@@ -15,11 +15,17 @@
 #
 
 
-from .error import Error
-from .fonts import Fonts, fonts
-from .icons import Icons
-from .registration import Registration
-from .session import Session
-from .themes import themes
-from .validation import validation_int, validation_float
-from .value import value_to_float, value_to_int, get_decimal_places, value_to_str
+def validation_int(value: str) -> bool:
+    try:
+        int(value)
+        return True
+    except:
+        return False
+
+
+def validation_float(value: str) -> bool:
+    try:
+        float(value)
+        return True
+    except:
+        return False
