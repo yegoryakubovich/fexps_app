@@ -39,17 +39,21 @@ class Chat(UserControl):
     control_list: list
 
     @staticmethod
-    def create_message_card(account_id: int, message: dict) -> Control:
-        position = message['account_position']
+    def create_message_card(account_id: int, message: dict, positions: dict = None) -> Control:
+        if not positions:
+            positions = {}
+        position = message['account_position'].title()
         if int(message['account']) == account_id:
             position = 'You'
+        position_str = positions.get(position.lower(), position)
+
         return InformationContainer(
             content=Column(
                 controls=[
                     Row(
                         controls=[
                             Text(
-                                value=position,
+                                value=position_str,
                                 size=14,
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
@@ -88,7 +92,8 @@ class Chat(UserControl):
             account_id: int,
             token: str,
             order_id: int,
-            controls: list = None
+            controls: list = None,
+            positions: dict = None
     ):
         super().__init__()
         self.api = api
@@ -98,6 +103,9 @@ class Chat(UserControl):
         self.control_list = controls
         if controls is None:
             self.control_list = []
+        self.positions = positions
+        if not positions:
+            self.positions = {}
         self.session = aiohttp.ClientSession()
         self.websocket: aiohttp.client_ws.ClientWebSocketResponse = None
 
@@ -124,7 +132,7 @@ class Chat(UserControl):
                 message = json.loads(message.data)
                 logging.critical(message)
                 self.control_list.append(
-                    self.create_message_card(account_id=self.account_id, message=message)
+                    self.create_message_card(account_id=self.account_id, message=message, positions=self.positions)
                 )
                 await self.update_async()
 
@@ -147,24 +155,33 @@ class ChatView(ClientBaseView):
     def __init__(self, order_id: int):
         super().__init__()
         self.order_id = order_id
+        self.positions = {}
 
     async def build(self):
         account = self.client.session.account
+        self.positions = {
+            'you': await self.client.session.gtv(key='chat_you'),
+            'unknown': await self.client.session.gtv(key='chat_unknown'),
+            'sender': await self.client.session.gtv(key='chat_sender'),
+            'receiver': await self.client.session.gtv(key='chat_receiver'),
+        }
         await self.set_type(loading=True)
         old_messages = await self.client.session.api.client.messages.get_list(order_id=self.order_id)
         old_messages_controls = [
-            Chat.create_message_card(account_id=account.id, message=message)
+            Chat.create_message_card(account_id=account.id, message=message, positions=self.positions)
             for message in old_messages[::-1]
         ]
         await self.set_type(loading=False)
         title_str = await self.client.session.gtv(key='chat_title')
         title_str = f'{title_str} order.{self.order_id}'
+
         self.chat = Chat(
             account_id=account.id,
             api=self.client.session.api,
             token=self.client.session.token,
             order_id=self.order_id,
             controls=old_messages_controls,
+            positions=self.positions,
         )
         self.tf_message = TextField(
             label=await self.client.session.gtv(key='chat_write_message'),
