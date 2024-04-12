@@ -15,12 +15,11 @@
 #
 
 
-from .error import Error
-from .fonts import Fonts, fonts
-from .icons import Icons
-from .image import get_image_src
-from .registration import Registration
-from .session import Session
-from .themes import themes
-from .validation import validation_int, validation_float
-from .value import value_to_float, value_to_int, get_decimal_places, value_to_str
+from base64 import b64encode
+
+from fexps_api_client import FexpsApiClient
+
+
+async def get_image_src(api: FexpsApiClient, id_str: str) -> str:
+    response = await api.client.images.get(id_str=id_str)
+    return f'data:image/jpeg;base64,{b64encode(await response.read()).decode()}'

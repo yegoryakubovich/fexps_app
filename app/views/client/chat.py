@@ -21,13 +21,13 @@ import logging
 
 import aiohttp
 from flet_core import Container, Row, alignment, Column, UserControl, Control, colors, MainAxisAlignment, padding, \
-    ListView
+    ListView, Image
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, InformationContainer
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
-from app.utils import Fonts
+from app.utils import Fonts, get_image_src
 from config import settings
 from fexps_api_client import FexpsApiClient
 
@@ -39,13 +39,30 @@ class Chat(UserControl):
     control_list: list
 
     @staticmethod
-    def create_message_card(account_id: int, message: dict, positions: dict = None) -> Control:
+    async def create_message_card(
+            api: FexpsApiClient,
+            account_id: int,
+            message: dict,
+            positions: dict = None,
+    ) -> Control:
+        logging.critical(message)
         if not positions:
             positions = {}
         position = message['account_position'].title()
         if int(message['account']) == account_id:
             position = 'You'
         position_str = positions.get(position.lower(), position)
+        content = Text(
+            value=message['value'],
+            size=28,
+            font_family=Fonts.SEMIBOLD,
+            color=colors.ON_PRIMARY_CONTAINER,
+        )
+        if message['type'] == 'image':
+            content = Image(
+                src=await get_image_src(api=api, id_str=message['value']),
+                height=150,
+            )
 
         return InformationContainer(
             content=Column(
@@ -70,12 +87,7 @@ class Chat(UserControl):
                     ),
                     Row(
                         controls=[
-                            Text(
-                                value=message['text'],
-                                size=28,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
+                            content
                         ],
                         alignment=MainAxisAlignment.SPACE_BETWEEN,
                     ),
@@ -132,7 +144,12 @@ class Chat(UserControl):
                 message = json.loads(message.data)
                 logging.critical(message)
                 self.control_list.append(
-                    self.create_message_card(account_id=self.account_id, message=message, positions=self.positions)
+                    await self.create_message_card(
+                        api=self.api,
+                        account_id=self.account_id,
+                        message=message,
+                        positions=self.positions,
+                    )
                 )
                 await self.update_async()
 
@@ -168,7 +185,12 @@ class ChatView(ClientBaseView):
         await self.set_type(loading=True)
         old_messages = await self.client.session.api.client.messages.get_list(order_id=self.order_id)
         old_messages_controls = [
-            Chat.create_message_card(account_id=account.id, message=message, positions=self.positions)
+            await Chat.create_message_card(
+                api=self.client.session.api,
+                account_id=account.id,
+                message=message,
+                positions=self.positions,
+            )
             for message in old_messages[::-1]
         ]
         await self.set_type(loading=False)
