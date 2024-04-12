@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 from flet_core import colors, Row
 from flet_core.dropdown import Option
 
@@ -24,8 +26,8 @@ from app.utils import Fonts, value_to_float
 from fexps_api_client.utils import ApiException
 
 
-class AccountWalletView(AdminBaseView):
-    route = '/admin/account/wallet/get'
+class WalletView(AdminBaseView):
+    route = '/admin/wallets/get'
     wallet = dict
     commissions_packs = dict
 

@@ -24,7 +24,7 @@ from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts, Icons
 from app.views.admin.accounts.role import AccountRoleListView
-from app.views.admin.accounts.wallet import AccountWalletListView
+from app.views.admin.wallet import WalletListView
 
 
 class AccountView(AdminBaseView):
@@ -151,7 +151,7 @@ class AccountView(AdminBaseView):
         await self.client.change_view(view=AccountRoleListView(account_id=self.account_id))
 
     async def wallets_view(self, _):
-        await self.client.change_view(view=AccountWalletListView(account_id=self.account_id))
+        await self.client.change_view(view=WalletListView(account_id=self.account_id))
 
     async def reset_password(self, e):
         if e.control.data == 0:

@@ -15,5 +15,5 @@
 #
 
 
-from .get import AccountWalletView
-from .get_list import AccountWalletListView
+from .get import WalletView
+from .get_list import WalletListView

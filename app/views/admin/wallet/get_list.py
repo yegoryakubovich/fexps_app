@@ -23,27 +23,27 @@ from app.controls.information import Text
 from app.controls.information.card import Card
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts, value_to_float
-from fexps_api_client import FexpsApiClient
-from .get import AccountWalletView
+from .get import WalletView
 
 
-class AccountWalletListView(AdminBaseView):
-    route = '/admin/account/wallets/list/get'
+class WalletListView(AdminBaseView):
+    route = '/admin/wallets/list/get'
     wallets = list[dict]
 
-    def __init__(self, account_id):
+    def __init__(self, account_id: int = None):
         super().__init__()
         self.account_id = account_id
 
     async def build(self):
-        self.client.session.api: FexpsApiClient
-
         await self.set_type(loading=True)
-        self.wallets = await self.client.session.api.admin.wallets.get_list(account_id=self.account_id)
+        if self.account_id:
+            self.wallets = await self.client.session.api.admin.wallets.get_list(account_id=self.account_id)
+        else:
+            self.wallets = await self.client.session.api.admin.wallets.get_list()
         await self.set_type(loading=False)
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='admin_account_wallet_get_list_view_title'),
+            title=await self.client.session.gtv(key='admin_wallet_get_list_view_title'),
             main_section_controls=[
                 Card(
                     controls=[
@@ -75,7 +75,7 @@ class AccountWalletListView(AdminBaseView):
 
     async def wallet_view(self, wallet_id: int, _):
         await self.client.change_view(
-            view=AccountWalletView(
+            view=WalletView(
                 wallet_id=wallet_id,
             ),
         )

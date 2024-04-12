@@ -25,11 +25,12 @@ from .commissions_packs.get_list import CommissionPackListView
 from .countries.get_list import CountryListView
 from .currencies.get_list import CurrencyListView
 from .languages.get_list import LanguageListView
-from .methods import MethodListView
-from .permissions import PermissionListView
-from .roles import RoleListView
+from .methods.get_list import MethodListView
+from .permissions.get_list import PermissionListView
+from .roles.get_list import RoleListView
 from .texts.get_list import TextListView
 from .timezones.get_list import TimezoneListView
+from .wallet.get_list import WalletListView
 from ...controls.button import ListItemButton
 from ...utils import Icons
 
@@ -108,6 +109,11 @@ class AdminView(AdminBaseView):
                 icon=Icons.TIMEZONE,
                 on_click=self.get_timezones,
             ),
+            Setting(
+                name='admin_wallet_get_list_view_title',
+                icon=Icons.ERROR,
+                on_click=self.get_wallets,
+            ),
 
         ]
 
@@ -165,3 +171,6 @@ class AdminView(AdminBaseView):
 
     async def get_timezones(self, _):
         await self.client.change_view(view=TimezoneListView())
+
+    async def get_wallets(self, _):
+        await self.client.change_view(view=WalletListView())
