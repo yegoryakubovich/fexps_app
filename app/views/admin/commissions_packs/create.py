@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 
+
+import asyncio
+
 from flet_core import Checkbox, ScrollMode
 
 from app.controls.button import StandardButton
@@ -64,6 +67,7 @@ class CommissionPackCreateView(AdminBaseView):
             )
             await self.client.session.get_text_pack()
             await self.set_type(loading=False)
+            await asyncio.sleep(0.05)
             await self.client.change_view(
                 view=CommissionPackView(commission_pack_id=commission_pack_id),
                 delete_current=True,

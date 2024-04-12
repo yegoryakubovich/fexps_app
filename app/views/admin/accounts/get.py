@@ -24,6 +24,7 @@ from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts, Icons
 from app.views.admin.accounts.role import AccountRoleListView
+from app.views.admin.accounts.wallet import AccountWalletListView
 
 
 class AccountView(AdminBaseView):
@@ -120,25 +121,37 @@ class AccountView(AdminBaseView):
                     controls=[
                         StandardButton(
                             content=Text(
-                                value=await self.client.session.gtv(key='roles'),
+                                value=await self.client.session.gtv(key='admin_account_roles'),
                             ),
-                            on_click=self.role_view,
+                            on_click=self.roles_view,
+                            expand=True,
                         ),
                         StandardButton(
                             content=Text(
-                                value=await self.client.session.gtv(key='admin_reset_user_password'),
+                                value=await self.client.session.gtv(key='admin_account_wallets'),
+                            ),
+                            on_click=self.wallets_view,
+                            expand=True,
+                        ),
+                        StandardButton(
+                            content=Text(
+                                value=await self.client.session.gtv(key='admin_account_reset_user_password'),
                             ),
                             on_click=self.reset_password,
                             data=0,
+                            expand=True,
                         ),
-                    ]
+                    ],
                 ),
                 self.clipboard,
             ],
         )
 
-    async def role_view(self, _):
+    async def roles_view(self, _):
         await self.client.change_view(view=AccountRoleListView(account_id=self.account_id))
+
+    async def wallets_view(self, _):
+        await self.client.change_view(view=AccountWalletListView(account_id=self.account_id))
 
     async def reset_password(self, e):
         if e.control.data == 0:

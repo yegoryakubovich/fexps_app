@@ -15,11 +15,12 @@
 #
 
 
-from fexps_api_client.utils import ApiException
+from flet_core import Row
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.layout import AdminBaseView
+from fexps_api_client.utils import ApiException
 
 
 class AccountRoleView(AdminBaseView):
@@ -36,19 +37,23 @@ class AccountRoleView(AdminBaseView):
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key=self.role['name_text']),
             main_section_controls=[
-                StandardButton(
-                    content=Text(
-                        value=await self.client.session.gtv(key='delete'),
-                    ),
-                    on_click=self.delete_role,
-                    expand=True,
+                Row(
+                    controls=[
+                        StandardButton(
+                            content=Text(
+                                value=await self.client.session.gtv(key='delete'),
+                            ),
+                            on_click=self.delete_role,
+                            expand=True,
+                        ),
+                    ],
                 ),
             ],
         )
 
     async def delete_role(self, _):
-        await self.set_type(loading=True)
         try:
+            await self.set_type(loading=True)
             await self.client.session.api.admin.accounts.roles.delete(
                 id_=self.role_id,
             )
