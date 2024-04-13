@@ -20,6 +20,8 @@ from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
+from app.utils import Error
+from fexps_api_client.utils import ApiException
 
 
 class CurrencyView(AdminBaseView):
@@ -74,19 +76,29 @@ class CurrencyView(AdminBaseView):
                             on_click=self.delete_currency,
                             expand=True,
                         ),
-                    ]
+                    ],
                 ),
             ],
         )
 
     async def update_currency(self, _):
-        await self.client.session.api.admin.currencies.update(
-            id_str=self.currency_id_str,
-            decimal=self.tf_decimal.value,
-            rate_decimal=self.tf_rate_decimal.value,
-            div=self.tf_div.value,
-        )
-        await self.client.change_view(go_back=True, with_restart=True)
+        await self.set_type(loading=True)
+        for field in [self.tf_decimal, self.tf_rate_decimal, self.tf_div]:
+            if not await Error.check_field(self, field, check_int=True):
+                await self.set_type(loading=False)
+                return
+        try:
+            await self.client.session.api.admin.currencies.update(
+                id_str=self.currency_id_str,
+                decimal=int(self.tf_decimal.value),
+                rate_decimal=int(self.tf_rate_decimal.value),
+                div=int(self.tf_div.value),
+            )
+            await self.set_type(loading=False)
+            await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)
 
     async def delete_currency(self, _):
         await self.client.session.api.admin.currencies.delete(

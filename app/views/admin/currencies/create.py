@@ -15,28 +15,44 @@
 #
 from flet_core import Row
 
-from fexps_api_client.utils import ApiException
-
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
 from app.utils import Error
+from fexps_api_client.utils import ApiException
 
 
 class CurrencyCreateView(AdminBaseView):
     route = '/admin/currency/create'
-    tf_name: TextField
     tf_id_str: TextField
+    tf_decimal: TextField
+    tf_rate_decimal: TextField
+    tf_div: TextField
 
     async def build(self):
         self.tf_id_str = TextField(
-            label=await self.client.session.gtv(key='name'),
+            label='id_str',
+        )
+        self.tf_decimal = TextField(
+            label=await self.client.session.gtv(key='currency_decimal'),
+            value='2',
+        )
+        self.tf_rate_decimal = TextField(
+            label=await self.client.session.gtv(key='currency_rate_decimal'),
+            value='2',
+        )
+        self.tf_div = TextField(
+            label=await self.client.session.gtv(key='currency_div'),
+            value='100',
         )
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_currency_create_view_title'),
             main_section_controls=[
                 self.tf_id_str,
+                self.tf_decimal,
+                self.tf_rate_decimal,
+                self.tf_div,
                 Row(
                     controls=[
                         StandardButton(
@@ -54,14 +70,20 @@ class CurrencyCreateView(AdminBaseView):
 
     async def create_currency(self, _):
         await self.set_type(loading=True)
-        fields = [(self.tf_id_str, 2, 32)]
-        for field, min_len, max_len in fields:
+        for field, min_len, max_len in [(self.tf_id_str, 2, 32)]:
             if not await Error.check_field(self, field, min_len=min_len, max_len=max_len):
+                await self.set_type(loading=False)
+                return
+        for field in [self.tf_decimal, self.tf_rate_decimal, self.tf_div]:
+            if not await Error.check_field(self, field, check_int=True):
                 await self.set_type(loading=False)
                 return
         try:
             await self.client.session.api.admin.currencies.create(
                 id_str=self.tf_id_str.value,
+                decimal=int(self.tf_decimal.value),
+                rate_decimal=int(self.tf_rate_decimal.value),
+                div=int(self.tf_div.value),
             )
             await self.set_type(loading=False)
             await self.client.change_view(go_back=True, with_restart=True, delete_current=True)

@@ -15,13 +15,13 @@
 #
 
 
-from flet_core import Checkbox, ScrollMode
+from flet_core import ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
-from app.utils import Fonts, validation_int, validation_float, value_to_str, value_to_int
+from app.utils import Fonts, validation_float, value_to_int, Error
 from fexps_api_client.utils import ApiException
 from .get import CommissionPackValueView
 
@@ -71,14 +71,10 @@ class CommissionPackValueCreateView(AdminBaseView):
         )
 
     async def create_commission_pack_value(self, _):
-        if not validation_float(self.tf_value_from.value):
-            self.tf_value_from.error_text = await self.client.session.gtv(key='validation_float_error')
-        if not validation_float(self.tf_value_to.value):
-            self.tf_value_to.error_text = await self.client.session.gtv(key='validation_float_error')
-        if not validation_float(self.tf_value_to.value):
-            self.tf_value_to.error_text = await self.client.session.gtv(key='validation_float_error')
-        if not validation_float(self.tf_value.value):
-            self.tf_value.error_text = await self.client.session.gtv(key='validation_float_error')
+        for field in [self.tf_value_from, self.tf_value_to, self.tf_percent, self.tf_value]:
+            if not await Error.check_field(self, field, check_float=True):
+                await self.set_type(loading=False)
+                return
         await self.set_type(loading=True)
         try:
             commission_pack_value_id = await self.client.session.api.admin.commissions_packs.values.create(
