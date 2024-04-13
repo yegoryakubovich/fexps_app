@@ -98,6 +98,11 @@ class AccountTab(BaseTab):
                         on_click=self.requisite_data,
                     ),
                     Setting(
+                        name='account_account_contact',
+                        icon=Icons.RELOAD,
+                        on_click=self.account_contact,
+                    ),
+                    Setting(
                         name='account_language',
                         icon=Icons.LANGUAGE,
                         on_click=self.update_language,
@@ -214,31 +219,35 @@ class AccountTab(BaseTab):
             ),
         ]
 
-    async def go_admin(self, _):
-        if 'admin' in self.client.session.account.permissions:
-            await self.client.change_view(view=AdminView())
+    async def change_password(self, _):
+        from app.views.client.account.change_password import ChangePasswordView
+        await self.client.change_view(view=ChangePasswordView())
 
     async def requisite_data(self, _):
         from app.views.client.account.requisite_data.get_list import RequisiteDataListView
         await self.client.change_view(view=RequisiteDataListView(go_back=True))
 
+    async def account_contact(self, _):
+        from app.views.client.account.account_contact.get import AccountContactView
+        await self.client.change_view(view=AccountContactView(go_back=True))
+
     async def update_language(self, _):
         from app.views.auth.language import LanguageView
         await self.client.change_view(view=LanguageView(go_back=True))
-
-    async def change_password(self, _):
-        from app.views.client.account.change_password import ChangePasswordView
-        await self.client.change_view(view=ChangePasswordView())
-
-    async def question_view(self, _):
-        from app.views.client.account.faq import FAQView
-        await self.client.change_view(view=FAQView())
-
-    async def about_us(self, _):
-        from app.views.client.account.about_us import AboutUsView
-        await self.client.change_view(view=AboutUsView())
 
     async def logout(self, _):
         await self.client.session.set_cs(key='token', value=None)
         from app.views.auth.init import InitView
         await self.client.change_view(view=InitView(), delete_current=True)
+
+    async def about_us(self, _):
+        from app.views.client.account.about_us import AboutUsView
+        await self.client.change_view(view=AboutUsView())
+
+    async def question_view(self, _):
+        from app.views.client.account.faq import FAQView
+        await self.client.change_view(view=FAQView())
+
+    async def go_admin(self, _):
+        if 'admin' in self.client.session.account.permissions:
+            await self.client.change_view(view=AdminView())
