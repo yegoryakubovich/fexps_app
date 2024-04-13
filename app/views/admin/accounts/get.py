@@ -23,6 +23,7 @@ from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts, Icons
+from app.views.admin.accounts.contacts import AccountContactView
 from app.views.admin.accounts.role import AccountRoleListView
 from app.views.admin.wallet import WalletListView
 
@@ -85,9 +86,10 @@ class AccountView(AdminBaseView):
             margin=margin.only(top=15),
             visible=False,
         )
+        title_str = await self.client.session.gtv(key='admin_account_get_view_title')
 
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='admin_account_get_view_title'),
+            title=f'{title_str}: {self.account['username']}',
             main_section_controls=[
                 Text(
                     value=await self.client.session.gtv(key='basic_information'),
@@ -135,6 +137,13 @@ class AccountView(AdminBaseView):
                         ),
                         StandardButton(
                             content=Text(
+                                value=await self.client.session.gtv(key='admin_account_contacts'),
+                            ),
+                            on_click=self.contacts_view,
+                            expand=True,
+                        ),
+                        StandardButton(
+                            content=Text(
                                 value=await self.client.session.gtv(key='admin_account_reset_user_password'),
                             ),
                             on_click=self.reset_password,
@@ -152,6 +161,9 @@ class AccountView(AdminBaseView):
 
     async def wallets_view(self, _):
         await self.client.change_view(view=WalletListView(account_id=self.account_id))
+
+    async def contacts_view(self, _):
+        await self.client.change_view(view=AccountContactView(account_id=self.account_id))
 
     async def reset_password(self, e):
         if e.control.data == 0:

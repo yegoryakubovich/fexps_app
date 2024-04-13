@@ -15,7 +15,6 @@
 #
 
 
-import logging
 from functools import partial
 
 from flet_core import Row, Column, ControlEvent
@@ -24,7 +23,6 @@ from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
-from fexps_api_client import FexpsApiClient
 from fexps_api_client.utils import ApiException
 
 
@@ -51,19 +49,17 @@ class AccountContactView(AdminBaseView):
         self.accounts_contacts = await self.client.session.api.client.accounts.contacts.get_list()
         self.reform_to_dict()
         await self.set_type(loading=False)
-        logging.critical(self.contacts)
-        logging.critical(self.accounts_contacts)
         contact_controls = []
         for contact in self.contacts:
             contact_controls += [
                 TextField(
                     label=await self.client.session.gtv(key=contact.name_text),
                     value=self.result_dict['contacts_db'].get(contact.id),
-                    on_change=partial(self.change_contact, contact.id)
+                    on_change=partial(self.change_contact, contact.id),
                 )
             ]
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='save'),
+            title=await self.client.session.gtv(key='account_contact_title'),
             main_section_controls=[
                 Column(
                     controls=[
@@ -86,17 +82,9 @@ class AccountContactView(AdminBaseView):
 
     async def change_contact(self, contact_id: int, _: ControlEvent):
         self.result_dict['contacts'][contact_id] = _.data
-        logging.critical(self.result_dict)
 
     async def update_account_contact(self, _):
-        logging.critical('---------------------')
-        logging.critical('---------------------')
-        logging.critical(self.result_dict)
-        logging.critical('---------------------')
-        logging.critical('---------------------')
         await self.set_type(loading=True)
-        self.client.session.api: FexpsApiClient
-
         try:
             for contact_id in self.result_dict['contacts']:
                 if not self.result_dict['contacts'].get(contact_id):

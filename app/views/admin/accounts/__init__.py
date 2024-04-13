@@ -15,5 +15,7 @@
 #
 
 
+from .contacts import AccountContactView
 from .get import AccountView
 from .get_list import AccountListView
+from .role import AccountRoleCreateView, AccountRoleView, AccountRoleListView
