@@ -28,7 +28,7 @@ class RequisiteDataCreateView(AdminBaseView):
         self.requisite_data_model = RequisiteDataCreateModel(
             session=self.client.session,
             update_async=self.update_async,
-            before_clise=self.open_requisite_data,
+            before_close=self.open_requisite_data,
         )
         await self.set_type(loading=True)
         await self.requisite_data_model.build()
