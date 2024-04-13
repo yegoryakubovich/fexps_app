@@ -22,42 +22,41 @@ from flet_core import Text, ScrollMode, colors
 from app.controls.information.card import Card
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts
-from app.views.admin.currencies.create import CurrencyCreateView
-from app.views.admin.currencies.get import CurrencyView
+from .create import ContactCreateView
+from .get import ContactView
 
 
-class CurrencyListView(AdminBaseView):
-    route = '/admin/currency/list/get'
-    currencies: list[dict]
+class ContactsListView(AdminBaseView):
+    route = '/admin/contacts/list/get'
+    contacts = list[dict]
 
     async def build(self):
         await self.set_type(loading=True)
-        self.currencies = await self.client.session.api.client.currencies.get_list()
+        self.contacts = await self.client.session.api.client.contacts.get_list()
         await self.set_type(loading=False)
-
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_currency_get_list_view_title'),
-            on_create_click=self.currency_create,
+            on_create_click=self.contact_create,
             main_section_controls=[
                 Card(
                     controls=[
                         Text(
-                            value=currency['id_str'].upper(),
+                            value=await self.client.session.gtv(key=contact.name_text),
                             size=18,
                             font_family=Fonts.SEMIBOLD,
                             color=colors.ON_PRIMARY_CONTAINER,
                         ),
                     ],
-                    on_click=partial(self.currency_view, currency['id_str']),
+                    on_click=partial(self.contact_view, contact.id),
                     color=colors.PRIMARY_CONTAINER,
                 )
-                for currency in self.currencies
+                for contact in self.contacts
             ],
         )
 
-    async def currency_create(self, _):
-        await self.client.change_view(view=CurrencyCreateView())
+    async def contact_create(self, _):
+        await self.client.change_view(view=ContactCreateView())
 
-    async def currency_view(self, currency_id_str: str, _):
-        await self.client.change_view(view=CurrencyView(currency_id_str=currency_id_str))
+    async def contact_view(self, contact_id: int, _):
+        await self.client.change_view(view=ContactView(contact_id=contact_id))

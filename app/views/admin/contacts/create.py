@@ -23,39 +23,21 @@ from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
 from app.utils import Error
 from fexps_api_client.utils import ApiException
-from .get import CurrencyView
+from .get import ContactView
 
 
-class CurrencyCreateView(AdminBaseView):
-    route = '/admin/currency/create'
-    tf_id_str: TextField
-    tf_decimal: TextField
-    tf_rate_decimal: TextField
-    tf_div: TextField
+class ContactCreateView(AdminBaseView):
+    route = '/admin/contacts/create'
+    tf_name: TextField
 
     async def build(self):
-        self.tf_id_str = TextField(
-            label='id_str',
-        )
-        self.tf_decimal = TextField(
-            label=await self.client.session.gtv(key='currency_decimal'),
-            value='2',
-        )
-        self.tf_rate_decimal = TextField(
-            label=await self.client.session.gtv(key='currency_rate_decimal'),
-            value='2',
-        )
-        self.tf_div = TextField(
-            label=await self.client.session.gtv(key='currency_div'),
-            value='100',
+        self.tf_name = TextField(
+            label=await self.client.session.gtv(key='name'),
         )
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_currency_create_view_title'),
             main_section_controls=[
-                self.tf_id_str,
-                self.tf_decimal,
-                self.tf_rate_decimal,
-                self.tf_div,
+                self.tf_name,
                 Row(
                     controls=[
                         StandardButton(
@@ -73,23 +55,17 @@ class CurrencyCreateView(AdminBaseView):
 
     async def create_currency(self, _):
         await self.set_type(loading=True)
-        for field, min_len, max_len in [(self.tf_id_str, 2, 32)]:
+        for field, min_len, max_len in [(self.tf_name, 1, 128)]:
             if not await Error.check_field(self, field, min_len=min_len, max_len=max_len):
                 await self.set_type(loading=False)
                 return
-        for field in [self.tf_decimal, self.tf_rate_decimal, self.tf_div]:
-            if not await Error.check_field(self, field, check_int=True):
-                await self.set_type(loading=False)
-                return
         try:
-            id_str = await self.client.session.api.admin.currencies.create(
-                id_str=self.tf_id_str.value,
-                decimal=int(self.tf_decimal.value),
-                rate_decimal=int(self.tf_rate_decimal.value),
-                div=int(self.tf_div.value),
+            id_ = await self.client.session.api.admin.contacts.create(
+                name=self.tf_name.value,
             )
+            await self.client.session.get_text_pack()
             await self.set_type(loading=False)
-            await self.client.change_view(view=CurrencyView(currency_id_str=id_str), delete_current=True)
+            await self.client.change_view(view=ContactView(contact_id=id_), delete_current=True)
         except ApiException as exception:
             await self.set_type(loading=False)
             return await self.client.session.error(exception=exception)
