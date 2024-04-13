@@ -30,7 +30,7 @@ from app.views.admin.wallet import WalletListView
 
 class AccountView(AdminBaseView):
     route = '/admin/accounts/get'
-    account: dict
+    account = dict
     clipboard_text_field: TextField
     clipboard: Container
 
@@ -40,9 +40,7 @@ class AccountView(AdminBaseView):
 
     async def build(self):
         await self.set_type(loading=True)
-        self.account = await self.client.session.api.admin.accounts.get(
-            id_=self.account_id
-        )
+        self.account = await self.client.session.api.admin.accounts.get(id_=self.account_id)
         await self.set_type(loading=False)
 
         # FIXME
@@ -89,7 +87,7 @@ class AccountView(AdminBaseView):
         title_str = await self.client.session.gtv(key='admin_account_get_view_title')
 
         self.controls = await self.get_controls(
-            title=f'{title_str}: {self.account['username']}',
+            title=f'{title_str}: {self.account.username}',
             main_section_controls=[
                 Text(
                     value=await self.client.session.gtv(key='basic_information'),
