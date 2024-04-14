@@ -15,7 +15,7 @@
 #
 import logging
 
-from flet_core import Column, colors, Row, MainAxisAlignment, Image, CircleAvatar
+from flet_core import Column, colors, Row, MainAxisAlignment, Image, CircleAvatar, ScrollMode
 
 from app.controls.information import Text
 from app.controls.layout import AdminBaseView
@@ -45,6 +45,7 @@ class TransferView(AdminBaseView):
         elif self.transfer.operation == 'receive':
             short_name = self.transfer.account_from.short_name
             value = f'+ {value}'
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='transfer_view_title'),
             back_with_restart=False,

@@ -19,7 +19,7 @@ import asyncio
 from functools import partial
 
 from flet_core import Control, Column, Container, Row, Divider, MainAxisAlignment, \
-    padding, Image, colors, alignment
+    padding, Image, colors, alignment, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
@@ -393,6 +393,7 @@ class RequestOrderView(ClientBaseView):
                     alignment=alignment.bottom_center,
                 )
             ]
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='request_order_title'),
             with_expand=True,

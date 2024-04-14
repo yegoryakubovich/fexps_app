@@ -19,8 +19,8 @@ import asyncio
 import logging
 from functools import partial
 
-from flet_core import SnackBar, Control, Column, Container, Row, Divider, MainAxisAlignment, \
-    padding, Image, colors, alignment, AlertDialog, TextField
+from flet_core import Control, Column, Container, Row, Divider, MainAxisAlignment, \
+    padding, Image, colors, alignment, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
@@ -36,12 +36,6 @@ class RequisiteOrderView(ClientBaseView):
     requisite = dict
     method = dict
     currency = dict
-    snack_bar: SnackBar
-    custom_info: list
-    custom_controls: list[Control]
-    output_field_dialog: AlertDialog
-    input_scheme_fields: list[TextField]
-    input_fields: dict
 
     def __init__(self, order_id: int):
         super().__init__()
@@ -340,8 +334,6 @@ class RequisiteOrderView(ClientBaseView):
         )
 
     async def build(self):
-        self.input_fields = {}
-        self.output_field_dialog = AlertDialog()
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
         self.currency = await self.client.session.api.client.currencies.get(id_str=self.order.currency)
@@ -388,7 +380,6 @@ class RequisiteOrderView(ClientBaseView):
 
         if buttons:
             controls += [
-                self.output_field_dialog,
                 Container(
                     content=Row(
                         controls=buttons,
@@ -397,6 +388,7 @@ class RequisiteOrderView(ClientBaseView):
                     alignment=alignment.bottom_center,
                 )
             ]
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='requisite_order_title'),
             with_expand=True,

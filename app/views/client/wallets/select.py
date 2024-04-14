@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import Column, Container, colors, Row, MainAxisAlignment, AlertDialog, TextField, alignment
+from flet_core import Column, Container, colors, Row, MainAxisAlignment, AlertDialog, TextField, alignment, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -85,34 +85,39 @@ class WalletSelectView(ClientBaseView):
         await self.set_type(loading=True)
         self.wallets = await self.client.session.api.client.wallets.get_list()
         self.wallet = await self.client.session.api.client.wallets.get(id_=self.client.session.current_wallet.id)
-        self.wallets_column = Column(controls=await self.get_wallet_list())
+        self.wallets_column = Column(
+            controls=await self.get_wallet_list(),
+            scroll=ScrollMode.AUTO,
+        )
         await self.set_type(loading=False)
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='wallet_select_title'),
             with_expand=True,
             main_section_controls=[
                 self.dialog,
-                self.wallets_column,
+                Container(
+                    content=self.wallets_column,
+                    expand=True,
+                ),
                 Container(
                     content=Row(
                         controls=[
                             StandardButton(
                                 text=await self.client.session.gtv(key='wallet_edit_name'),
                                 on_click=self.dialog_edit_name_open,
-                                expand=True,
                                 color=colors.ON_PRIMARY_CONTAINER,
                                 bgcolor=colors.PRIMARY_CONTAINER,
+                                expand=True,
                             ),
                             StandardButton(
                                 text=await self.client.session.gtv(key='wallet_permissions'),
                                 on_click=None,
-                                expand=True,
                                 color=colors.ON_PRIMARY_CONTAINER,
                                 bgcolor=colors.PRIMARY_CONTAINER,
+                                expand=True,
                             ),
                         ],
                     ),
-                    expand=True,
                     alignment=alignment.bottom_center,
                 ),
                 Container(

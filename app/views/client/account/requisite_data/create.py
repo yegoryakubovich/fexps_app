@@ -15,12 +15,14 @@
 #
 
 
-from app.controls.layout import AdminBaseView
+from flet_core import ScrollMode, Container, Column, Row
+
+from app.controls.layout import ClientBaseView
 from app.views.client.account.requisite_data.get import RequisiteDataView
 from app.views.client.account.requisite_data.models import RequisiteDataCreateModel
 
 
-class RequisiteDataCreateView(AdminBaseView):
+class RequisiteDataCreateView(ClientBaseView):
     route = '/client/requisite/data/create'
     requisite_data_model: RequisiteDataCreateModel
 
@@ -35,8 +37,15 @@ class RequisiteDataCreateView(AdminBaseView):
         await self.set_type(loading=False)
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='requisite_data_create_view_title'),
+            with_expand=True,
             main_section_controls=[
-                *self.requisite_data_model.controls,
+                Container(
+                    content=Column(
+                        controls=self.requisite_data_model.controls,
+                        scroll=ScrollMode.AUTO
+                    ),
+                    expand=True,
+                ),
                 *self.requisite_data_model.buttons,
             ]
         )

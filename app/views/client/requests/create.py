@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import Column, Container, KeyboardType, Row, alignment, Control, AlertDialog, Image, colors
+from flet_core import Column, Container, KeyboardType, Row, alignment, Control, AlertDialog, Image, colors, ScrollMode
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -136,7 +136,7 @@ class RequestCreateView(ClientBaseView):
             expand=True,
         )
         return [
-            SubTitle(value=await self.client.session.gtv(key='request_create_input')),
+            SubTitle(value=await self.client.session.gtv(key='request_create_output')),
             Row(
                 controls=[
                     self.tf_output_value,
@@ -173,9 +173,17 @@ class RequestCreateView(ClientBaseView):
             with_expand=True,
             title=await self.client.session.gtv(key='request_create_title'),
             main_section_controls=[
-                self.dialog,
-                *await self.get_input(),
-                *await self.get_output(),
+                Container(
+                    content=Column(
+                        controls=[
+                            self.dialog,
+                            *await self.get_input(),
+                            *await self.get_output(),
+                        ],
+                        scroll=ScrollMode.AUTO,
+                    ),
+                    expand=True,
+                ),
                 Container(
                     content=Row(
                         controls=[
@@ -186,7 +194,6 @@ class RequestCreateView(ClientBaseView):
                             )
                         ],
                     ),
-                    expand=True,
                     alignment=alignment.bottom_center,
                 ),
             ],

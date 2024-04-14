@@ -17,16 +17,17 @@
 
 from functools import partial
 
-from flet_core import Row, Column, ControlEvent, ScrollMode
+from _ctypes import alignment
+from flet_core import Row, Column, ControlEvent, ScrollMode, Container, alignment
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
-from app.controls.layout import AdminBaseView
+from app.controls.layout import AdminBaseView, ClientBaseView
 from fexps_api_client.utils import ApiException
 
 
-class AccountContactView(AdminBaseView):
+class AccountContactView(ClientBaseView):
     route = '/client/account/contact/get'
     contacts = list[dict]
     accounts_contacts = list[dict]
@@ -58,26 +59,31 @@ class AccountContactView(AdminBaseView):
                     on_change=partial(self.change_contact, contact.id),
                 )
             ]
-        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='account_contact_title'),
+            with_expand=True,
             main_section_controls=[
-                Column(
-                    controls=[
-                        *contact_controls,
-                        Row(
-                            controls=[
-                                StandardButton(
-                                    content=Text(
-                                        value=await self.client.session.gtv(key='save'),
-                                    ),
-                                    on_click=self.update_account_contact,
-                                    expand=True,
-                                ),
-                            ],
-                        ),
-                    ],
+                Container(
+                    content=Column(
+                        controls=contact_controls,
+                        scroll=ScrollMode.AUTO,
+                    ),
+                    expand=True,
                 ),
+                Container(
+                    content=Row(
+                        controls=[
+                            StandardButton(
+                                content=Text(
+                                    value=await self.client.session.gtv(key='save'),
+                                ),
+                                on_click=self.update_account_contact,
+                                expand=True,
+                            ),
+                        ],
+                    ),
+                    alignment=alignment.bottom_center,
+                )
             ],
         )
 

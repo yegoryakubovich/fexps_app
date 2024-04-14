@@ -17,7 +17,7 @@ import asyncio
 import logging
 from functools import partial
 
-from flet_core import Row, colors, MainAxisAlignment, Image, Column, Control
+from flet_core import Row, colors, MainAxisAlignment, Image, Column, Control, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import SubTitle, Text
@@ -205,11 +205,11 @@ class RequisiteView(ClientBaseView):
         elif self.requisite.type == 'output':
             controls += await self.get_controls_output()
         title_str = await self.client.session.gtv(key='requisite_get_title')
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
-            with_expand=True,
+            back_with_restart=True,
             title=f'{title_str} #{self.requisite.id:08}',
             main_section_controls=controls,
-            back_with_restart=True,
         )
 
     async def order_view(self, order_id: int, _):

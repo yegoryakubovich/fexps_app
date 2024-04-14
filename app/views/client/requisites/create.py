@@ -15,7 +15,7 @@
 #
 
 from flet_core import padding, ScrollMode, Row, Column, Container, KeyboardType, ControlEvent, AlertDialog, colors, \
-    Image
+    Image, alignment
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -94,15 +94,25 @@ class RequisiteCreateView(ClientBaseView):
             on_change=self.change_type_or_currency,
         )
         self.optional = Column(controls=[])
-        self.controls_container = Container(
-            content=Column(
-                controls=[
-                    self.dialog,
-                    self.dd_type,
-                    self.dd_wallet,
-                    self.dd_currency,
-                    self.optional,
-                    Row(
+        self.controls = await self.get_controls(
+            title=await self.client.session.gtv(key='requisite_create_title'),
+            with_expand=True,
+            main_section_controls=[
+                Container(
+                    content=Column(
+                        controls=[
+                            self.dialog,
+                            self.dd_type,
+                            self.dd_wallet,
+                            self.dd_currency,
+                            self.optional,
+                        ],
+                        scroll=ScrollMode.AUTO,
+                    ),
+                    expand=True,
+                ),
+                Container(
+                    content=Row(
                         controls=[
                             StandardButton(
                                 text=await self.client.session.gtv(key='requisite_create_title'),
@@ -110,19 +120,10 @@ class RequisiteCreateView(ClientBaseView):
                                 expand=True,
                             ),
                         ],
-                    )
-                ],
-                spacing=10,
-            ),
-            padding=padding.only(bottom=15),
-        )
-        controls = [
-            self.controls_container
-        ]
-        self.scroll = ScrollMode.AUTO
-        self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='requisite_create_title'),
-            main_section_controls=controls,
+                    ),
+                    alignment=alignment.bottom_center,
+                ),
+            ],
         )
 
     async def change_type_or_currency(self, _):

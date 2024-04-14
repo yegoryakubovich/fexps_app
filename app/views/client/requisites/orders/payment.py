@@ -22,7 +22,7 @@ from functools import partial
 from io import BytesIO
 
 from flet_core import Control, Row, MainAxisAlignment, TextField, ControlEvent, FilePickerUploadFile, \
-    FilePickerUploadEvent, Image
+    FilePickerUploadEvent, Image, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -82,6 +82,7 @@ class RequisiteOrderPaymentView(ClientBaseView):
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
         await self.set_type(loading=False)
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='request_order_title'),
             with_expand=True,

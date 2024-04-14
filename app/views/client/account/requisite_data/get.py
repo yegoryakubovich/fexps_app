@@ -15,17 +15,17 @@
 #
 
 
-from flet_core import Row, Column, colors, SnackBar
+from flet_core import Row, Column, colors, SnackBar, Container, alignment, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
-from app.controls.layout import AdminBaseView
+from app.controls.layout import AdminBaseView, ClientBaseView
 from app.utils import Fonts
 from fexps_api_client.utils import ApiException
 
 
-class RequisiteDataView(AdminBaseView):
+class RequisiteDataView(ClientBaseView):
     route = '/client/requisite/data/get'
     requisite_data = dict
     method = dict
@@ -54,38 +54,46 @@ class RequisiteDataView(AdminBaseView):
             )
         self.controls = await self.get_controls(
             title=self.requisite_data['name'],
+            with_expand=True,
             main_section_controls=[
-                Column(
-                    controls=[
-                        Text(
-                            value='\n'.join([
-                                f'{await self.client.session.gtv(key="name")}: {self.requisite_data.name}',
-                                f'{await self.client.session.gtv(key="currency")}: {self.method.currency.upper()}',
-                                f'{await self.client.session.gtv(key="method")}: '
-                                f'{await self.client.session.gtv(key=self.method.name_text)} ({self.method.id})',
-                            ]),
-                            size=24,
-                            font_family=Fonts.MEDIUM,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                        *self.details,
-                        Row(
-                            controls=[
-                                StandardButton(
-                                    content=Text(
-                                        value=await self.client.session.gtv(key='save'),
-                                    ),
-                                    on_click=self.update_requisite_data,
-                                    expand=True,
+                Container(
+                    content=Column(
+                        controls=[
+                            Text(
+                                value='\n'.join([
+                                    f'{await self.client.session.gtv(key="name")}: {self.requisite_data.name}',
+                                    f'{await self.client.session.gtv(key="currency")}: {self.method.currency.upper()}',
+                                    f'{await self.client.session.gtv(key="method")}: '
+                                    f'{await self.client.session.gtv(key=self.method.name_text)} ({self.method.id})',
+                                ]),
+                                size=24,
+                                font_family=Fonts.MEDIUM,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                            *self.details,
+                        ],
+                        scroll=ScrollMode.AUTO,
+                    ),
+                    expand=True,
+                ),
+                Container(
+                    content=Row(
+                        controls=[
+                            StandardButton(
+                                content=Text(
+                                    value=await self.client.session.gtv(key='save'),
                                 ),
-                                StandardButton(
-                                    content=Text(value=await self.client.session.gtv(key='delete')),
-                                    on_click=self.delete_requisite_data,
-                                    expand=True,
-                                ),
-                            ],
-                        ),
-                    ],
+                                on_click=self.update_requisite_data,
+                                expand=True,
+                            ),
+                            StandardButton(
+                                content=Text(value=await self.client.session.gtv(key='delete')),
+                                on_click=self.delete_requisite_data,
+                                expand=True,
+                            ),
+                        ],
+                    ),
+                    alignment=alignment.bottom_center,
                 ),
             ],
         )

@@ -15,11 +15,12 @@
 #
 
 
-from flet_core import Column, Container, ScrollMode, padding, KeyboardType, Row
+from flet_core import Column, Container, KeyboardType, Row, alignment, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
+from app.utils import Error
 from app.utils.value import get_decimal_places, value_to_int
 from fexps_api_client.utils import ApiException
 
@@ -28,7 +29,6 @@ class TransferCreateView(ClientBaseView):
     route = '/client/transfer/create'
     wallet_to_id_tf: TextField
     value_tf: TextField
-    controls_container: Container
 
     async def build(self):
         # self.client.session.account
@@ -40,40 +40,45 @@ class TransferCreateView(ClientBaseView):
             label=await self.client.session.gtv(key='send_money_value'),
             keyboard_type=KeyboardType.NUMBER,
         )
-        self.controls_container = Container(
-            content=Column(
-                controls=[
-                    self.wallet_to_id_tf,
-                    self.value_tf,
-                    Row(
+        self.controls = await self.get_controls(
+            title=await self.client.session.gtv(key='send_money'),
+            with_expand=True,
+            main_section_controls=[
+                Container(
+                    content=Column(
+                        controls=[
+                            self.wallet_to_id_tf,
+                            self.value_tf,
+                        ],
+                        scroll=ScrollMode.AUTO,
+                    ),
+                    expand=True
+                ),
+                Container(
+                    content=Row(
                         controls=[
                             StandardButton(
                                 text=await self.client.session.gtv(key='send_money'),
-                                on_click=self.switch_tf,
+                                on_click=self.send,
                                 expand=True,
                             ),
                         ],
                     ),
-                ],
-                spacing=10,
-            ),
-            padding=padding.only(bottom=15),
-        )
-        controls = [
-            self.controls_container
-        ]
-        self.scroll = ScrollMode.AUTO
-        self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='send_money'),
-            main_section_controls=controls,
+                    alignment=alignment.bottom_center
+                )
+            ],
         )
 
     async def go_back(self, _):
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
 
-    async def switch_tf(self, _):
-        self.wallet_to_id_tf.error_text = None
-        self.value_tf.error_text = None
+    async def send(self, _):
+        if not await Error.check_field(self, self.wallet_to_id_tf, check_int=True):
+            await self.set_type(loading=False)
+            return
+        if not await Error.check_field(self, self.value_tf, check_float=True):
+            await self.set_type(loading=False)
+            return
         if get_decimal_places(float(self.value_tf.value)) > 2:
             self.value_tf.error_text = await self.client.session.gtv(key='payment_too_many_decimal_places')
             await self.update_async()
