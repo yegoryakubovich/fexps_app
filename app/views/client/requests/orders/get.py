@@ -389,7 +389,6 @@ class RequestOrderView(ClientBaseView):
                     content=Row(
                         controls=buttons,
                     ),
-                    expand=True,
                     alignment=alignment.bottom_center,
                 )
             ]
