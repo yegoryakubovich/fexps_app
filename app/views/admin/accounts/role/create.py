@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from flet_core import Row
+from flet_core import Row, ScrollMode
 from flet_core.dropdown import Option
 from fexps_api_client.utils import ApiException
 
@@ -38,6 +38,7 @@ class AccountRoleCreateView(AdminBaseView):
         self.roles = await self.client.session.api.admin.roles.get_list()
         await self.set_type(loading=False)
 
+        self.scroll = ScrollMode.AUTO
         role_options = [
             Option(
                 text=await self.client.session.gtv(key=role.get('name_text')),

@@ -34,6 +34,7 @@ class ContactCreateView(AdminBaseView):
         self.tf_name = TextField(
             label=await self.client.session.gtv(key='name'),
         )
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_currency_create_view_title'),
             main_section_controls=[

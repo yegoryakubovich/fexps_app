@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from flet_core import Row
+from flet_core import Row, ScrollMode
 
 from fexps_api_client.utils import ApiException
 
@@ -36,6 +36,7 @@ class LanguageCreateView(AdminBaseView):
             )
             for key in ['key', 'name']
         ]
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_language_create_view_title'),
             main_section_controls=[

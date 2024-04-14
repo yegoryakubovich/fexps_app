@@ -25,7 +25,6 @@ from app.controls.information.card import Card
 from app.controls.layout import AdminBaseView
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts
-from fexps_api_client import FexpsApiClient
 from fexps_api_client.utils import ApiException
 from .create import CommissionPackCreateView
 from .get import CommissionPackView
@@ -39,8 +38,6 @@ class CommissionPackListView(AdminBaseView):
     items_per_page: int = 6
 
     async def build(self):
-        self.client.session.api: FexpsApiClient
-
         await self.set_type(loading=True)
         try:
             self.commissions_packs = await self.client.session.api.admin.commissions_packs.get_list()

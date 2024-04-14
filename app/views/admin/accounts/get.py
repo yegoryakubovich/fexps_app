@@ -15,7 +15,7 @@
 #
 
 
-from flet_core import Row, colors, MaterialState, Container, Image, padding, margin, InputBorder, TextStyle
+from flet_core import Row, colors, MaterialState, Container, Image, padding, margin, InputBorder, TextStyle, ScrollMode
 from pyperclip import copy
 
 from app.controls.button import StandardButton
@@ -42,7 +42,7 @@ class AccountView(AdminBaseView):
         await self.set_type(loading=True)
         self.account = await self.client.session.api.admin.accounts.get(id_=self.account_id)
         await self.set_type(loading=False)
-
+        self.scroll = ScrollMode.AUTO
         # FIXME
         surname = self.account['surname'] if self.account['surname'] else await self.client.session.gtv(key='absent')
 

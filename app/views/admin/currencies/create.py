@@ -15,7 +15,7 @@
 #
 
 
-from flet_core import Row
+from flet_core import Row, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -49,6 +49,7 @@ class CurrencyCreateView(AdminBaseView):
             label=await self.client.session.gtv(key='currency_div'),
             value='100',
         )
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_currency_create_view_title'),
             main_section_controls=[

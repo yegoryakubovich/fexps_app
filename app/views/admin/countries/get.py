@@ -15,7 +15,7 @@
 #
 
 
-from flet_core import Row
+from flet_core import Row, ScrollMode
 from flet_core.dropdown import Option
 
 from app.controls.input import Dropdown, TextField
@@ -96,6 +96,7 @@ class CountryView(AdminBaseView):
             value=self.country['currency'],
             options=currency_options,
         )
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=self.country['name'],
             main_section_controls=[

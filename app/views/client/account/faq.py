@@ -25,7 +25,6 @@ class FAQView(ClientBaseView):
     route = '/client/account/FAQ/'
 
     async def build(self):
-        self.scroll = ScrollMode.AUTO
         questions_answers = {
             await self.client.session.gtv(key='faq_question_1'):
                 await self.client.session.gtv(key='faq_answer_1'),
@@ -48,6 +47,7 @@ class FAQView(ClientBaseView):
             )
             for question, answer in questions_answers.items()
         ]
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='faq'),
             main_section_controls=[

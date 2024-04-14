@@ -15,7 +15,7 @@
 #
 
 
-from flet_core import Row
+from flet_core import Row, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -34,6 +34,7 @@ class ContactView(AdminBaseView):
         await self.set_type(loading=True)
         self.contact = await self.client.session.api.client.contacts.get(id_=self.contact_id)
         await self.set_type(loading=False)
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key=self.contact.name_text),
             main_section_controls=[

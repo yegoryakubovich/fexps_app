@@ -16,7 +16,7 @@
 import logging
 from functools import partial
 
-from flet_core import TextField, Row, Image, colors
+from flet_core import TextField, Row, Image, colors, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.layout import AdminBaseView
@@ -45,7 +45,7 @@ class AccountContactView(AdminBaseView):
         self.reform_to_dict()
         await self.set_type(loading=False)
         contact_controls = []
-        logging.critical(self.accounts_contacts_dict)
+        self.scroll = ScrollMode.AUTO
         for contact in self.contacts:
             logging.critical(contact)
             contact_controls += [

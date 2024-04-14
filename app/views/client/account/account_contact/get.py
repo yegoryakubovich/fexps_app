@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import Row, Column, ControlEvent
+from flet_core import Row, Column, ControlEvent, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -58,6 +58,7 @@ class AccountContactView(AdminBaseView):
                     on_change=partial(self.change_contact, contact.id),
                 )
             ]
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='account_contact_title'),
             main_section_controls=[

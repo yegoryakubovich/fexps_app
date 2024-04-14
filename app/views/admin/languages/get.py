@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from flet_core import Row
+from flet_core import Row, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -35,6 +35,7 @@ class LanguageView(AdminBaseView):
         )
         await self.set_type(loading=False)
 
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=self.language['name'],
             main_section_controls=[

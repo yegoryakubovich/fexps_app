@@ -15,7 +15,7 @@
 #
 
 
-from flet_core import Row
+from flet_core import Row, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -34,6 +34,7 @@ class AccountRoleView(AdminBaseView):
         self.role = role
 
     async def build(self):
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key=self.role['name_text']),
             main_section_controls=[

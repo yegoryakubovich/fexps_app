@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from flet_core import Row
+from flet_core import Row, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -54,6 +54,7 @@ class CurrencyView(AdminBaseView):
             value=self.currency['div'],
         )
 
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=self.currency['id_str'].upper(),
             main_section_controls=[
