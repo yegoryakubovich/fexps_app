@@ -308,7 +308,7 @@ class RequisiteOrderView(ClientBaseView):
             content=Row(
                 controls=[
                     Text(
-                        value=await self.client.session.gtv(key='value_edit_button'),
+                        value=await self.client.session.gtv(key='requisite_order_value_edit_button'),
                         size=20,
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
@@ -326,7 +326,7 @@ class RequisiteOrderView(ClientBaseView):
             content=Row(
                 controls=[
                     Text(
-                        value=await self.client.session.gtv(key='cancel_button'),
+                        value=await self.client.session.gtv(key='requisite_order_cancel_button'),
                         size=20,
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
