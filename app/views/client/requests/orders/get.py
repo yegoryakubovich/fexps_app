@@ -389,7 +389,6 @@ class RequestOrderView(ClientBaseView):
                     content=Row(
                         controls=buttons,
                     ),
-                    alignment=alignment.bottom_center,
                 )
             ]
         self.scroll = ScrollMode.AUTO

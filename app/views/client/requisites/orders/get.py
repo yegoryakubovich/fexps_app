@@ -384,14 +384,11 @@ class RequisiteOrderView(ClientBaseView):
                     content=Row(
                         controls=buttons,
                     ),
-                    expand=True,
-                    alignment=alignment.bottom_center,
                 )
             ]
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='requisite_order_title'),
-            with_expand=True,
             main_section_controls=controls,
         )
 
