@@ -17,7 +17,6 @@
 
 import asyncio
 import json
-import logging
 
 import aiohttp
 from flet_core import Container, Row, alignment, Column, UserControl, Control, colors, MainAxisAlignment, padding, \
@@ -45,7 +44,6 @@ class Chat(UserControl):
             message: dict,
             positions: dict = None,
     ) -> Control:
-        logging.critical(message)
         if not positions:
             positions = {}
         position = message['account_position'].title()
@@ -128,7 +126,7 @@ class Chat(UserControl):
         await self.websocket.close()
 
     async def send(self, data: dict):
-        await self.websocket.send_str(data=data)
+        await self.websocket.send_json(data=data)
 
     async def did_mount_async(self):
         self.running = True
@@ -140,18 +138,17 @@ class Chat(UserControl):
 
     async def update_chat(self):
         async for message in self.websocket:
-            if message.type == aiohttp.WSMsgType.TEXT:
-                message = json.loads(message.data)
-                logging.critical(message)
-                self.control_list.append(
-                    await self.create_message_card(
-                        api=self.api,
-                        account_id=self.account_id,
-                        message=message,
-                        positions=self.positions,
-                    )
+            if not self.running:
+                return
+            self.control_list.append(
+                await self.create_message_card(
+                    api=self.api,
+                    account_id=self.account_id,
+                    message=json.loads(message.data),
+                    positions=self.positions,
                 )
-                await self.update_async()
+            )
+            await self.update_async()
 
     def build(self):
         self.message_column = ListView(
@@ -229,7 +226,7 @@ class ChatView(ClientBaseView):
                     content=Row(
                         controls=[
                             StandardButton(
-                                text=await self.client.session.gtv(key='send'),
+                                text=await self.client.session.gtv(key='chat_send'),
                                 on_click=self.send,
                                 expand=True,
                             ),
