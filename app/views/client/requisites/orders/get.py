@@ -20,7 +20,7 @@ import logging
 from functools import partial
 
 from flet_core import SnackBar, Control, Column, Container, Row, Divider, MainAxisAlignment, \
-    padding, Image, colors, alignment, AlertDialog, TextButton, TextField, KeyboardType, ControlEvent
+    padding, Image, colors, alignment, AlertDialog, TextField
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
@@ -261,45 +261,6 @@ class RequisiteOrderView(ClientBaseView):
     OUTPUT
     """
 
-    async def create_output_payment_dialog(self):
-        self.input_scheme_fields = []
-        for input_scheme_field in self.order.input_scheme_fields:
-            type_ = input_scheme_field["type"]
-            type_str = await self.client.session.gtv(key=type_)
-            name_list = [await self.client.session.gtv(key=input_scheme_field['name_text_key']), f'({type_str})']
-            if not input_scheme_field['optional']:
-                name_list.append('*')
-            self.input_scheme_fields.append(
-                TextField(
-                    label=' '.join(name_list),
-                    on_change=partial(self.change_input_fields, input_scheme_field['key']),
-                    keyboard_type=KeyboardType.NUMBER if type_ == 'int' else None,
-                )
-            )
-        self.output_field_dialog = AlertDialog(
-            content=Container(
-                content=Column(
-                    controls=self.input_scheme_fields,
-                ),
-                height=220,
-            ),
-            actions=[
-                Row(
-                    controls=[
-                        TextButton(
-                            content=Text(
-                                value=await self.client.session.gtv(key="confirm"),
-                                size=16,
-                            ),
-                            on_click=self.output_field_dialog_confirm,
-                        ),
-                    ],
-                    alignment=MainAxisAlignment.END,
-                ),
-            ],
-            modal=False,
-        )
-
     async def get_output_payment_button(self) -> StandardButton:
         currency_value = value_to_float(
             value=self.order.currency_value,
@@ -315,7 +276,7 @@ class RequisiteOrderView(ClientBaseView):
                 color=colors.ON_PRIMARY,
             ),
             bgcolor=colors.PRIMARY,
-            on_click=self.output_field_dialog_open,
+            on_click=self.order_payment,
             expand=2,
         )
 
@@ -412,7 +373,6 @@ class RequisiteOrderView(ClientBaseView):
             if self.order.state == 'waiting':
                 pass
             elif self.order.state == 'payment':
-                await self.create_output_payment_dialog()
                 buttons += [
                     await self.get_cancel_button(),
                     await self.get_value_edit_button(),
@@ -443,61 +403,6 @@ class RequisiteOrderView(ClientBaseView):
             main_section_controls=controls,
         )
 
-    async def copy_to_clipboard(self, data, _):
-        await self.client.page.set_clipboard_async(str(data))
-
-    async def chat_open(self, _):
-        from app.views.client.chat import ChatView
-        await self.client.change_view(view=ChatView(order_id=self.order_id))
-
-    """INPUT"""
-
-    async def input_confirmation_confirm(self, _):
-        try:
-            await self.client.session.api.client.orders.updates.completed(id_=self.order_id)
-            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
-        except ApiException as exception:
-            return await self.client.session.error(exception=exception)
-
-    """OUTPUT"""
-
-    async def output_field_dialog_open(self, _):
-        self.reload_stop = True
-        self.output_field_dialog.open = True
-        await self.update_async()
-
-    async def change_input_fields(self, key: str, event: ControlEvent):
-        self.input_fields[key] = event.data
-
-    async def output_field_dialog_confirm(self, _):
-        self.output_field_dialog.open = False
-        await self.update_async()
-        await asyncio.sleep(0.1)
-        await self.set_type(loading=True)
-        self.reload_stop = False
-        for input_scheme_field in self.order.input_scheme_fields:
-            if not self.input_fields.get(input_scheme_field['key']):
-                continue
-            if input_scheme_field['type'] == 'int':
-                self.input_fields[input_scheme_field['key']] = int(self.input_fields[input_scheme_field['key']])
-        try:
-            await self.client.session.api.client.orders.updates.confirmation(
-                id_=self.order_id,
-                input_fields=self.input_fields,
-            )
-            await self.set_type(loading=False)
-            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
-        except ApiException as exception:
-            await self.set_type(loading=False)
-            return await self.client.session.error(exception=exception)
-
-    async def on_dev(self, _):
-        await self.client.session.bs_info.open_(
-            icon=Icons.CHILL,
-            title=await self.client.session.gtv(key='in_dev_title'),
-            description=await self.client.session.gtv(key='in_dev_description'),
-        )
-
     async def auto_reloader(self):
         if self.reload_bool:
             return
@@ -512,3 +417,30 @@ class RequisiteOrderView(ClientBaseView):
             await self.build()
             await self.update_async()
             await asyncio.sleep(5)
+
+    async def copy_to_clipboard(self, data, _):
+        await self.client.page.set_clipboard_async(str(data))
+
+    async def chat_open(self, _):
+        from app.views.client.chat import ChatView
+        await self.client.change_view(view=ChatView(order_id=self.order_id))
+
+    async def order_payment(self, _):
+        from .payment import RequisiteOrderPaymentView
+        await self.client.change_view(view=RequisiteOrderPaymentView(order_id=self.order_id))
+
+    async def on_dev(self, _):
+        await self.client.session.bs_info.open_(
+            icon=Icons.CHILL,
+            title=await self.client.session.gtv(key='in_dev_title'),
+            description=await self.client.session.gtv(key='in_dev_description'),
+        )
+
+    """INPUT"""
+
+    async def input_confirmation_confirm(self, _):
+        try:
+            await self.client.session.api.client.orders.updates.completed(id_=self.order_id)
+            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
