@@ -36,7 +36,7 @@ class ContactsListView(AdminBaseView):
         await self.set_type(loading=False)
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='admin_currency_get_list_view_title'),
+            title=await self.client.session.gtv(key='admin_contacts_get_list_view_title'),
             on_create_click=self.contact_create,
             main_section_controls=[
                 Card(
