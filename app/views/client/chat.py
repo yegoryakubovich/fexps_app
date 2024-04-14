@@ -127,8 +127,8 @@ class Chat(UserControl):
     async def disconnect(self):
         await self.websocket.close()
 
-    async def send(self, text: str):
-        await self.websocket.send_str(data=text)
+    async def send(self, data: dict):
+        await self.websocket.send_str(data=data)
 
     async def did_mount_async(self):
         self.running = True
@@ -230,7 +230,7 @@ class ChatView(ClientBaseView):
                         controls=[
                             StandardButton(
                                 text=await self.client.session.gtv(key='send'),
-                                on_click=self.send_message,
+                                on_click=self.send,
                                 expand=True,
                             ),
                         ],
@@ -244,9 +244,10 @@ class ChatView(ClientBaseView):
         await self.chat.disconnect()
         await self.client.change_view(go_back=True, delete_current=True)
 
-    async def send_message(self, _):
+    async def send(self, _):
         if not self.tf_message.value:
             return
-        await self.chat.send(text=self.tf_message.value)
+        type_ = 'text'
+        await self.chat.send(data={'type_': type_, 'value': self.tf_message.value})
         self.tf_message.value = None
         await self.update_async()
