@@ -396,7 +396,6 @@ class RequestOrderView(ClientBaseView):
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='request_order_title'),
-            with_expand=True,
             main_section_controls=controls,
         )
 

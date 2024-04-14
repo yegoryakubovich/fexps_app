@@ -356,7 +356,6 @@ class RequestView(ClientBaseView):
 
     async def get_orders_send(self) -> Row:
         return Row(
-            scroll=ScrollMode.AUTO,
             controls=[
                 SubTitle(value=await self.client.session.gtv(key='request_orders_input_title')),
                 *await self.get_orders_cards(type_='input'),
@@ -448,11 +447,11 @@ class RequestView(ClientBaseView):
         else:
             controls += await self.get_controls_other()
         title_str = await self.client.session.gtv(key='request_get_title')
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
-            with_expand=True,
+            back_with_restart=True,
             title=f'{title_str} #{self.request.id:08}',
             main_section_controls=controls,
-            back_with_restart=True,
         )
 
     async def request_edit_name(self, _):
