@@ -17,7 +17,7 @@ import asyncio
 import logging
 from functools import partial
 
-from flet_core import Row, colors, MainAxisAlignment, Image, Column, Control, ScrollMode
+from flet_core import Row, colors, MainAxisAlignment, Image, Column, Control, ScrollMode, Container
 
 from app.controls.button import StandardButton
 from app.controls.information import SubTitle, Text
@@ -193,13 +193,12 @@ class RequisiteView(ClientBaseView):
         await self.set_type(loading=True)
         self.requisite = await self.client.session.api.client.requisites.get(id_=self.requisite_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_requisite(requisite_id=self.requisite_id)
-        asyncio.create_task(self.auto_reloader())
-        logging.critical(self.orders)
         await self.set_type(loading=False)
+        asyncio.create_task(self.auto_reloader())
         controls = [
-            # await self.get_info_card(),
             await self.get_order_row(),
         ]
+        buttons = []
         if self.requisite.type == 'input':
             controls += await self.get_controls_input()
         elif self.requisite.type == 'output':
@@ -207,9 +206,22 @@ class RequisiteView(ClientBaseView):
         title_str = await self.client.session.gtv(key='requisite_get_title')
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
-            back_with_restart=True,
             title=f'{title_str} #{self.requisite.id:08}',
-            main_section_controls=controls,
+            back_with_restart=True,
+            with_expand=True,
+            main_section_controls=[
+                Container(
+                    content=Column(
+                        controls=controls,
+                        scroll=ScrollMode.AUTO,
+                    ),
+                    expand=True,
+                ),
+                *[
+                    Container(content=button)
+                    for button in buttons
+                ],
+            ],
         )
 
     async def order_view(self, order_id: int, _):

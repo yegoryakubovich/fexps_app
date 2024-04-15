@@ -16,10 +16,11 @@
 
 
 import asyncio
+import logging
 from functools import partial
 
 from flet_core import Control, Column, Container, Row, Divider, MainAxisAlignment, \
-    padding, Image, colors, alignment, ScrollMode
+    padding, Image, colors, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
@@ -319,7 +320,7 @@ class RequestOrderView(ClientBaseView):
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
             on_click=self.on_dev,
-            expand=1,
+            expand=2,
         )
 
     async def get_cancel_button(self) -> StandardButton:
@@ -358,14 +359,26 @@ class RequestOrderView(ClientBaseView):
                 pass
             elif self.order.state == 'payment':
                 buttons += [
-                    await self.get_cancel_button(),
-                    await self.get_value_edit_button(),
-                    await self.get_input_payment_button(),
-                    await self.get_chat_button(),
+                    Row(
+                        controls=[
+                            await self.get_value_edit_button(),
+                            await self.get_cancel_button(),
+                        ]
+                    ),
+                    Row(
+                        controls=[
+                            await self.get_input_payment_button(),
+                            await self.get_chat_button(),
+                        ]
+                    ),
                 ]
             elif self.order.state == 'confirmation':
                 buttons += [
-                    await self.get_chat_button(),
+                    Row(
+                        controls=[
+                            await self.get_chat_button(),
+                        ]
+                    ),
                 ]
             else:  # completed, canceled
                 pass
@@ -378,23 +391,31 @@ class RequestOrderView(ClientBaseView):
                 ]
             elif self.order.state == 'confirmation':
                 buttons += [
-                    await self.get_output_confirmation_button(),
-                    await self.get_chat_button(),
+                    Row(
+                        controls=[
+                            await self.get_output_confirmation_button(),
+                            await self.get_chat_button(),
+                        ]
+                    ),
                 ]
             else:  # completed, canceled
                 pass
-        if buttons:
-            controls += [
-                Container(
-                    content=Row(
-                        controls=buttons,
-                    ),
-                )
-            ]
-        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='request_order_title'),
-            main_section_controls=controls,
+            with_expand=True,
+            main_section_controls=[
+                Container(
+                    content=Column(
+                        controls=controls,
+                        scroll=ScrollMode.AUTO,
+                    ),
+                    expand=True,
+                ),
+                *[
+                    Container(content=button)
+                    for button in buttons
+                ],
+            ],
         )
 
     async def auto_reloader(self):

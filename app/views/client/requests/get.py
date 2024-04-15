@@ -16,10 +16,11 @@
 
 
 import asyncio
+import logging
 from functools import partial
 
-from flet_core import Column, colors, Control, ScrollMode, Row, MainAxisAlignment, Container, \
-    padding, alignment, Image, Divider, UserControl, AlertDialog
+from flet_core import Column, colors, Control, Row, MainAxisAlignment, Container, \
+    padding, Image, Divider, UserControl, AlertDialog, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
@@ -256,33 +257,22 @@ class RequestView(ClientBaseView):
             padding=padding.symmetric(vertical=32, horizontal=32),
         )
 
-    async def get_controls_waiting(self):
-        confirm_str = await self.client.session.gtv(key='request_confirm')
-        return [
-            Container(
-                content=Row(
-                    controls=[
-                        StandardButton(
-                            content=Row(
-                                controls=[
-                                    Text(
-                                        value=confirm_str,
-                                        size=16,
-                                        font_family=Fonts.BOLD,
-                                    ),
-                                    DynamicTimer(seconds=self.request.waiting_delta),
-                                ],
-                                alignment=MainAxisAlignment.CENTER,
-                            ),
-                            on_click=self.waiting_confirm,
-                            expand=True,
-                        )
-                    ],
-                ),
-                expand=True,
-                alignment=alignment.bottom_center,
+    async def get_waiting_button(self):
+        return StandardButton(
+            content=Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='request_confirm'),
+                        size=16,
+                        font_family=Fonts.BOLD,
+                    ),
+                    DynamicTimer(seconds=self.request.waiting_delta),
+                ],
+                alignment=MainAxisAlignment.CENTER,
             ),
-        ]
+            on_click=self.waiting_confirm,
+            expand=1,
+        )
 
     """
     ORDERS SEND
@@ -436,22 +426,40 @@ class RequestView(ClientBaseView):
         await self.set_type(loading=False)
         asyncio.create_task(self.auto_reloader())
         controls = [
-            self.dialog,
             await self.get_info_card(),
         ]
+        buttons = []
         if self.request.state == 'loading':
             pass
-            # asyncio.create_task(self.auto_reloader())
         elif self.request.state == 'waiting':
-            controls += await self.get_controls_waiting()
+            buttons += [
+                Row(
+                    controls=[
+                        await self.get_waiting_button(),
+                    ]
+                ),
+            ]
         else:
             controls += await self.get_controls_other()
         title_str = await self.client.session.gtv(key='request_get_title')
-        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
-            back_with_restart=True,
             title=f'{title_str} #{self.request.id:08}',
-            main_section_controls=controls,
+            back_with_restart=True,
+            with_expand=True,
+            main_section_controls=[
+                self.dialog,
+                Container(
+                    content=Column(
+                        controls=controls,
+                        scroll=ScrollMode.AUTO,
+                    ),
+                    expand=True,
+                ),
+                *[
+                    Container(content=button)
+                    for button in buttons
+                ],
+            ],
         )
 
     async def request_edit_name(self, _):

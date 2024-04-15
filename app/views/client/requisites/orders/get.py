@@ -20,7 +20,7 @@ import logging
 from functools import partial
 
 from flet_core import Control, Column, Container, Row, Divider, MainAxisAlignment, \
-    padding, Image, colors, alignment, ScrollMode
+    padding, Image, colors, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
@@ -312,7 +312,7 @@ class RequisiteOrderView(ClientBaseView):
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
             on_click=self.on_dev,
-            expand=1,
+            expand=2,
         )
 
     async def get_cancel_button(self) -> StandardButton:
@@ -341,7 +341,6 @@ class RequisiteOrderView(ClientBaseView):
         self.method = await self.client.session.api.client.methods.get(id_=self.order.method)
         await self.set_type(loading=False)
         asyncio.create_task(self.auto_reloader())
-        logging.critical(self.order)
         controls = [
             await self.get_info_card(),
             *await self.get_help_cards(),
@@ -352,12 +351,20 @@ class RequisiteOrderView(ClientBaseView):
                 pass
             elif self.order.state == 'payment':
                 buttons += [
-                    await self.get_chat_button(),
+                    Row(
+                        controls=[
+                            await self.get_chat_button(),
+                        ],
+                    ),
                 ]
             elif self.order.state == 'confirmation':
                 buttons += [
-                    await self.get_input_confirmation_button(),
-                    await self.get_chat_button(),
+                    Row(
+                        controls=[
+                            await self.get_input_confirmation_button(),
+                            await self.get_chat_button(),
+                        ],
+                    ),
                 ]
             else:  # completed, canceled
                 pass
@@ -366,30 +373,45 @@ class RequisiteOrderView(ClientBaseView):
                 pass
             elif self.order.state == 'payment':
                 buttons += [
-                    await self.get_cancel_button(),
-                    await self.get_value_edit_button(),
-                    await self.get_output_payment_button(),
-                    await self.get_chat_button(),
+                    Row(
+                        controls=[
+                            await self.get_value_edit_button(),
+                            await self.get_cancel_button(),
+                        ],
+                    ),
+                    Row(
+                        controls=[
+                            await self.get_output_payment_button(),
+                            await self.get_chat_button(),
+                        ],
+                    ),
                 ]
             elif self.order.state == 'confirmation':
                 buttons += [
-                    await self.get_chat_button(),
+                    Row(
+                        controls=[
+                            await self.get_chat_button(),
+                        ],
+                    ),
                 ]
             else:  # completed, canceled
                 pass
-
-        if buttons:
-            controls += [
-                Container(
-                    content=Row(
-                        controls=buttons,
-                    ),
-                )
-            ]
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='requisite_order_title'),
-            main_section_controls=controls,
+            main_section_controls=[
+                Container(
+                    content=Column(
+                        controls=controls,
+                        scroll=ScrollMode.AUTO,
+                    ),
+                    expand=True,
+                ),
+                *[
+                    Container(content=button)
+                    for button in buttons
+                ],
+            ],
         )
 
     async def auto_reloader(self):
