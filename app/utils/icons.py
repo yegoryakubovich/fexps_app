@@ -76,3 +76,4 @@ class Icons:
     PAYMENT = get_svg('payment')
     DEV = get_svg('dev')
     EDIT = get_svg('edit')
+    CLIP = get_svg('clip')
