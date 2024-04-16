@@ -18,13 +18,13 @@ import logging
 from flet_core import Column, colors, Row, MainAxisAlignment, Image, CircleAvatar, ScrollMode
 
 from app.controls.information import Text
-from app.controls.layout import AdminBaseView
+from app.controls.layout import ClientBaseView
 from app.utils import Fonts, Icons
 from app.utils.value import value_to_float
 from config import settings
 
 
-class TransferView(AdminBaseView):
+class TransferView(ClientBaseView):
     route = '/client/transfers/get'
     transfer = dict
 
@@ -48,7 +48,6 @@ class TransferView(AdminBaseView):
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='transfer_view_title'),
-            back_with_restart=False,
             main_section_controls=[
                 Column(
                     controls=[

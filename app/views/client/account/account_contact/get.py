@@ -23,7 +23,7 @@ from flet_core import Row, Column, ControlEvent, ScrollMode, Container, alignmen
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
-from app.controls.layout import AdminBaseView, ClientBaseView
+from app.controls.layout import ClientBaseView
 from fexps_api_client.utils import ApiException
 
 

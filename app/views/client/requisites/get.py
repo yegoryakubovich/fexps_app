@@ -207,7 +207,6 @@ class RequisiteView(ClientBaseView):
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=f'{title_str} #{self.requisite.id:08}',
-            back_with_restart=True,
             with_expand=True,
             main_section_controls=[
                 Container(

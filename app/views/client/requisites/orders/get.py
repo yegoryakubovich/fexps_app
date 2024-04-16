@@ -396,9 +396,9 @@ class RequisiteOrderView(ClientBaseView):
                 ]
             else:  # completed, canceled
                 pass
-        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='requisite_order_title'),
+            with_expand=True,
             main_section_controls=[
                 Container(
                     content=Column(

@@ -21,13 +21,13 @@ from flet_core import Text, ScrollMode, colors, Row, MainAxisAlignment
 
 from app.controls.information.card import Card
 from app.controls.input import TextField
-from app.controls.layout import AdminBaseView
+from app.controls.layout import ClientBaseView
 from app.utils import Fonts
 from app.views.client.account.requisite_data.create import RequisiteDataCreateView
 from app.views.client.account.requisite_data.get import RequisiteDataView
 
 
-class RequisiteDataListView(AdminBaseView):
+class RequisiteDataListView(ClientBaseView):
     route = '/client/requisite/data/list/get'
     requisites_datas = list[dict]
     tf_search = TextField

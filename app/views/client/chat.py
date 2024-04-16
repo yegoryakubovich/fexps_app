@@ -16,17 +16,21 @@
 
 
 import asyncio
+import datetime
 import json
+import os
+from base64 import b64encode
+from io import BytesIO
 
 import aiohttp
-from flet_core import Container, Row, alignment, Column, UserControl, Control, colors, MainAxisAlignment, padding, \
-    ListView, Image
+from flet_core import Container, Row, Column, UserControl, Control, colors, MainAxisAlignment, padding, \
+    Image, ScrollMode, FilePickerUploadFile, FilePickerUploadEvent, Stack, ImageFit, IconButton, icons
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, InformationContainer
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
-from app.utils import Fonts, get_image_src
+from app.utils import Fonts, get_image_src, Icons
 from config import settings
 from fexps_api_client import FexpsApiClient
 
@@ -34,7 +38,7 @@ from fexps_api_client import FexpsApiClient
 class Chat(UserControl):
     running: bool
     url: str = f'{settings.url}/messages/chat/ws'
-    message_column: ListView
+    message_column: Column
     control_list: list
 
     @staticmethod
@@ -43,6 +47,7 @@ class Chat(UserControl):
             account_id: int,
             message: dict,
             positions: dict = None,
+            deviation: int = 0,
     ) -> Control:
         if not positions:
             positions = {}
@@ -61,6 +66,10 @@ class Chat(UserControl):
                 src=await get_image_src(api=api, id_str=message['value']),
                 height=150,
             )
+        date = message['date']
+        if isinstance(date, str):
+            date = datetime.datetime.strptime(date, settings.datetime_format)
+            date = date.replace(tzinfo=None) + datetime.timedelta(hours=deviation)
 
         return InformationContainer(
             content=Column(
@@ -74,7 +83,7 @@ class Chat(UserControl):
                                 color=colors.ON_PRIMARY_CONTAINER,
                             ),
                             Text(
-                                value=message['date'],
+                                value=date.strftime(settings.datetime_format),
                                 size=14,
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
@@ -103,7 +112,8 @@ class Chat(UserControl):
             token: str,
             order_id: int,
             controls: list = None,
-            positions: dict = None
+            positions: dict = None,
+            deviation: int = 0,
     ):
         super().__init__()
         self.api = api
@@ -111,6 +121,7 @@ class Chat(UserControl):
         self.account_id = account_id
         self.order_id = order_id
         self.control_list = controls
+        self.deviation = deviation
         if controls is None:
             self.control_list = []
         self.positions = positions
@@ -146,13 +157,15 @@ class Chat(UserControl):
                     account_id=self.account_id,
                     message=json.loads(message.data),
                     positions=self.positions,
+                    deviation=self.deviation,
                 )
             )
             await self.update_async()
 
     def build(self):
-        self.message_column = ListView(
+        self.message_column = Column(
             controls=self.control_list,
+            scroll=ScrollMode.AUTO,
             auto_scroll=True,
             expand=True,
             spacing=10,
@@ -165,11 +178,14 @@ class ChatView(ClientBaseView):
     chat: Chat
     order_id: int
     tf_message: TextField
+    photo_row: Row
 
     def __init__(self, order_id: int):
         super().__init__()
         self.order_id = order_id
         self.positions = {}
+        self.photo = None
+        self.data_io = None
 
     async def build(self):
         account = self.client.session.account
@@ -201,26 +217,42 @@ class ChatView(ClientBaseView):
             order_id=self.order_id,
             controls=old_messages_controls,
             positions=self.positions,
+            deviation=self.client.session.timezone.deviation,
         )
         self.tf_message = TextField(
             label=await self.client.session.gtv(key='chat_write_message'),
             expand=True,
         )
+        self.photo_row = Row()
         self.controls = await self.get_controls(
             title=title_str,
+            with_expand=True,
             go_back_func=self.go_back,
             main_section_controls=[
                 Container(
                     content=self.chat,
-                    height=self.client.page.height - 300,
+                    expand=True,
+                ),
+                Container(
+                    content=self.photo_row,
                 ),
                 Container(
                     content=Row(
                         controls=[
+                            StandardButton(
+                                content=Image(
+                                    src=Icons.CLIP,
+                                    width=48,
+                                    height=48,
+                                    color=colors.ON_BACKGROUND,
+                                ),
+                                on_click=self.add_photo,
+                                color=colors.ON_BACKGROUND,
+                                bgcolor=colors.BACKGROUND,
+                            ),
                             self.tf_message,
                         ],
                     ),
-                    alignment=alignment.bottom_center,
                 ),
                 Container(
                     content=Row(
@@ -232,7 +264,6 @@ class ChatView(ClientBaseView):
                             ),
                         ],
                     ),
-                    alignment=alignment.bottom_center,
                 ),
             ],
         )
@@ -242,9 +273,81 @@ class ChatView(ClientBaseView):
         await self.client.change_view(go_back=True, delete_current=True)
 
     async def send(self, _):
-        if not self.tf_message.value:
+        if self.data_io:
+            id_str = await self.client.session.api.client.images.create(
+                model='order',
+                model_id=self.order_id,
+                file=self.data_io.read(),
+            )
+            await self.chat.send(data={'type_': 'image', 'value': id_str})
+            self.photo = None
+            self.data_io = None
+            self.photo_row.controls = []
+            await self.update_async()
+        if self.tf_message.value:
+            await self.chat.send(data={'type_': 'text', 'value': self.tf_message.value})
+            self.tf_message.value = None
+            await self.update_async()
+
+    """PHOTO"""
+
+    async def add_photo(self, _):
+        await self.client.session.filepicker.open_(
+            on_select=self.upload_files,
+            on_upload=self.on_upload_progress,
+            allowed_extensions=['svg', 'jpg'],
+        )
+
+    async def photo_delete(self, _):
+        self.photo = None
+        self.data_io = None
+        self.photo_row.controls = []
+        await self.photo_row.update_async()
+
+    async def upload_files(self, _):
+        uf = []
+        if not self.client.session.filepicker.result.files:
             return
-        type_ = 'text'
-        await self.chat.send(data={'type_': type_, 'value': self.tf_message.value})
-        self.tf_message.value = None
-        await self.update_async()
+        for f in self.client.session.filepicker.result.files:
+            uf.append(
+                FilePickerUploadFile(
+                    f.name,
+                    upload_url=await self.client.session.page.get_upload_url_async(f.name, 600),
+                )
+            )
+            await self.client.session.filepicker.upload_async([uf[-1]])
+            await self.on_upload_progress(e=FilePickerUploadEvent(file_name=f.name, progress=1.0, error=None))
+
+    async def on_upload_progress(self, e: FilePickerUploadEvent):
+        if e.progress is not None and e.progress < 1.0:
+            return
+        path = f'uploads/{e.file_name}'
+        if not os.path.exists(path):
+            return
+        with open(path, 'rb') as f:
+            image_data = f.read()
+        self.data_io = BytesIO(image_data)
+        encoded_image_data = b64encode(image_data).decode()
+        self.photo_row.controls = [
+            Container(
+                content=Stack(
+                    controls=[
+                        Image(
+                            src=f"data:image/jpeg;base64,{encoded_image_data}",
+                            width=150,
+                            height=150,
+                            fit=ImageFit.CONTAIN,
+                        ),
+                        IconButton(
+                            icon=icons.CLOSE,
+                            on_click=self.photo_delete,
+                            top=1,
+                            right=0,
+                            icon_color=colors.ON_SECONDARY,
+                        ),
+                    ],
+                ),
+                bgcolor=colors.SECONDARY,
+            ),
+        ]
+        await self.photo_row.update_async()

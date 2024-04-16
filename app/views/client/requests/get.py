@@ -444,7 +444,6 @@ class RequestView(ClientBaseView):
         title_str = await self.client.session.gtv(key='request_get_title')
         self.controls = await self.get_controls(
             title=f'{title_str} #{self.request.id:08}',
-            back_with_restart=True,
             with_expand=True,
             main_section_controls=[
                 self.dialog,

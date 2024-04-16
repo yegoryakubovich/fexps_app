@@ -20,7 +20,7 @@ from flet_core import Row, Column, colors, SnackBar, Container, alignment, Scrol
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
-from app.controls.layout import AdminBaseView, ClientBaseView
+from app.controls.layout import ClientBaseView
 from app.utils import Fonts
 from fexps_api_client.utils import ApiException
 

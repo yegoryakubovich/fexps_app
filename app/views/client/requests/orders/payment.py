@@ -15,14 +15,13 @@
 #
 
 
-import logging
 import os
 from base64 import b64encode
 from functools import partial
 from io import BytesIO
 
 from flet_core import Control, Row, TextField, ControlEvent, FilePickerUploadFile, \
-    FilePickerUploadEvent, Image
+    FilePickerUploadEvent, Image, Container, Column, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -91,18 +90,26 @@ class RequestOrderPaymentView(ClientBaseView):
             title=await self.client.session.gtv(key='request_order_title'),
             with_expand=True,
             main_section_controls=[
-                *await self.get_field_controls(),
-                Row(
-                    controls=[
-                        StandardButton(
-                            content=Text(
-                                value=await self.client.session.gtv(key="confirm"),
-                                size=16,
+                Container(
+                    content=Column(
+                        controls=await self.get_field_controls(),
+                        scroll=ScrollMode.AUTO,
+                    ),
+                    expand=True,
+                ),
+                Container(
+                    content=Row(
+                        controls=[
+                            StandardButton(
+                                content=Text(
+                                    value=await self.client.session.gtv(key="confirm"),
+                                    size=16,
+                                ),
+                                on_click=self.order_confirm,
+                                expand=True
                             ),
-                            on_click=self.order_confirm,
-                            expand=True
-                        ),
-                    ],
+                        ],
+                    ),
                 ),
             ],
         )
@@ -150,7 +157,6 @@ class RequestOrderPaymentView(ClientBaseView):
         if not self.client.session.filepicker.result.files:
             return
         for f in self.client.session.filepicker.result.files:
-            logging.critical(f)
             uf.append(
                 FilePickerUploadFile(
                     f.name,
@@ -165,7 +171,6 @@ class RequestOrderPaymentView(ClientBaseView):
             return
         path = f'uploads/{e.file_name}'
         if not os.path.exists(path):
-            logging.critical('NOT EXISTS')
             return
         with open(path, 'rb') as f:
             image_data = f.read()
