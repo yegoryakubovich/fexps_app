@@ -55,50 +55,60 @@ class Chat(UserControl):
         if int(message['account']) == account_id:
             position = 'You'
         position_str = positions.get(position.lower(), position)
-        content = Text(
-            value=message['value'],
-            size=28,
-            font_family=Fonts.SEMIBOLD,
-            color=colors.ON_PRIMARY_CONTAINER,
-        )
-        if message['type'] == 'image':
-            content = Image(
-                src=await get_image_src(api=api, id_str=message['value']),
-                height=150,
-            )
         date = message['date']
         if isinstance(date, str):
             date = datetime.datetime.strptime(date, settings.datetime_format)
             date = date.replace(tzinfo=None) + datetime.timedelta(hours=deviation)
-
-        return InformationContainer(
-            content=Column(
+        column_controls = [
+            Row(
                 controls=[
-                    Row(
-                        controls=[
-                            Text(
-                                value=position_str,
-                                size=14,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                            Text(
-                                value=date.strftime(settings.datetime_format),
-                                size=14,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                        ],
-                        spacing=16,
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    Text(
+                        value=position_str,
+                        size=14,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
                     ),
-                    Row(
-                        controls=[
-                            content
-                        ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    Text(
+                        value=date.strftime(settings.datetime_format),
+                        size=14,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
                     ),
                 ],
+                spacing=16,
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+        ]
+        if message['image']:
+            column_controls += [
+                Row(
+                    controls=[
+                        Image(
+                            src=await get_image_src(
+                                api=api,
+                                id_str=message['image'],
+                            ),
+                            height=150,
+                        ),
+                    ],
+                ),
+            ]
+        if message['text']:
+            column_controls += [
+                Row(
+                    controls=[
+                        Text(
+                            value=message['text'],
+                            size=28,
+                            font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
+                        ),
+                    ],
+                ),
+            ]
+        return InformationContainer(
+            content=Column(
+                controls=column_controls,
                 spacing=-50,
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
@@ -207,9 +217,6 @@ class ChatView(ClientBaseView):
             for message in old_messages[::-1]
         ]
         await self.set_type(loading=False)
-        title_str = await self.client.session.gtv(key='chat_title')
-        title_str = f'{title_str} order.{self.order_id}'
-
         self.chat = Chat(
             account_id=account.id,
             api=self.client.session.api,
@@ -219,13 +226,14 @@ class ChatView(ClientBaseView):
             positions=self.positions,
             deviation=self.client.session.timezone.deviation,
         )
+        self.photo_row = Row()
         self.tf_message = TextField(
             label=await self.client.session.gtv(key='chat_write_message'),
             expand=True,
         )
-        self.photo_row = Row()
+        title_str = await self.client.session.gtv(key='chat_title')
         self.controls = await self.get_controls(
-            title=title_str,
+            title=f'{title_str} order.{self.order_id}',
             with_expand=True,
             go_back_func=self.go_back,
             main_section_controls=[
@@ -273,21 +281,30 @@ class ChatView(ClientBaseView):
         await self.client.change_view(go_back=True, delete_current=True)
 
     async def send(self, _):
+        image_id_str = None
         if self.data_io:
-            id_str = await self.client.session.api.client.images.create(
+            image_id_str = await self.client.session.api.client.images.create(
                 model='order',
                 model_id=self.order_id,
                 file=self.data_io.read(),
             )
-            await self.chat.send(data={'type_': 'image', 'value': id_str})
-            self.photo = None
-            self.data_io = None
-            self.photo_row.controls = []
-            await self.update_async()
+        text = None
         if self.tf_message.value:
-            await self.chat.send(data={'type_': 'text', 'value': self.tf_message.value})
-            self.tf_message.value = None
-            await self.update_async()
+            text = self.tf_message.value
+        if not image_id_str and not text:
+            return
+
+        await self.chat.send(
+            data={
+                'image_id_str': image_id_str,
+                'text': text,
+            },
+        )
+        self.photo = None
+        self.data_io = None
+        self.photo_row.controls = []
+        self.tf_message.value = None
+        await self.update_async()
 
     """PHOTO"""
 

@@ -132,7 +132,6 @@ class RequestOrderPaymentView(ClientBaseView):
                         await self.set_type(loading=False)
                         return
                     self.input_fields[input_scheme_field['key']] = int(self.input_fields[input_scheme_field['key']])
-
             await self.client.session.api.client.orders.updates.confirmation(
                 id_=self.order_id,
                 input_fields=self.input_fields,
