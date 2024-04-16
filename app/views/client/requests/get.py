@@ -16,7 +16,6 @@
 
 
 import asyncio
-import logging
 from functools import partial
 
 from flet_core import Column, colors, Control, Row, MainAxisAlignment, Container, \
@@ -156,13 +155,13 @@ class RequestView(ClientBaseView):
                                     src=Icons.EDIT,
                                     color=colors.ON_PRIMARY_CONTAINER,
                                 ),
-                                height=48,
-                                width=48,
+                                height=32,
+                                width=32,
                                 bgcolor=colors.PRIMARY_CONTAINER,
                                 on_click=self.request_edit_name,
                             ),
                         ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                        wrap=True,
                     ),
                     Divider(color=colors.ON_PRIMARY_CONTAINER),
                     Row(

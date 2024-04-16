@@ -55,9 +55,9 @@ class HomeTab(BaseTab):
         elif time_now.hour < 12:
             hello_text_str = await self.client.session.gtv(key='good_morning')
         elif time_now.hour < 18:
-            hello_text_str = await self.client.session.gtv(key='good_evening')
-        else:
             hello_text_str = await self.client.session.gtv(key='good_afternoon')
+        else:
+            hello_text_str = await self.client.session.gtv(key='good_evening')
         hello_text_str = f'{hello_text_str},'
         return Row(
             controls=[
