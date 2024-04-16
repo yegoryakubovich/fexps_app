@@ -18,7 +18,7 @@
 import logging
 from functools import partial
 
-from flet_core import ScrollMode, colors
+from flet_core import ScrollMode, colors, Row, MainAxisAlignment
 
 from app.controls.information import Text
 from app.controls.information.card import Card
@@ -58,14 +58,28 @@ class CommissionPackValueListView(AdminBaseView):
                 *[
                     Card(
                         controls=[
-                            Text(
-                                value=f'{value_to_float(commission_pack_value.value_from)}'
-                                      f' -> '
-                                      f'{value_to_float(commission_pack_value.value_to)}',
-                                size=18,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=f'{value_to_float(commission_pack_value.value_from)}'
+                                              f' -> '
+                                              f'{value_to_float(commission_pack_value.value_to)}',
+                                        size=18,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_PRIMARY_CONTAINER,
+                                    ),
+                                    Text(
+                                        value=f'{value_to_float(commission_pack_value.percent)}%'
+                                              f'+'
+                                              f'{value_to_float(commission_pack_value.value)}',
+                                        size=18,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_PRIMARY_CONTAINER,
+                                    ),
+                                ],
+                                alignment=MainAxisAlignment.SPACE_BETWEEN,
                             ),
+
                         ],
                         on_click=partial(self.commission_pack_value_view, commission_pack_value.id),
                         color=colors.PRIMARY_CONTAINER,

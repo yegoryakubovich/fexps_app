@@ -18,12 +18,12 @@
 from flet_core import ScrollMode, Row
 from flet_core.dropdown import Option
 
-from app.controls.button import FilledButton, StandardButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import Dropdown, TextField
 from app.controls.layout import AuthView
 from app.utils import Error
-from app.views.auth.signup.agreement import AgreementRegistrationView
+from .contacts import ContactRegistrationView
 
 
 class RegistrationSecondView(AuthView):
@@ -102,4 +102,4 @@ class RegistrationSecondView(AuthView):
         self.client.session.registration.currency = country['currency']
         self.client.session.registration.timezone = country['timezone']
         await self.set_type(loading=False)
-        await self.client.change_view(view=AgreementRegistrationView(), delete_current=True)
+        await self.client.change_view(view=ContactRegistrationView(), delete_current=True)

@@ -15,6 +15,7 @@
 #
 
 
+from .agreement import AgreementRegistrationView
+from .contacts import ContactRegistrationView
 from .first import RegistrationFirstView
 from .second import RegistrationSecondView
-from .agreement import AgreementRegistrationView

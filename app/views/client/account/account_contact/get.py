@@ -83,7 +83,7 @@ class AccountContactView(ClientBaseView):
                         ],
                     ),
                     alignment=alignment.bottom_center,
-                )
+                ),
             ],
         )
 

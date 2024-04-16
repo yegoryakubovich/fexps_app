@@ -27,3 +27,4 @@ class Registration:
     country: str
     timezone: str
     currency: str
+    contacts: dict

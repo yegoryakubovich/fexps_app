@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import logging
 
 from flet_core import Column, Row
 
@@ -22,6 +22,8 @@ from app.controls.button import ListItemButton, StandardButton
 from app.controls.information import Text
 from app.controls.layout import AuthView
 from app.utils import Icons
+from config import settings
+from fexps_api_client import FexpsApiClient
 
 
 class AgreementRegistrationView(AuthView):
@@ -74,8 +76,8 @@ class AgreementRegistrationView(AuthView):
             surname=self.client.session.registration.surname or None,
             country=self.client.session.registration.country,
             language=self.client.session.language,
-            timezone=self.client.session.registration.timezone,
             currency=self.client.session.registration.currency,
+            timezone=self.client.session.registration.timezone,
         )
 
         session = await self.client.session.api.client.sessions.create(
@@ -85,6 +87,13 @@ class AgreementRegistrationView(AuthView):
 
         token = session.token
         await self.client.session.set_cs(key='token', value=token)
+        self.client.session.api = FexpsApiClient(url=settings.url, token=token)
+
+        for contact_id, value in self.client.session.registration.contacts.items():
+            if not contact_id or not value:
+                continue
+            logging.critical(f'{contact_id}: {value}')
+            await self.client.session.api.client.accounts.contacts.create(contact_id=contact_id, value=value)
 
         self.client.session.registration = None
 
