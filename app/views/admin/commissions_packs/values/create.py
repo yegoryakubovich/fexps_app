@@ -76,13 +76,19 @@ class CommissionPackValueCreateView(AdminBaseView):
                 await self.set_type(loading=False)
                 return
         await self.set_type(loading=True)
+        percent = 0
+        if self.tf_percent.value:
+            percent = self.tf_percent.value
+        value = 0
+        if self.tf_value.value:
+            value = self.tf_value.value
         try:
             commission_pack_value_id = await self.client.session.api.admin.commissions_packs.values.create(
                 commission_pack_id=self.commission_pack_id,
                 value_from=value_to_int(self.tf_value_from.value),
                 value_to=value_to_int(self.tf_value_to.value),
-                percent=value_to_int(self.tf_percent.value),
-                value=value_to_int(self.tf_value.value),
+                percent=value_to_int(percent),
+                value=value_to_int(value),
             )
             await self.client.session.get_text_pack()
             await self.set_type(loading=False)
