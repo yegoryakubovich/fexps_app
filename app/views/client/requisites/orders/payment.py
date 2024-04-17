@@ -54,7 +54,7 @@ class RequisiteOrderPaymentView(ClientBaseView):
             if type_ == 'image':
                 self.photo_row = Row()
                 result += [
-                    self.photo_row,
+                    Text(value=' '.join(name_list)),
                     Row(
                         controls=[
                             StandardButton(
@@ -65,6 +65,7 @@ class RequisiteOrderPaymentView(ClientBaseView):
                             ),
                         ],
                     ),
+                    self.photo_row,
                 ]
             else:
                 result += [

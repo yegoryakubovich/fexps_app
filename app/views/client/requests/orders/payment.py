@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 import os
 from base64 import b64encode
 from functools import partial
@@ -54,28 +53,25 @@ class RequestOrderPaymentView(ClientBaseView):
                 name_list.append('*')
             if type_ == 'image':
                 self.photo_row = Row()
-                self.fields[input_scheme_field['key']] = Row(
-                    controls=[
-                        self.photo_row,
-                        Row(
-                            controls=[
-                                StandardButton(
-                                    icon=Icons.PAYMENT,
-                                    text=await self.client.session.gtv(key='add_image'),
-                                    on_click=self.add_photo,
-                                    disabled=self.photo is not None,
-                                ),
-                            ],
-                        ),
-                    ]
-                )
-                result.append(self.fields[input_scheme_field['key']])
+                result += [
+                    Text(value=' '.join(name_list)),
+                    Row(
+                        controls=[
+                            StandardButton(
+                                icon=Icons.PAYMENT,
+                                text=await self.client.session.gtv(key='add_image'),
+                                on_click=self.add_photo,
+                                disabled=self.photo is not None,
+                            ),
+                        ],
+                    ),
+                    self.photo_row,
+                ]
             else:
                 self.fields[input_scheme_field['key']] = TextField(
                     label=' '.join(name_list),
                     on_change=partial(self.change_input_fields, input_scheme_field['key']),
                 )
-
                 result.append(self.fields[input_scheme_field['key']])
 
         return result
@@ -177,7 +173,6 @@ class RequestOrderPaymentView(ClientBaseView):
         self.photo_row.controls = [
             Image(src=f"data:image/jpeg;base64,{encoded_image_data}", width=150, height=150),
         ]
-        logging.critical('Hello')
         await self.update_async()
 
     """TEXT FIELD"""
