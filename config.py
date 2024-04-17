@@ -22,10 +22,9 @@ class Settings(BaseSettings):
     app_port: int
 
     version: str = '0.1'
-    is_test: bool = True
     language_default: str = 'eng'
-    service_id: int = 1
-    url: str  # = 'http://api.test.'
+    url: str
+    chat_url: str
     url_telegram: str = 'https://t.me/fexps_manager'
 
     default_decimal: int = 2
