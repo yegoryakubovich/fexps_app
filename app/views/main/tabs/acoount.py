@@ -94,12 +94,12 @@ class AccountTab(BaseTab):
                     ),
                     Setting(
                         name='account_requisite_data',
-                        icon=Icons.RELOAD,
+                        icon=Icons.METHOD,
                         on_click=self.requisite_data,
                     ),
                     Setting(
                         name='account_account_contact',
-                        icon=Icons.RELOAD,
+                        icon=Icons.CONTACT,
                         on_click=self.account_contact,
                     ),
                     Setting(

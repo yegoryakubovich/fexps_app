@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+import logging
 import os
 from base64 import b64encode
 from functools import partial
@@ -178,7 +177,8 @@ class RequestOrderPaymentView(ClientBaseView):
         self.photo_row.controls = [
             Image(src=f"data:image/jpeg;base64,{encoded_image_data}", width=150, height=150),
         ]
-        await self.photo_row.update_async()
+        logging.critical('Hello')
+        await self.update_async()
 
     """TEXT FIELD"""
 

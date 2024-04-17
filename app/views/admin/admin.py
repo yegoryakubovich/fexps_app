@@ -67,12 +67,12 @@ class AdminView(AdminBaseView):
             ),
             Setting(
                 name='admin_commissions_packs_get_list_view_title',
-                icon=Icons.ERROR,
+                icon=Icons.COMMISSION_PACK,
                 on_click=self.get_commissions_packs,
             ),
             Setting(
                 name='admin_contacts_get_list_view_title',
-                icon=Icons.ERROR,
+                icon=Icons.CONTACT,
                 on_click=self.get_contacts,
             ),
             Setting(
@@ -92,7 +92,7 @@ class AdminView(AdminBaseView):
             ),
             Setting(
                 name='admin_method_get_list_view_title',
-                icon=Icons.ERROR,
+                icon=Icons.METHOD,
                 on_click=self.get_methods,
             ),
             Setting(
@@ -117,7 +117,7 @@ class AdminView(AdminBaseView):
             ),
             Setting(
                 name='admin_wallet_get_list_view_title',
-                icon=Icons.ERROR,
+                icon=Icons.WALLET,
                 on_click=self.get_wallets,
             ),
 

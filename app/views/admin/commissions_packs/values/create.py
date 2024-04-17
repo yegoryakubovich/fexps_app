@@ -14,16 +14,14 @@
 # limitations under the License.
 #
 
-
 from flet_core import ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
-from app.utils import Fonts, validation_float, value_to_int, Error
+from app.utils import Fonts, value_to_int, Error
 from fexps_api_client.utils import ApiException
-from .get import CommissionPackValueView
 
 
 class CommissionPackValueCreateView(AdminBaseView):
@@ -47,9 +45,11 @@ class CommissionPackValueCreateView(AdminBaseView):
         )
         self.tf_percent = TextField(
             label=await self.client.session.gtv(key='commission_pack_value_percent'),
+            value=0,
         )
         self.tf_value = TextField(
             label=await self.client.session.gtv(key='commission_pack_value_value'),
+            value=0,
         )
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
@@ -71,32 +71,22 @@ class CommissionPackValueCreateView(AdminBaseView):
         )
 
     async def create_commission_pack_value(self, _):
+        await self.set_type(loading=True)
         for field in [self.tf_value_from, self.tf_value_to, self.tf_percent, self.tf_value]:
             if not await Error.check_field(self, field, check_float=True):
                 await self.set_type(loading=False)
                 return
-        await self.set_type(loading=True)
-        percent = 0
-        if self.tf_percent.value:
-            percent = self.tf_percent.value
-        value = 0
-        if self.tf_value.value:
-            value = self.tf_value.value
         try:
-            commission_pack_value_id = await self.client.session.api.admin.commissions_packs.values.create(
+            await self.client.session.api.admin.commissions_packs.values.create(
                 commission_pack_id=self.commission_pack_id,
                 value_from=value_to_int(self.tf_value_from.value),
                 value_to=value_to_int(self.tf_value_to.value),
-                percent=value_to_int(percent),
-                value=value_to_int(value),
+                percent=value_to_int(self.tf_percent.value),
+                value=value_to_int(self.tf_value.value),
             )
             await self.client.session.get_text_pack()
             await self.set_type(loading=False)
-            await self.client.change_view(
-                view=CommissionPackValueView(commission_pack_value_id=commission_pack_value_id),
-                delete_current=True,
-                with_restart=True,
-            )
+            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
         except ApiException as exception:
             await self.set_type(loading=False)
             return await self.client.session.error(exception=exception)

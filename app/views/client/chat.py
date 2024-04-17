@@ -367,4 +367,4 @@ class ChatView(ClientBaseView):
                 bgcolor=colors.SECONDARY,
             ),
         ]
-        await self.photo_row.update_async()
+        await self.update_async()

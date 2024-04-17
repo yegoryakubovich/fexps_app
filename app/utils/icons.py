@@ -77,3 +77,7 @@ class Icons:
     DEV = get_svg('dev')
     EDIT = get_svg('edit')
     CLIP = get_svg('clip')
+    WALLET = get_svg('wallet')
+    METHOD = get_svg('method')
+    COMMISSION_PACK = get_svg('commission_pack')
+    CONTACT = get_svg('contact')
