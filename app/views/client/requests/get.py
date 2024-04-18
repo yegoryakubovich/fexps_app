@@ -16,7 +16,6 @@
 
 
 import asyncio
-import webbrowser
 from functools import partial
 
 from flet_core import Column, colors, Control, Row, MainAxisAlignment, Container, \
@@ -30,7 +29,7 @@ from app.utils.value import requisite_value_to_str
 from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView
 from app.views.main.tabs.acoount import open_support
-from config import settings
+from fexps_api_client import FexpsApiClient
 
 
 class DynamicTimer(UserControl):
@@ -505,7 +504,7 @@ class RequestView(ClientBaseView):
         await self.client.change_view(view=RequestOrderView(order_id=order_id))
 
     async def waiting_confirm(self, _):
-        await self.client.session.api.client.requests.update_confirmation(id_=self.request_id)
+        await self.client.session.api.client.requests.updates.confirmation(id_=self.request_id)
         await self.build()
         await self.update_async()
 

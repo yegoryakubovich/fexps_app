@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
 
 from flet_core import Control, Row
 
@@ -75,7 +75,7 @@ class RequestUpdateNameModel:
         if self.before_close:
             await self.before_close()
         try:
-            await self.session.api.client.requests.update_name(
+            await self.session.api.client.requests.updates.name(
                 id_=self.request_id,
                 name=self.tf_name.value,
             )
