@@ -23,8 +23,6 @@ from flet_manager.utils import get_svg
 SLEEP = 0.65
 ICONS = {
     1: 300,
-    2: 450,
-    3: 100,
 }
 
 
@@ -47,20 +45,13 @@ class Loading(UserControl):
     async def animate(self):
         while self.infinity:
             self.opactity = 0 if self.opactity == 1 else 1
-            self.icon_1.opacity, self.icon_2.opacity, self.icon_3.opacity = [self.opactity]*3
+            self.icon_1.opacity = self.opactity
             await self.update_async()
             await sleep(SLEEP)
 
     def build(self):
-        svg_1, svg_2, svg_3 = (
-            get_svg(path=f'assets/icons/logos/animation/{svg_num}.svg')
-            for svg_num in ICONS.keys()
-        )
-
-        self.icon_1, self.icon_2, self.icon_3 = (
-            Image(src=svg, width=500, height=50, color=self.color, animate_opacity=animate_opacity, opacity=1)
-            for svg, animate_opacity in zip([svg_1, svg_2, svg_3], ICONS.values())
-        )
+        svg_1 = get_svg(path=f'assets/icons/logos/logo.svg')
+        self.icon_1 = Image(src=svg_1, width=500, height=50, color=self.color, animate_opacity=300, opacity=1)
 
         self.expand = True
         return Column(
@@ -68,8 +59,6 @@ class Loading(UserControl):
                 Stack(
                     controls=[
                         self.icon_1,
-                        self.icon_2,
-                        self.icon_3,
                     ],
                 ),
                 Container(),

@@ -5,12 +5,12 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="Flet application.">
+  <meta name="description" content="Finance Express - проверенный обмен денег №1">
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="Flet">
+  <meta name="apple-mobile-web-app-title" content="Finance Express">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon-192.png">
 
   <!-- Favicon -->
@@ -54,164 +54,34 @@
     });
   </script>
 
-  <title>Fexps</title>
+  <title>Finance Express</title>
+
+  <style>
+    #loading {
+      display: flex;
+      height: 98vh;
+      flex-direction: row;
+      align-content: center;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
 </head>
 <body>
 <div class="wrapper">
   <div id="loading">
-    <style>
-      body {
-        inset: 0;
-        overflow: hidden;
-        margin: 0;
-        padding: 0;
-        position: fixed;
-      }
 
-      #loading {
-        align-items: center;
-        display: flex;
-        height: 100%;
-        justify-content: center;
-        width: 100%;
-      }
-
-      .wrapper {
-        height: 100%;
-      }
-
-      .logo {
-        width: 30%;
-        height: 100%;
-      }
-
-      @media only screen and (max-width: 1000px) {
-        .logo {
-          width: 50%;
-        }
-      }
-
-      @keyframes zooooom {
-        from {
-          transform: scale(0.4)
-        }
-
-        to {
-          transform: scale(10)
-        }
-      }
-    </style>
-    <style>
-      svg .svg-elem-1 {
-        fill: transparent;
-        -webkit-transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 0.6s;
-                transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 0.6s;
-      }
-
-      svg.active .svg-elem-1 {
-        fill: rgb(0, 143, 18);
-      }
-
-      svg .svg-elem-2 {
-        fill: transparent;
-        -webkit-transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 0.7s;
-                transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 0.7s;
-      }
-
-      svg.active .svg-elem-2 {
-        fill: rgb(0, 143, 18);
-      }
-
-      svg .svg-elem-3 {
-        fill: transparent;
-        -webkit-transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 0.8s;
-                transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 0.8s;
-      }
-
-      svg.active .svg-elem-3 {
-        fill: rgb(0, 143, 18);
-      }
-
-      svg .svg-elem-4 {
-        fill: transparent;
-        -webkit-transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 0.9s;
-                transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 0.9s;
-      }
-
-      svg.active .svg-elem-4 {
-        fill: rgb(0, 143, 18);
-      }
-
-      svg .svg-elem-5 {
-        fill: transparent;
-        -webkit-transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1s;
-                transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1s;
-      }
-
-      svg.active .svg-elem-5 {
-        fill: rgb(0, 143, 18);
-      }
-
-      svg .svg-elem-6 {
-        fill: transparent;
-        -webkit-transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1.1s;
-                transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1.1s;
-      }
-
-      svg.active .svg-elem-6 {
-        fill: rgb(0, 143, 18);
-      }
-
-      svg .svg-elem-7 {
-        fill: transparent;
-        -webkit-transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1.2000000000000002s;
-                transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1.2000000000000002s;
-      }
-
-      svg.active .svg-elem-7 {
-        fill: rgb(0, 143, 18);
-      }
-
-      svg .svg-elem-8 {
-        fill: transparent;
-        -webkit-transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1.3s;
-                transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1.3s;
-      }
-
-      svg.active .svg-elem-8 {
-        fill: rgb(0, 143, 18);
-      }
-
-      svg .svg-elem-9 {
-        fill: transparent;
-        -webkit-transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1.4s;
-                transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1.4s;
-      }
-
-      svg.active .svg-elem-9 {
-        fill: rgb(0, 143, 18);
-      }
-
-      svg .svg-elem-10 {
-        fill: transparent;
-        -webkit-transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1.5s;
-                transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1.5s;
-      }
-
-      svg.active .svg-elem-10 {
-        fill: rgb(0, 143, 18);
-      }
-
-      svg .svg-elem-11 {
-        fill: transparent;
-        -webkit-transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1.6s;
-                transition: fill 0.6s cubic-bezier(0.77, 0, 0.175, 1) 1.6s;
-      }
-
-      svg.active .svg-elem-11 {
-        fill: rgb(0, 143, 18);
-      }
-    </style>
+    <svg width="128" height="128" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g clip-path="url(#clip0_884_49)">
+      <circle cx="256" cy="256" r="256" fill="#FFE500"/>
+      <path d="M19.9695 276.61L19.9894 276.89L20.239 277.019L29.9972 282.054C55.2048 295.059 83.5359 303.941 113.101 308.112C127.629 310.16 157.235 310.158 170.577 308.104C219.312 300.602 258.346 276.463 288.18 235.39C304.47 212.962 316.705 188.06 327.619 155.142C330.632 146.056 332.715 140.448 334.959 136.241C337.192 132.053 339.59 129.241 343.262 125.766C353.651 115.938 367.805 110.504 383.15 110.475C388.487 110.466 392.636 110.808 396.636 111.73C400.636 112.653 404.508 114.16 409.286 116.503C425.006 124.21 436.375 140.678 440.779 162.292C441.765 167.132 442.269 170.539 442.326 174.088C442.384 177.641 441.995 181.356 441.176 186.814C436.383 218.731 422.547 256.519 404.192 287.804C352.435 376.017 262.71 435.05 150.492 454.671C146.465 455.375 142.667 456.057 139.791 456.588C138.353 456.854 137.145 457.082 136.253 457.256C135.379 457.428 134.774 457.554 134.576 457.614C134.323 457.691 133.927 457.883 133.884 458.34C133.865 458.539 133.927 458.716 134 458.853C134.075 458.993 134.179 459.125 134.298 459.251C134.757 459.738 135.667 460.371 137.029 461.18C139.781 462.816 144.591 465.295 151.983 468.933C169.604 477.605 189.063 484.375 206.993 488.068C226.108 492.006 232.593 492.598 256.292 492.584C282.271 492.568 292.65 491.353 314.946 485.71C397.146 464.909 462.613 400.468 484.924 318.404C491.097 295.697 493.452 275.027 492.785 249.434C492.183 226.308 489.462 208.764 483.291 188.246C455.719 96.5711 377.107 31.1559 281.557 20.3734C228.022 14.3327 170.839 28.1657 125.906 58.0273C69.6054 95.4418 32.3901 153.24 21.9325 219.51C19.7478 233.352 18.505 255.929 19.3068 267.257L19.9695 276.61ZM286.724 2.17868L286.786 1.68266L286.724 2.17869C331.854 7.81089 373.85 24.6791 409.425 51.4591C467.122 94.8916 503.467 159.459 510.694 231.369C511.894 243.3 511.725 271.493 510.383 283.432C505.639 325.624 492.132 362.868 468.873 397.889C426.584 461.564 357.634 502.996 281.161 510.685C270.352 511.772 242.232 511.772 231.423 510.685C143.701 501.865 66.8731 449.151 27.7055 370.913C-8.63714 298.317 -8.56357 212.464 27.8974 140.878C52.9239 91.741 92.1475 52.5841 141.357 27.6112C170.337 12.9038 202.397 3.94929 236.819 0.952547C247.881 -0.010287 274.398 0.639689 286.724 2.17868ZM410.752 141.076L411.574 140.772L410.893 140.219L407.344 137.339C402.884 133.721 398.061 131.251 393.329 130.185C379.971 127.173 367.463 129.922 357.368 138.117C354.681 140.299 352.901 142.206 351.135 145.605C349.386 148.973 347.648 153.806 345.012 161.822C342.352 169.908 338.088 181.537 335.539 187.655L330.895 198.804L330.793 199.05L330.94 199.273L332.94 202.294C339.041 211.517 341.844 222.032 341.75 235.499C341.603 256.776 332.626 274.044 315.78 285.506C306.567 291.773 294.651 296.65 283.123 299.389C271.58 302.132 260.504 302.715 252.95 300.471L252.807 300.951L252.95 300.471L248.763 299.229L248.56 299.168L248.376 299.272L241.019 303.419C227.032 311.306 210.056 318.346 197.103 321.638C196.4 321.817 195.741 321.984 195.124 322.14C193.159 322.637 191.612 323.029 190.388 323.366C188.787 323.806 187.695 324.166 186.919 324.567C186.116 324.983 185.64 325.451 185.274 326.093C185.014 326.551 184.807 327.11 184.564 327.766C184.491 327.963 184.415 328.167 184.334 328.381C182.315 333.666 176.05 342.12 168.516 349.644C162.448 355.704 157.659 359.82 152.649 362.943C147.642 366.064 142.394 368.208 135.391 370.299C118.073 375.472 103.19 375.195 88.4359 369.454C67.9041 361.465 49.2567 339.575 42.2437 315.139C41.3639 312.074 40.4607 309.768 39.5027 308.218C38.5558 306.686 37.4701 305.761 36.1904 305.761H36.186C36.1003 305.761 35.9012 305.761 35.7144 305.869C35.4916 305.999 35.3893 306.212 35.3432 306.411C35.2995 306.6 35.2922 306.831 35.3043 307.101C35.3167 307.378 35.3517 307.731 35.41 308.179C35.6426 309.966 36.2713 313.44 37.4989 320.177C45.8757 366.161 72.0112 411.369 104.602 436.183C107.466 438.364 109.239 439.635 110.669 440.334C112.144 441.054 113.256 441.168 114.769 441.094C117.753 440.946 125.761 439.884 133.549 438.707C141.329 437.53 148.977 436.225 151.226 435.579L151.226 435.579C151.833 435.405 152.298 434.834 152.635 434.176C152.984 433.493 153.255 432.6 153.417 431.591L152.923 431.512L153.417 431.591C154.345 425.783 158.072 415.134 162.353 406.106C176.926 375.379 199.671 353.49 226.182 344.589C229.584 343.447 236.857 341.741 242.332 340.805C250.976 339.327 254.38 339.162 268.883 339.537C289.846 340.079 305.689 342.877 322.404 348.978L328.818 351.319L329.116 351.428L329.342 351.204L339.58 341.016C357.51 323.173 373.607 302.609 386.508 281.065L392.88 270.421L393.076 270.095L392.813 269.819L388.438 265.231C369.192 245.05 361.139 210.675 369.724 185.462C376.843 164.553 390.636 148.525 406.389 142.692L410.752 141.076Z" fill="#181818" stroke="#181818"/>
+      </g>
+      <defs>
+      <clipPath id="clip0_884_49">
+      <rect width="512" height="512" fill="white"/>
+      </clipPath>
+      </defs>
+    </svg>
 
     </div>
   </div>
@@ -232,8 +102,6 @@
         loading.classList.add('init_done');
         return appRunner.runApp();
       }).then(function (app) {
-        // Wait a few milliseconds so users can see the "zoooom" animation
-        // before getting rid of the "loading" div.
         window.setTimeout(function () {
           loading.remove();
         }, 200);
