@@ -31,7 +31,7 @@ class RequisiteDataCreateModel:
     requisite_data_id: int = None
     height: int = 450
 
-    methods: list
+    methods = list
     method: dict
 
     optional: Column
@@ -47,32 +47,51 @@ class RequisiteDataCreateModel:
             update_async: callable,
             after_close: callable = None,
             before_close: callable = None,
+            currency_id_str: str = None,
+            method_id: int = None,
     ):
         self.session = session
         self.update_async = update_async
         self.after_close = after_close
         self.before_close = before_close
+        self.currency_id_str = currency_id_str
+        self.method_id = method_id
 
     async def build(self):
         self.fields, self.fields_keys = {}, {}
-        method_options = []
         self.methods = await self.session.api.client.methods.get_list()
         currency_options = [
             Option(text=currency.id_str.upper(), key=currency.id_str)
             for currency in await self.session.api.client.currencies.get_list()
         ]
+        method_options = []
+        if self.currency_id_str:
+            for method in self.methods:
+                if method.currency.id_str.lower() != self.currency_id_str.lower():
+                    continue
+                name = await self.session.gtv(key=method.name_text)
+                method_options.append(Option(
+                    text=f'{name} ({method.id})',
+                    key=method.id,
+                ))
         self.tf_name = TextField(label=await self.session.gtv(key='name'))
         self.dd_currency = Dropdown(
             label=await self.session.gtv(key='currency'),
             options=currency_options,
             on_change=self.change_currency,
+            value=self.currency_id_str,
         )
         self.dd_method = Dropdown(
             label=await self.session.gtv(key='method'),
             options=method_options,
             on_change=self.change_method,
+            value=self.method_id if self.currency_id_str else None,
         )
         self.optional = Column(controls=[])
+        if self.currency_id_str:
+            await self.change_currency('')
+            if self.method_id:
+                await self.change_method('')
         self.controls = [
             self.tf_name,
             self.dd_currency,
@@ -95,10 +114,10 @@ class RequisiteDataCreateModel:
             )
         ]
 
-    async def change_currency(self, event: ControlEvent):
+    async def change_currency(self, _):
         method_options = []
         for method in self.methods:
-            if method.currency.id_str.lower() != event.data.lower():
+            if method.currency.id_str.lower() != self.dd_currency.value.lower():
                 continue
             name = await self.session.gtv(key=method.name_text)
             method_options.append(Option(
@@ -106,11 +125,12 @@ class RequisiteDataCreateModel:
                 key=method.id,
             ))
         self.dd_method.options = method_options
+        self.dd_method.value = None
         self.optional.controls = []
         await self.update_async()
 
-    async def change_method(self, event: ControlEvent):
-        self.method = await self.session.api.client.methods.get(id_=event.data)
+    async def change_method(self, _):
+        self.method = await self.session.api.client.methods.get(id_=self.dd_method.value)
         controls = []
         for field in self.method['schema_fields']:
             type_ = field["type"]
@@ -148,4 +168,3 @@ class RequisiteDataCreateModel:
             return await self.session.error(exception=exception)
         if self.after_close:
             await self.after_close()
-

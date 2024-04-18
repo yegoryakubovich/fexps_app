@@ -205,11 +205,13 @@ class RequestCreateView(ClientBaseView):
             currency = self.dd_input_currency.value
             self.dd_input_method.disabled = False
             self.dd_input_method.options = await self.get_method_options(currency_id_str=currency)
+            self.dd_input_method.value = None
             self.dd_output_currency.options = await self.get_currency_options(exclude_currency_id_str=currency)
         if type_ == 'output' and self.dd_output_currency.value:
             currency = self.dd_output_currency.value
             self.dd_output_method.disabled = False
             self.dd_output_method.options = await self.get_method_options(currency_id_str=currency)
+            self.dd_output_method.value = None
             self.dd_input_currency.options = await self.get_currency_options(exclude_currency_id_str=currency)
         await self.set_type(loading=False)
 
@@ -238,8 +240,10 @@ class RequestCreateView(ClientBaseView):
         self.requisite_data_model = RequisiteDataCreateModel(
             session=self.client.session,
             update_async=self.update_async,
-            before_close=self.create_output_requisite_data_before_clise,
+            before_close=self.create_output_requisite_data_before_close,
             after_close=self.create_output_requisite_data_after_close,
+            currency_id_str=self.dd_output_currency.value,
+            method_id=self.dd_output_method.value,
         )
         await self.requisite_data_model.build()
         self.dialog.content = Container(
@@ -252,7 +256,7 @@ class RequestCreateView(ClientBaseView):
         self.dialog.open = True
         await self.update_async()
 
-    async def create_output_requisite_data_before_clise(self):
+    async def create_output_requisite_data_before_close(self):
         self.dialog.open = False
         await self.update_async()
 
