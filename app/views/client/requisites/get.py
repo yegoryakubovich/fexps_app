@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 import asyncio
-import logging
-import webbrowser
 from functools import partial
 
 from flet_core import Row, colors, MainAxisAlignment, Image, Column, Control, ScrollMode, Container
@@ -27,7 +27,7 @@ from app.utils import Icons, Fonts, value_to_float
 from app.utils.value import requisite_value_to_str
 from app.views.client.requisites.orders.get import RequisiteOrderView
 from app.views.main.tabs.acoount import open_support
-from config import settings
+from fexps_api_client.utils import ApiException
 
 
 class RequisiteView(ClientBaseView):
@@ -48,7 +48,7 @@ class RequisiteView(ClientBaseView):
     async def get_orders_cards(self):
         cards: list = []
         for order in self.orders:
-            currency = await self.client.session.api.client.currencies.get(id_str=order.currency)
+            currency = order.currency
             state_str = await self.client.session.gtv(key=f'requisite_order_{order.type}_{order.state}')
             value = value_to_float(value=order.currency_value, decimal=currency.decimal)
             value_str = f'{value} {currency.id_str.upper()}'
@@ -200,6 +200,49 @@ class RequisiteView(ClientBaseView):
             *await self.get_help_cards(),
         ]
 
+    """
+    BUTTON
+    """
+
+    async def get_stop_button(self):
+        return StandardButton(
+            content=Text(
+                value=await self.client.session.gtv(key='requisite_stop_button'),
+                size=20,
+                font_family=Fonts.SEMIBOLD,
+                color=colors.ON_PRIMARY,
+            ),
+            bgcolor=colors.PRIMARY,
+            on_click=self.requisite_state_stop,
+            expand=1,
+        )
+
+    async def get_enable_button(self):
+        return StandardButton(
+            content=Text(
+                value=await self.client.session.gtv(key='requisite_enable_button'),
+                size=20,
+                font_family=Fonts.SEMIBOLD,
+                color=colors.ON_PRIMARY,
+            ),
+            bgcolor=colors.PRIMARY,
+            on_click=self.requisite_state_enable,
+            expand=1,
+        )
+
+    async def get_disable_button(self):
+        return StandardButton(
+            content=Text(
+                value=await self.client.session.gtv(key='requisite_disable_button'),
+                size=20,
+                font_family=Fonts.SEMIBOLD,
+                color=colors.ON_PRIMARY,
+            ),
+            bgcolor=colors.PRIMARY,
+            on_click=self.requisite_state_disable,
+            expand=1,
+        )
+
     async def build(self):
         await self.set_type(loading=True)
         self.requisite = await self.client.session.api.client.requisites.get(id_=self.requisite_id)
@@ -214,8 +257,24 @@ class RequisiteView(ClientBaseView):
             controls += await self.get_controls_input()
         elif self.requisite.type == 'output':
             controls += await self.get_controls_output()
+        if self.requisite.state == 'enable':
+            buttons += [
+                Row(
+                    controls=[
+                        await self.get_stop_button(),
+                    ],
+                ),
+            ]
+        elif self.requisite.state == 'stop':
+            buttons += [
+                Row(
+                    controls=[
+                        await self.get_enable_button(),
+                        await self.get_disable_button(),
+                    ],
+                ),
+            ]
         title_str = await self.client.session.gtv(key='requisite_get_title')
-        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=f'{title_str} #{self.requisite.id:08}',
             with_expand=True,
@@ -236,6 +295,39 @@ class RequisiteView(ClientBaseView):
 
     async def order_view(self, order_id: int, _):
         await self.client.change_view(view=RequisiteOrderView(order_id=order_id))
+
+    async def requisite_state_stop(self, _):
+        await self.set_type(loading=True)
+        try:
+            await self.client.session.api.client.requisites.updates.stop(id_=self.requisite_id)
+            await self.set_type(loading=False)
+            await self.build()
+            await self.update_async()
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)
+
+    async def requisite_state_enable(self, _):
+        await self.set_type(loading=True)
+        try:
+            await self.client.session.api.client.requisites.updates.enable(id_=self.requisite_id)
+            await self.set_type(loading=False)
+            await self.build()
+            await self.update_async()
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)
+
+    async def requisite_state_disable(self, _):
+        await self.set_type(loading=True)
+        try:
+            await self.client.session.api.client.requisites.updates.disable(id_=self.requisite_id)
+            await self.set_type(loading=False)
+            await self.build()
+            await self.update_async()
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)
 
     async def auto_reloader(self):
         if self.reload_bool:
