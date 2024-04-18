@@ -278,7 +278,7 @@ class ChatView(ClientBaseView):
 
     async def go_back(self, _):
         await self.chat.disconnect()
-        await self.client.change_view(go_back=True, delete_current=True)
+        await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
 
     async def send(self, _):
         image_id_str = None
