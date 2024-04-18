@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import Column, ScrollMode, Row, ControlEvent, colors, Image, MainAxisAlignment
+from flet_core import Column, ScrollMode, Row, ControlEvent, colors, Image, MainAxisAlignment, Container
 
 from app.controls.button import Chip, StandardButton
 from app.controls.information import Text
@@ -255,15 +255,21 @@ class RequisiteTab(BaseTab):
 
     async def build(self):
         self.scroll = ScrollMode.AUTO
-        self.scroll = ScrollMode.AUTO
         self.controls = [
-            Title(
-                value=await self.client.session.gtv(key='requisite_tab_title'),
-                create_name_text=await self.client.session.gtv(key='create'),
-                on_create=self.requisite_create,
-            ),
-            await self.get_currently_orders(),
-            await self.get_requisite_history(),
+            Container(
+                content=Column(
+                    controls=[
+                        Title(
+                            value=await self.client.session.gtv(key='requisite_tab_title'),
+                            create_name_text=await self.client.session.gtv(key='create'),
+                            on_create=self.requisite_create,
+                        ),
+                        await self.get_currently_orders(),
+                        await self.get_requisite_history(),
+                    ]
+                ),
+                padding=10,
+            )
         ]
 
     async def requisite_create(self, _: ControlEvent):

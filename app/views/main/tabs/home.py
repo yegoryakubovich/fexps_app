@@ -431,11 +431,18 @@ class HomeTab(BaseTab):
         )
         self.scroll = ScrollMode.AUTO
         self.controls = [
-            await self.get_account(),
-            await self.get_balance(),
-            await self.get_actions(),
-            await self.get_currently_request(),
-            await self.get_history_transfer(),
+            Container(
+                content=Column(
+                    controls=[
+                        await self.get_account(),
+                        await self.get_balance(),
+                        await self.get_actions(),
+                        await self.get_currently_request(),
+                        await self.get_history_transfer(),
+                    ]
+                ),
+                padding=10,
+            )
         ]
 
     async def change_wallet(self, event: ControlEvent):

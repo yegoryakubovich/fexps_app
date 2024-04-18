@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import Column, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image
+from flet_core import Column, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, Container
 
 from app.controls.button import Chip, StandardButton
 from app.controls.button.actions import ActionItem
@@ -327,13 +327,20 @@ class RequestTab(BaseTab):
         )
         self.scroll = ScrollMode.AUTO
         self.controls = [
-            Title(
-                value=await self.client.session.gtv(key='request_tab_title'),
-                create_name_text=await self.client.session.gtv(key='create'),
-                on_create=self.request_create,
-            ),
-            await self.get_currently_request(),
-            await self.get_history_request(),
+            Container(
+                content=Column(
+                    controls=[
+                        Title(
+                            value=await self.client.session.gtv(key='request_tab_title'),
+                            create_name_text=await self.client.session.gtv(key='create'),
+                            on_create=self.request_create,
+                        ),
+                        await self.get_currently_request(),
+                        await self.get_history_request(),
+                    ]
+                ),
+                padding=10,
+            )
         ]
 
     async def request_create(self, _):

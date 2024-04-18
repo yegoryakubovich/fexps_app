@@ -30,7 +30,7 @@ class View(BaseView):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.padding = padding.symmetric(vertical=0, horizontal=12)
+        self.padding = 0
         self.spacing = 0
         self.bgcolor = colors.BACKGROUND
 
