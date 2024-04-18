@@ -82,7 +82,6 @@ class Session:
         self.api = FexpsApiClient(url=settings.get_url(), token=self.token)
         try:
             self.account = await self.api.client.accounts.get()
-            self.language = self.account.language
             self.timezone = await self.api.client.timezones.get(id_str=self.account.timezone)
             self.api = FexpsApiClient(url=settings.get_url(), token=self.token, deviation=self.timezone.deviation)
             if self.language != self.account.language:

@@ -30,7 +30,7 @@ from .get import MethodView
 
 class MethodListView(AdminBaseView):
     route = '/admin/method/list/get'
-    methods: list[dict]
+    methods = list[dict]
     page_method: int = 1
     total_pages: int = 1
     items_per_page: int = 6
@@ -53,19 +53,19 @@ class MethodListView(AdminBaseView):
                     Card(
                         controls=[
                             Text(
-                                value=await self.client.session.gtv(key=method['name_text']),
+                                value=await self.client.session.gtv(key=method.name_text),
                                 size=18,
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
                             ),
                             Text(
-                                value=method['currency'],
+                                value=method.currency.id_str,
                                 size=10,
                                 font_family=Fonts.MEDIUM,
                                 color=colors.ON_PRIMARY_CONTAINER,
                             ),
                         ],
-                        on_click=partial(self.method_view, method['id']),
+                        on_click=partial(self.method_view, method.id),
                         color=colors.PRIMARY_CONTAINER,
                     )
                     for method in self.methods

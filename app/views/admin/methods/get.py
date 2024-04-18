@@ -34,6 +34,10 @@ class MethodView(AdminBaseView):
     method = dict
 
     dd_currency: Dropdown
+    currency_options: list[Option]
+    schema_type_options: list[Option]
+    schema_input_type_options: list[Option]
+
     schema: Column
     schema_fields: list[Column]
     schema_input_fields: list[Column]
@@ -49,10 +53,10 @@ class MethodView(AdminBaseView):
     async def build(self):
         await self.set_type(loading=True)
         self.method = await self.client.session.api.client.methods.get(id_=self.method_id)
-        self.currency_options = [Option(
-            text=currency.id_str.upper(),
-            key=currency.id_str,
-        ) for currency in await self.client.session.api.client.currencies.get_list()]
+        self.currency_options = [
+            Option(text=currency.id_str.upper(), key=currency.id_str)
+            for currency in await self.client.session.api.client.currencies.get_list()
+        ]
         await self.set_type(loading=False)
         self.snack_bar = SnackBar(content=Text(value=await self.client.session.gtv(key='successful')))
         self.schema_type_options = [
@@ -76,7 +80,7 @@ class MethodView(AdminBaseView):
         self.dd_currency = Dropdown(
             label=await self.client.session.gtv(key='currency'),
             options=self.currency_options,
-            value=self.method.currency,
+            value=self.method.currency.id_str,
         )
         self.tf_color = TextField(
             label=await self.client.session.gtv(key='admin_method_color'),

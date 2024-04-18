@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 from flet_core import Row
 from flet_core.dropdown import Option
 
-from app.controls.button import FilledButton, StandardButton
+from app.controls.button import StandardButton
 from app.controls.input import Dropdown
 from app.controls.layout import AuthView
 from config import settings
@@ -30,20 +32,6 @@ class LanguageView(AuthView):
     def __init__(self, go_back: bool = False):
         super().__init__()
         self.is_go_back = go_back
-
-    async def select(self, _):
-        language = self.dropdown.value
-
-        # If user not selected language
-        if not language:
-            self.dropdown.error_text = await self.client.session.gtv(key='error_language_select')
-            await self.update_async()
-            return
-
-        await self.client.session.set_cs(key='language', value=language)
-        await self.client.session.get_text_pack(language=language)
-        from .init import InitView
-        await self.client.change_view(view=InitView(), delete_current=True)
 
     async def build(self):
         self.languages = await self.client.session.api.client.languages.get_list()
@@ -75,6 +63,17 @@ class LanguageView(AuthView):
                         ),
                     ]
                 ),
-
             ],
         )
+
+    async def select(self, _):
+        language = self.dropdown.value
+        # If user not selected language
+        if not language:
+            self.dropdown.error_text = await self.client.session.gtv(key='error_language_select')
+            await self.update_async()
+            return
+        await self.client.session.set_cs(key='language', value=language)
+        await self.client.session.get_text_pack(language=language)
+        from .init import InitView
+        await self.client.change_view(view=InitView(), delete_current=True)
