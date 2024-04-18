@@ -3,6 +3,7 @@
 /build
 /.idea
 /fexps_api_client.egg-info
+/fexps_api_client
 /venv
 test.py
 .env
