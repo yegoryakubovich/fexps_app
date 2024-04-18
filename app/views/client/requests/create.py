@@ -274,6 +274,13 @@ class RequestCreateView(ClientBaseView):
     async def go_request_create(self, wallet_id: int):
         input_method_id, input_currency_value, input_value = None, None, None
         output_requisite_data_id, output_currency_value, output_value = None, None, None
+        for field in [self.dd_input_currency, self.dd_output_currency]:
+            if field.value is not None:
+                continue
+            field.error_text = await self.client.session.gtv(key='error_empty')
+            await self.update_async()
+            return
+
         await self.set_type(loading=True)
         if self.dd_output_currency.value == 'ya_coins':
             input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
