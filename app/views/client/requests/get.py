@@ -95,7 +95,7 @@ class RequestView(ClientBaseView):
             value=self.request.rate, decimal=self.request.rate_decimal
         )
         if self.request.type == 'input':
-            input_currency = await self.client.session.api.client.currencies.get(id_str=self.request.input_currency)
+            input_currency = self.request.input_currency
             input_currency_value = value_to_float(
                 value=self.request.input_currency_value_raw,
                 decimal=input_currency.decimal,
@@ -107,9 +107,7 @@ class RequestView(ClientBaseView):
             value_str = f'{input_currency_value} {input_currency.id_str.upper()} -> {input_value}'
             rate_str = f'{rate} {input_currency.id_str.upper()} / 1'
         elif self.request.type == 'output':
-            output_currency = await self.client.session.api.client.currencies.get(
-                id_str=self.request.output_currency,
-            )
+            output_currency = self.request.output_currency
             output_currency_value = value_to_float(
                 value=self.request.output_currency_value_raw,
                 decimal=output_currency.decimal,
@@ -121,10 +119,8 @@ class RequestView(ClientBaseView):
             value_str = f'{output_value} -> {output_currency_value} {output_currency.id_str.upper()}'
             rate_str = f'{rate} {output_currency.id_str.upper()} / 1'
         else:
-            input_currency = await self.client.session.api.client.currencies.get(id_str=self.request.input_currency)
-            output_currency = await self.client.session.api.client.currencies.get(
-                id_str=self.request.output_currency,
-            )
+            input_currency = self.request.input_currency
+            output_currency = self.request.output_currency
             input_currency_value = value_to_float(
                 value=self.request.input_currency_value_raw,
                 decimal=input_currency.decimal,
@@ -285,7 +281,7 @@ class RequestView(ClientBaseView):
         for order in self.orders:
             if order.type != type_:
                 continue
-            currency = await self.client.session.api.client.currencies.get(id_str=order.currency)
+            currency = order.currency
             state_str = await self.client.session.gtv(key=f'request_order_{order.type}_{order.state}')
             value = value_to_float(value=order.currency_value, decimal=currency.decimal)
             value_str = f'{value} {currency.id_str.upper()}'

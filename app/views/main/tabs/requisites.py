@@ -62,7 +62,7 @@ class RequisiteTab(BaseTab):
         )
         cards: list[StandardButton] = []
         for order in self.currency_orders:
-            currency = await self.client.session.api.client.currencies.get(id_str=order.currency)
+            currency = order.currency
             state_str = await self.client.session.gtv(key=f'requisite_order_{order.type}_{order.state}')
             value = value_to_float(value=order.currency_value, decimal=currency.decimal)
             value_str = f'{value} {currency.id_str.upper()}'
@@ -168,7 +168,7 @@ class RequisiteTab(BaseTab):
         self.history_requests = response.requisites
         cards: list[StandardButton] = []
         for requisite in self.history_requests:
-            currency = await self.client.session.api.client.currencies.get(id_str=requisite.currency)
+            currency = requisite.currency
             if requisite.type == 'input':
                 method = await self.client.session.api.client.methods.get(id_=requisite.input_method)
             else:

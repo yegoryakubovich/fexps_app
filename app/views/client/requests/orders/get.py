@@ -350,7 +350,7 @@ class RequestOrderView(ClientBaseView):
     async def build(self):
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
-        self.currency = await self.client.session.api.client.currencies.get(id_str=self.order.currency)
+        self.currency = self.order.currency
         self.request = await self.client.session.api.client.requests.get(id_=self.order.request)
         self.method = await self.client.session.api.client.methods.get(id_=self.order.method)
         await self.set_type(loading=False)

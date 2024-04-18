@@ -59,7 +59,7 @@ class RequestTab(BaseTab):
         for request in self.current_requests:
             state_str = await self.client.session.gtv(key=f'request_state_{request.state}')
             if request.type == 'input':
-                input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
+                input_currency = request.input_currency
                 input_currency_value = value_to_float(
                     value=request.input_currency_value_raw,
                     decimal=input_currency.decimal,
@@ -74,8 +74,7 @@ class RequestTab(BaseTab):
                     f'{value_to_str(value=input_value)}'
                 )
             elif request.type == 'output':
-                output_currency = await self.client.session.api.client.currencies.get(
-                    id_str=request.output_currency)
+                output_currency = request.output_currency
                 output_currency_value = value_to_float(
                     value=request.output_currency_value_raw,
                     decimal=output_currency.decimal,
@@ -90,9 +89,8 @@ class RequestTab(BaseTab):
                     f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
                 )
             else:
-                input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
-                output_currency = await self.client.session.api.client.currencies.get(
-                    id_str=request.output_currency)
+                input_currency = request.input_currency
+                output_currency = request.output_currency
                 input_currency_value = value_to_float(
                     value=request.input_currency_value_raw,
                     decimal=input_currency.decimal,
@@ -203,7 +201,7 @@ class RequestTab(BaseTab):
             state_str = await self.client.session.gtv(key=f'request_state_{request.state}')
             date_str = request.date.strftime('%d %b %Y, %H:%M')
             if request.type == 'input':
-                input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
+                input_currency = request.input_currency
                 input_currency_value = value_to_float(
                     value=request.input_currency_value_raw,
                     decimal=input_currency.decimal,
@@ -218,7 +216,7 @@ class RequestTab(BaseTab):
                     f'{value_to_str(value=input_value)}'
                 )
             elif request.type == 'output':
-                output_currency = await self.client.session.api.client.currencies.get(id_str=request.output_currency)
+                output_currency = request.output_currency
                 output_currency_value = value_to_float(
                     value=request.output_currency_value_raw,
                     decimal=output_currency.decimal,
@@ -233,8 +231,8 @@ class RequestTab(BaseTab):
                     f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
                 )
             else:
-                input_currency = await self.client.session.api.client.currencies.get(id_str=request.input_currency)
-                output_currency = await self.client.session.api.client.currencies.get(id_str=request.output_currency)
+                input_currency = request.input_currency
+                output_currency = request.output_currency
                 input_currency_value = value_to_float(
                     value=request.input_currency_value_raw,
                     decimal=input_currency.decimal,

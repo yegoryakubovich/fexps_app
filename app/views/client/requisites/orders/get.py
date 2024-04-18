@@ -341,7 +341,7 @@ class RequisiteOrderView(ClientBaseView):
     async def build(self):
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
-        self.currency = await self.client.session.api.client.currencies.get(id_str=self.order.currency)
+        self.currency = self.order.currency
         self.requisite = await self.client.session.api.client.requisites.get(id_=self.order.requisite)
         self.method = await self.client.session.api.client.methods.get(id_=self.order.method)
         await self.set_type(loading=False)
