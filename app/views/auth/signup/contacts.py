@@ -13,17 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
+
 from functools import partial
 
 from flet_core import Column, Row, TextField, ControlEvent, Container, ScrollMode
 
-from app.controls.button import ListItemButton, StandardButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.layout import AuthView
-from app.utils import Icons
 from app.views.auth.signup import AgreementRegistrationView
-from fexps_api_client import FexpsApiClient
 
 
 class ContactRegistrationView(AuthView):
@@ -31,14 +30,9 @@ class ContactRegistrationView(AuthView):
     result: dict
 
     async def build(self):
-        self.client.session.api: FexpsApiClient
-
-        logging.critical('hello123')
         self.result = {}
         await self.set_type(loading=True)
-        logging.critical('tttt')
         self.contacts = await self.client.session.api.client.contacts.get_list()
-        logging.critical(self.contacts)
         await self.set_type(loading=False)
         contact_controls = []
         for contact in self.contacts:
