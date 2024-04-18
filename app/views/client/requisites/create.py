@@ -130,7 +130,7 @@ class RequisiteCreateView(ClientBaseView):
         async def get_input_method():
             input_method_options = []
             for method in self.methods:
-                if method.currency.lower() != self.dd_currency.value.lower():
+                if method.currency.id_str.lower() != self.dd_currency.value.lower():
                     continue
                 name = await self.client.session.gtv(key=method.name_text)
                 input_method_options.append(Option(
@@ -146,7 +146,7 @@ class RequisiteCreateView(ClientBaseView):
             requisites_datas = await self.client.session.api.client.requisites_datas.get_list()
             output_requisite_data_options = []
             for requisite_data in requisites_datas:
-                if requisite_data.currency.lower() != self.dd_currency.value.lower():
+                if requisite_data.currency.id_str.lower() != self.dd_currency.value.lower():
                     continue
                 output_requisite_data_options.append(Option(
                     text=f'{requisite_data.name}',

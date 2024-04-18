@@ -98,7 +98,7 @@ class RequisiteDataCreateModel:
     async def change_currency(self, event: ControlEvent):
         method_options = []
         for method in self.methods:
-            if method.currency.lower() != event.data.lower():
+            if method.currency.id_str.lower() != event.data.lower():
                 continue
             name = await self.session.gtv(key=method.name_text)
             method_options.append(Option(

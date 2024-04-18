@@ -62,7 +62,7 @@ class RequisiteDataView(ClientBaseView):
                             Text(
                                 value='\n'.join([
                                     f'{await self.client.session.gtv(key="name")}: {self.requisite_data.name}',
-                                    f'{await self.client.session.gtv(key="currency")}: {self.method.currency.upper()}',
+                                    f'{await self.client.session.gtv(key="currency")}: {self.method.currency.id_str.upper()}',
                                     f'{await self.client.session.gtv(key="method")}: '
                                     f'{await self.client.session.gtv(key=self.method.name_text)} ({self.method.id})',
                                 ]),

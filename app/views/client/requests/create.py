@@ -62,18 +62,18 @@ class RequestCreateView(ClientBaseView):
     SEND
     """
 
-    async def get_currency_options(self, exclude_currency: str = None) -> list[Option]:
-        options = [Option(text='YA COIN', key='ya_coins')] if exclude_currency != 'ya_coins' else []
+    async def get_currency_options(self, exclude_currency_id_str: str = None) -> list[Option]:
+        options = [Option(text='YA COIN', key='ya_coins')] if exclude_currency_id_str != 'ya_coins' else []
         for currency in self.currencies:
-            if currency.id_str == exclude_currency:
+            if currency.id_str == exclude_currency_id_str:
                 continue
             options.append(Option(text=currency.id_str.upper(), key=currency.id_str))
         return options
 
-    async def get_method_options(self, currency: str) -> list[Option]:
+    async def get_method_options(self, currency_id_str: str) -> list[Option]:
         options = []
         for method in self.methods:
-            if method.currency.upper() != currency.upper():
+            if method.currency.id_str.lower() != currency_id_str.lower():
                 continue
             options.append(Option(
                 text=f'{await self.client.session.gtv(key=method.name_text)} ({method.id})',
@@ -204,13 +204,13 @@ class RequestCreateView(ClientBaseView):
         if type_ == 'input' and self.dd_input_currency.value:
             currency = self.dd_input_currency.value
             self.dd_input_method.disabled = False
-            self.dd_input_method.options = await self.get_method_options(currency=currency)
-            self.dd_output_currency.options = await self.get_currency_options(exclude_currency=currency)
+            self.dd_input_method.options = await self.get_method_options(currency_id_str=currency)
+            self.dd_output_currency.options = await self.get_currency_options(exclude_currency_id_str=currency)
         if type_ == 'output' and self.dd_output_currency.value:
             currency = self.dd_output_currency.value
             self.dd_output_method.disabled = False
-            self.dd_output_method.options = await self.get_method_options(currency=currency)
-            self.dd_input_currency.options = await self.get_currency_options(exclude_currency=currency)
+            self.dd_output_method.options = await self.get_method_options(currency_id_str=currency)
+            self.dd_input_currency.options = await self.get_currency_options(exclude_currency_id_str=currency)
         await self.set_type(loading=False)
 
     """

@@ -52,7 +52,7 @@ class RequisiteDataListView(ClientBaseView):
                                     color=colors.ON_PRIMARY_CONTAINER,
                                 ),
                                 Text(
-                                    value=requisite_data.currency.upper(),
+                                    value=requisite_data.currency.id_str.upper(),
                                     size=18,
                                     font_family=Fonts.SEMIBOLD,
                                     color=colors.ON_PRIMARY_CONTAINER,
