@@ -26,14 +26,14 @@ class RequisiteDataCreateView(ClientBaseView):
     route = '/client/requisite/data/create'
     requisite_data_model: RequisiteDataCreateModel
 
-    async def build(self):
+    async def construct(self):
         self.requisite_data_model = RequisiteDataCreateModel(
             session=self.client.session,
             update_async=self.update_async,
             before_close=self.open_requisite_data,
         )
         await self.set_type(loading=True)
-        await self.requisite_data_model.build()
+        await self.requisite_data_model.construct()
         await self.set_type(loading=False)
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='requisite_data_create_view_title'),

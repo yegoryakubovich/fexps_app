@@ -39,7 +39,7 @@ class AccountContactView(ClientBaseView):
             self.result_dict['contacts'][account_contact.contact_id] = account_contact.value
             self.result_dict['contacts_account_contacts'][account_contact.contact_id] = account_contact.id
 
-    async def build(self):
+    async def construct(self):
         self.result_dict = {
             'contacts_db': {},
             'contacts': {},
@@ -113,7 +113,7 @@ class AccountContactView(ClientBaseView):
                     value=self.result_dict['contacts'][contact_id],
                 )
             await self.set_type(loading=False)
-            await self.build()
+            await self.construct()
             await self.update_async()
         except ApiException as exception:
             await self.set_type(loading=False)

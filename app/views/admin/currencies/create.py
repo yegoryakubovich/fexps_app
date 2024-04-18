@@ -33,7 +33,7 @@ class CurrencyCreateView(AdminBaseView):
     tf_rate_decimal: TextField
     tf_div: TextField
 
-    async def build(self):
+    async def construct(self):
         self.tf_id_str = TextField(
             label='id_str',
         )

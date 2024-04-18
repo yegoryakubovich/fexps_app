@@ -18,7 +18,9 @@
 import asyncio
 import datetime
 import json
+import logging
 import os
+from asyncio import create_task
 from base64 import b64encode
 from io import BytesIO
 
@@ -142,22 +144,27 @@ class Chat(UserControl):
 
     async def connect(self):
         self.websocket = await self.session.ws_connect(f'{self.url}?token={self.token}&order_id={self.order_id}')
+        logging.critical('connect...')
+        logging.critical(self.websocket)
 
     async def disconnect(self):
         await self.websocket.close()
 
     async def send(self, data: dict):
+        print(data)
         await self.websocket.send_json(data=data)
 
-    async def did_mount_async(self):
+    def did_mount(self):
+        logging.critical('did_mount_async')
+        logging.critical(self.websocket)
         self.running = True
-        await self.connect()
-        asyncio.create_task(self.update_chat())
+        create_task(self.update_chat())
 
-    async def will_unmount_async(self):
+    def will_unmount(self):
         self.running = False
 
     async def update_chat(self):
+        await self.connect()
         async for message in self.websocket:
             if not self.running:
                 return
@@ -197,7 +204,7 @@ class ChatView(ClientBaseView):
         self.photo = None
         self.data_io = None
 
-    async def build(self):
+    async def construct(self):
         account = self.client.session.account
         self.positions = {
             'you': await self.client.session.gtv(key='chat_you'),

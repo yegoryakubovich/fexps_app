@@ -39,7 +39,7 @@ class Loading(UserControl):
         self.infinity = infinity
         self.opactity = opactity
 
-    async def did_mount_async(self):
+    def did_mount_async(self):
         create_task(self.animate())
 
     async def animate(self):

@@ -23,7 +23,6 @@ from app.controls.layout import View
 
 
 class BaseTab(Column):
-    title = 'Fexps'
     controls_last: list = []
 
     def __init__(self, client: Client, view: View, **kwargs):
@@ -31,7 +30,7 @@ class BaseTab(Column):
         self.client = client
         self.view = view
 
-    async def build(self):
+    async def construct(self):
         self.controls = []
 
     async def set_type(self, loading: bool = False):

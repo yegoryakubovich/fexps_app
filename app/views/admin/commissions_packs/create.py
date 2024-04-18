@@ -34,7 +34,7 @@ class CommissionPackCreateView(AdminBaseView):
     tf_name: TextField
     cb_is_default: Checkbox
 
-    async def build(self):
+    async def construct(self):
         self.tf_name = TextField(
             label=await self.client.session.gtv(key='name'),
         )

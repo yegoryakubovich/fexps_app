@@ -37,7 +37,7 @@ class RoleView(AdminBaseView):
         super().__init__()
         self.role_id = role_id
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.role = await self.client.session.api.admin.roles.get(
             id_=self.role_id

@@ -29,7 +29,7 @@ class TimezoneCreateView(AdminBaseView):
     tf_deviation: TextField
     tf_id_str: TextField
 
-    async def build(self):
+    async def construct(self):
         self.tf_id_str = TextField(
             label=await self.client.session.gtv(key='key'),
         )

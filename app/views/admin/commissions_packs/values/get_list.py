@@ -40,7 +40,7 @@ class CommissionPackValueListView(AdminBaseView):
         super().__init__()
         self.commission_pack_id = commission_pack_id
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.commissions_packs_values = await self.client.session.api.admin.commissions_packs.values.get_list(
             commission_pack_id=self.commission_pack_id,
@@ -106,11 +106,11 @@ class CommissionPackValueListView(AdminBaseView):
     async def next_page(self, _):
         if self.page_count < self.total_pages:
             self.page_count += 1
-            await self.build()
+            await self.construct()
             await self.update_async()
 
     async def previous_page(self, _):
         if self.page_count > 1:
             self.page_count -= 1
-            await self.build()
+            await self.construct()
             await self.update_async()

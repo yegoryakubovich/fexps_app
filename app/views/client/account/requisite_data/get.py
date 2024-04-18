@@ -36,7 +36,7 @@ class RequisiteDataView(ClientBaseView):
         super().__init__()
         self.requisite_data_id = requisite_data_id
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.requisite_data = await self.client.session.api.client.requisites_datas.get(id_=self.requisite_data_id)
         self.method = await self.client.session.api.client.methods.get(id_=self.requisite_data.method)

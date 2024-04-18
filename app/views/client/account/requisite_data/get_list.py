@@ -32,7 +32,7 @@ class RequisiteDataListView(ClientBaseView):
     requisites_datas = list[dict]
     tf_search = TextField
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.requisites_datas = await self.client.session.api.client.requisites_datas.get_list()
         await self.set_type(loading=False)

@@ -33,7 +33,7 @@ class AccountRoleView(AdminBaseView):
         self.role_id = role_id
         self.role = role
 
-    async def build(self):
+    async def construct(self):
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key=self.role['name_text']),

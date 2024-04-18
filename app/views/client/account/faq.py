@@ -24,7 +24,7 @@ from app.controls.layout import ClientBaseView
 class FAQView(ClientBaseView):
     route = '/client/account/FAQ/'
 
-    async def build(self):
+    async def construct(self):
         questions_answers = {
             await self.client.session.gtv(key='faq_question_1'):
                 await self.client.session.gtv(key='faq_answer_1'),

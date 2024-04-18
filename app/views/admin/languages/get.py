@@ -28,7 +28,7 @@ class LanguageView(AdminBaseView):
         super().__init__()
         self.language_id_str = language_id_str
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.language = await self.client.session.api.client.languages.get(
             id_str=self.language_id_str,

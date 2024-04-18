@@ -30,7 +30,7 @@ class LanguageListView(AdminBaseView):
     route = '/admin/language/list/get'
     languages: list[dict]
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.languages = await self.client.session.api.client.languages.get_list()
         await self.set_type(loading=False)

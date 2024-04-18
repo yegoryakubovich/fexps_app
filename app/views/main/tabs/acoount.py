@@ -58,7 +58,7 @@ async def open_support(_):
 
 class AccountTab(BaseTab):
 
-    async def build(self):
+    async def construct(self):
         on_click_coming_soon = partial(
             self.client.session.bs_info.open_,
             icon=Icons.CHILL,

@@ -35,7 +35,7 @@ class AccountListView(AdminBaseView):
     items_per_page: int = 6
     tf_search = TextField
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         response = await self.client.session.api.admin.accounts.search(
             page=self.page_account,
@@ -102,11 +102,11 @@ class AccountListView(AdminBaseView):
     async def next_page(self, _):
         if self.page_account < self.total_pages:
             self.page_account += 1
-            await self.build()
+            await self.construct()
             await self.update_async()
 
     async def previous_page(self, _):
         if self.page_account > 1:
             self.page_account -= 1
-            await self.build()
+            await self.construct()
             await self.update_async()

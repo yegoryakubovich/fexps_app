@@ -57,7 +57,7 @@ class RequisiteDataCreateModel:
         self.currency_id_str = currency_id_str
         self.method_id = method_id
 
-    async def build(self):
+    async def construct(self):
         self.fields, self.fields_keys = {}, {}
         self.methods = await self.session.api.client.methods.get_list()
         currency_options = [

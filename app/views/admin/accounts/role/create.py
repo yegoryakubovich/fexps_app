@@ -33,7 +33,7 @@ class AccountRoleCreateView(AdminBaseView):
         super().__init__()
         self.account_id = account_id
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.roles = await self.client.session.api.admin.roles.get_list()
         await self.set_type(loading=False)

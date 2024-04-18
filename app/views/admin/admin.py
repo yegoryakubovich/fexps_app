@@ -57,7 +57,7 @@ class Section:
 class AdminView(AdminBaseView):
     route = '/admin'
 
-    async def build(self):
+    async def construct(self):
         self.scroll = ScrollMode.AUTO
         parts = [
             Setting(

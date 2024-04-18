@@ -32,7 +32,7 @@ class TransferView(ClientBaseView):
         super().__init__()
         self.transfer_id = transfer_id
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.transfer = await self.client.session.api.client.transfers.get(id_=self.transfer_id)
         await self.set_type(loading=False)

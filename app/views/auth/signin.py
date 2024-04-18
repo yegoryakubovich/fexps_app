@@ -28,7 +28,7 @@ class AuthenticationView(AuthView):
     tf_username: TextField
     tf_password: TextField
 
-    async def build(self):
+    async def construct(self):
         self.tf_username = TextField(
             label=await self.client.session.gtv(key='username'),
         )

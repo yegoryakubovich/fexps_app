@@ -28,7 +28,7 @@ class RolePermissionView(AdminBaseView):
         super().__init__()
         self.permission_id = permission_id
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.permission = await self.client.session.api.admin.roles.permissions.get(
             id_=self.permission_id

@@ -42,7 +42,7 @@ class TextView(AdminBaseView):
         super().__init__()
         self.key = key
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.text = await self.client.session.api.admin.texts.get(
             key=self.key

@@ -33,7 +33,7 @@ class LanguageView(AuthView):
         super().__init__()
         self.is_go_back = go_back
 
-    async def build(self):
+    async def construct(self):
         self.languages = await self.client.session.api.client.languages.get_list()
         await self.client.session.get_text_pack(language=settings.language_default)
 

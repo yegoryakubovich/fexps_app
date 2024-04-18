@@ -30,7 +30,7 @@ class PermissionListView(AdminBaseView):
     route = '/admin/permission/list/get'
     permissions: list[dict]
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.permissions = await self.client.session.api.admin.permissions.get_list()
         await self.set_type(loading=False)

@@ -30,7 +30,7 @@ class ContactCreateView(AdminBaseView):
     route = '/admin/contacts/create'
     tf_name: TextField
 
-    async def build(self):
+    async def construct(self):
         self.tf_name = TextField(
             label=await self.client.session.gtv(key='name'),
         )

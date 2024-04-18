@@ -27,7 +27,7 @@ from fexps_api_client import FexpsApiClient
 
 
 class AgreementRegistrationView(AuthView):
-    async def build(self):
+    async def construct(self):
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='registration_account_create_view_title'),
             controls=[

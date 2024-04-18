@@ -30,7 +30,7 @@ class TextCreateView(AdminBaseView):
     tf_value_default: TextField
     tf_key: TextField
 
-    async def build(self):
+    async def construct(self):
         self.tf_key = TextField(
             label=await self.client.session.gtv(key='key'),
         )

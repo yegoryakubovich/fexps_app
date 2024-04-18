@@ -30,7 +30,7 @@ class ContactView(AdminBaseView):
         super().__init__()
         self.contact_id = contact_id
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.contact = await self.client.session.api.client.contacts.get(id_=self.contact_id)
         await self.set_type(loading=False)

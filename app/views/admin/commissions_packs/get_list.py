@@ -37,7 +37,7 @@ class CommissionPackListView(AdminBaseView):
     total_pages: int = 1
     items_per_page: int = 6
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         try:
             self.commissions_packs = await self.client.session.api.admin.commissions_packs.get_list()
@@ -89,11 +89,11 @@ class CommissionPackListView(AdminBaseView):
     async def next_page(self, _):
         if self.page_count < self.total_pages:
             self.page_count += 1
-            await self.build()
+            await self.construct()
             await self.update_async()
 
     async def previous_page(self, _):
         if self.page_count > 1:
             self.page_count -= 1
-            await self.build()
+            await self.construct()
             await self.update_async()

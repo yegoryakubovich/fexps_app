@@ -36,7 +36,7 @@ class CommissionPackValueCreateView(AdminBaseView):
         super().__init__()
         self.commission_pack_id = commission_pack_id
 
-    async def build(self):
+    async def construct(self):
         self.tf_value_from = TextField(
             label=await self.client.session.gtv(key='commission_pack_value_from'),
         )

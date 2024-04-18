@@ -30,7 +30,7 @@ class RoleListView(AdminBaseView):
     route = '/admin/role/list/get'
     roles: list[dict]
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.roles = await self.client.session.api.admin.roles.get_list()
         await self.set_type(loading=False)

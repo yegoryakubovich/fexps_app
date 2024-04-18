@@ -25,7 +25,7 @@ from app.utils import Fonts, Icons
 
 
 class View(BaseView):
-    title = 'Fexps'
+    title = 'Finance Express'
     controls_last: list = []
 
     def __init__(self, **kwargs):

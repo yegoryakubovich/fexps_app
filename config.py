@@ -21,6 +21,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     app_port: int
 
+    secret_key: str
     version: str = '0.1'
     language_default: str = 'eng'
     url_telegram: str = 'https://t.me/fexps_manager'

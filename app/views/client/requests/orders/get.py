@@ -347,7 +347,7 @@ class RequestOrderView(ClientBaseView):
             expand=1,
         )
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
         self.currency = self.order.currency
@@ -435,7 +435,7 @@ class RequestOrderView(ClientBaseView):
                 return
             if self.reload_stop:
                 continue
-            await self.build()
+            await self.construct()
             await self.update_async()
             await asyncio.sleep(5)
 

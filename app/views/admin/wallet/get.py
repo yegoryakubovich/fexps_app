@@ -38,7 +38,7 @@ class WalletView(AdminBaseView):
         super().__init__()
         self.wallet_id = wallet_id
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.wallet = await self.client.session.api.admin.wallets.get(id_=self.wallet_id)
         self.commissions_packs = await self.client.session.api.admin.commissions_packs.get_list()
@@ -104,7 +104,7 @@ class WalletView(AdminBaseView):
                 **updates,
             )
             await self.set_type(loading=False)
-            await self.build()
+            await self.construct()
             await self.update_async()
         except ApiException as exception:
             await self.set_type(loading=False)

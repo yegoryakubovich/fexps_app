@@ -43,7 +43,7 @@ class CountryView(AdminBaseView):
         super().__init__()
         self.country_id_str = country_id_str
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.country = await self.client.session.api.client.countries.get(
             id_str=self.country_id_str,

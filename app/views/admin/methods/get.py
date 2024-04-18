@@ -50,7 +50,7 @@ class MethodView(AdminBaseView):
         super().__init__()
         self.method_id = id_
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.method = await self.client.session.api.client.methods.get(id_=self.method_id)
         self.currency_options = [

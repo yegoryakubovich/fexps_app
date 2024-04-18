@@ -253,7 +253,7 @@ class RequisiteTab(BaseTab):
             wrap=True,
         )
 
-    async def build(self):
+    async def construct(self):
         self.scroll = ScrollMode.AUTO
         self.controls = [
             Container(
@@ -282,7 +282,7 @@ class RequisiteTab(BaseTab):
 
     async def chip_select(self, event: ControlEvent):
         self.selected_chip = event.control.key
-        await self.build()
+        await self.construct()
         await self.update_async()
 
     async def requisite_view(self, requisite_id: int, _: ControlEvent):
@@ -292,11 +292,11 @@ class RequisiteTab(BaseTab):
     async def next_page(self, _):
         if self.page_requisites < self.total_pages:
             self.page_requisites += 1
-            await self.build()
+            await self.construct()
             await self.update_async()
 
     async def previous_page(self, _):
         if self.page_requisites > 1:
             self.page_requisites -= 1
-            await self.build()
+            await self.construct()
             await self.update_async()

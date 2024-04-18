@@ -29,7 +29,7 @@ class LanguageCreateView(AdminBaseView):
     tf_name: TextField
     tf_id_str: TextField
 
-    async def build(self):
+    async def construct(self):
         self.tf_id_str, self.tf_name = [
             TextField(
                 label=await self.client.session.gtv(key=key),

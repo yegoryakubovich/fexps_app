@@ -35,7 +35,7 @@ class TextListView(AdminBaseView):
     total_pages: int = 1
     items_per_page: int = 10
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.texts = await self.client.session.api.admin.texts.get_list()
         await self.set_type(loading=False)
@@ -90,11 +90,11 @@ class TextListView(AdminBaseView):
     async def next_page(self, _):
         if self.page_text < self.total_pages:
             self.page_text += 1
-            await self.build()
+            await self.construct()
             await self.update_async()
 
     async def previous_page(self, _):
         if self.page_text > 1:
             self.page_text -= 1
-            await self.build()
+            await self.construct()
             await self.update_async()

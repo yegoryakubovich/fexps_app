@@ -30,7 +30,7 @@ class ContactsListView(AdminBaseView):
     route = '/admin/contacts/list/get'
     contacts = list[dict]
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.contacts = await self.client.session.api.client.contacts.get_list()
         await self.set_type(loading=False)

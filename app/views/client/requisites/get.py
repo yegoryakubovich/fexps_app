@@ -243,7 +243,7 @@ class RequisiteView(ClientBaseView):
             expand=1,
         )
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.requisite = await self.client.session.api.client.requisites.get(id_=self.requisite_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_requisite(requisite_id=self.requisite_id)
@@ -302,7 +302,7 @@ class RequisiteView(ClientBaseView):
         try:
             await self.client.session.api.client.requisites.updates.stop(id_=self.requisite_id)
             await self.set_type(loading=False)
-            await self.build()
+            await self.construct()
             await self.update_async()
         except ApiException as exception:
             await self.set_type(loading=False)
@@ -313,7 +313,7 @@ class RequisiteView(ClientBaseView):
         try:
             await self.client.session.api.client.requisites.updates.enable(id_=self.requisite_id)
             await self.set_type(loading=False)
-            await self.build()
+            await self.construct()
             await self.update_async()
         except ApiException as exception:
             await self.set_type(loading=False)
@@ -324,7 +324,7 @@ class RequisiteView(ClientBaseView):
         try:
             await self.client.session.api.client.requisites.updates.disable(id_=self.requisite_id)
             await self.set_type(loading=False)
-            await self.build()
+            await self.construct()
             await self.update_async()
         except ApiException as exception:
             await self.set_type(loading=False)
@@ -341,6 +341,6 @@ class RequisiteView(ClientBaseView):
                 return
             if self.reload_stop:
                 continue
-            await self.build()
+            await self.construct()
             await self.update_async()
             await asyncio.sleep(5)

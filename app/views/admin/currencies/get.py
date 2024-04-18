@@ -35,7 +35,7 @@ class CurrencyView(AdminBaseView):
         super().__init__()
         self.currency_id_str = currency_id_str
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.currency = await self.client.session.api.client.currencies.get(
             id_str=self.currency_id_str,

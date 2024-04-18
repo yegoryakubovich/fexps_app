@@ -30,7 +30,7 @@ class CurrencyListView(AdminBaseView):
     route = '/admin/currency/list/get'
     currencies: list[dict]
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.currencies = await self.client.session.api.client.currencies.get_list()
         await self.set_type(loading=False)

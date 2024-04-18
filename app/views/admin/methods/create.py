@@ -43,7 +43,7 @@ class MethodCreateView(AdminBaseView):
     tf_color: TextField
     tf_bgcolor: TextField
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.currency_options = [Option(
             text=currency.id_str.upper(),

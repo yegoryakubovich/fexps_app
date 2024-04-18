@@ -29,7 +29,7 @@ class ContactRegistrationView(AuthView):
     contacts = list[dict]
     result: dict
 
-    async def build(self):
+    async def construct(self):
         self.result = {}
         await self.set_type(loading=True)
         self.contacts = await self.client.session.api.client.contacts.get_list()

@@ -35,7 +35,7 @@ class MethodListView(AdminBaseView):
     total_pages: int = 1
     items_per_page: int = 6
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.methods = await self.client.session.api.client.methods.get_list()
         await self.set_type(loading=False)
@@ -90,11 +90,11 @@ class MethodListView(AdminBaseView):
     async def next_page(self, _):
         if self.page_method < self.total_pages:
             self.page_method += 1
-            await self.build()
+            await self.construct()
             await self.update_async()
 
     async def previous_page(self, _):
         if self.page_method > 1:
             self.page_method -= 1
-            await self.build()
+            await self.construct()
             await self.update_async()

@@ -424,7 +424,7 @@ class HomeTab(BaseTab):
             wrap=True,
         )
 
-    async def build(self):
+    async def construct(self):
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
             id_=self.client.session.current_wallet['id'],
@@ -473,17 +473,17 @@ class HomeTab(BaseTab):
 
     async def chip_select(self, event: ControlEvent):
         self.selected_chip = event.control.key
-        await self.build()
+        await self.construct()
         await self.update_async()
 
     async def next_page(self, _):
         if self.page_transfer < self.total_pages:
             self.page_transfer += 1
-            await self.build()
+            await self.construct()
             await self.update_async()
 
     async def previous_page(self, _):
         if self.page_transfer > 1:
             self.page_transfer -= 1
-            await self.build()
+            await self.construct()
             await self.update_async()

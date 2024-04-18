@@ -30,7 +30,7 @@ class CountryListView(AdminBaseView):
     route = '/admin/country/list/get'
     countries: list[dict]
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.countries = await self.client.session.api.client.countries.get_list()
         await self.set_type(loading=False)

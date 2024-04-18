@@ -38,7 +38,7 @@ class AccountView(AdminBaseView):
         super().__init__()
         self.account_id = account_id
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.account = await self.client.session.api.admin.accounts.get(id_=self.account_id)
         await self.set_type(loading=False)

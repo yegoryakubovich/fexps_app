@@ -163,7 +163,7 @@ class RequestCreateView(ClientBaseView):
             )
         ]
 
-    async def build(self):
+    async def construct(self):
         self.dialog = AlertDialog(modal=False)
         await self.set_type(loading=True)
         self.methods = await self.client.session.api.client.methods.get_list()
@@ -245,7 +245,7 @@ class RequestCreateView(ClientBaseView):
             currency_id_str=self.dd_output_currency.value,
             method_id=self.dd_output_method.value,
         )
-        await self.requisite_data_model.build()
+        await self.requisite_data_model.construct()
         self.dialog.content = Container(
             content=Column(
                 controls=self.requisite_data_model.controls,

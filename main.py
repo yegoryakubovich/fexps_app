@@ -15,7 +15,12 @@
 #
 
 
+from os import environ
+
 from app import create_app
+from config import settings
 
 
+upload_dir = environ['FLET_UPLOAD_DIR'] = 'uploads'
+secret_key = environ['FLET_SECRET_KEY'] = settings.secret_key
 app = create_app()

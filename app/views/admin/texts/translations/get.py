@@ -36,7 +36,7 @@ class TextTranslationView(AdminBaseView):
         self.text_key = text_key
         self.language = language
 
-    async def build(self):
+    async def construct(self):
         self.snack_bar = SnackBar(
             content=Text(
                 value=await self.client.session.gtv(key='successful'),

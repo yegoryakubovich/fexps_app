@@ -47,7 +47,7 @@ class RequestUpdateNameModel:
         self.after_close = after_close
         self.before_close = before_close
 
-    async def build(self):
+    async def construct(self):
         self.tf_name = TextField(
             label=await self.session.gtv(key='name'),
             value=self.request_name,

@@ -37,7 +37,7 @@ class TextTranslationCreateView(AdminBaseView):
         self.key = key
         self.languages = None
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.text = await self.client.session.api.admin.texts.get(
             key=self.key,

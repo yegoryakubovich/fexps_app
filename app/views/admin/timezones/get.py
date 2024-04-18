@@ -28,7 +28,7 @@ class TimezoneView(AdminBaseView):
         super().__init__()
         self.timezone_id_str = timezone_id_str
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.timezone = await self.client.session.api.client.timezones.get(
             id_str=self.timezone_id_str

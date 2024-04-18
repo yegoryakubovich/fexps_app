@@ -34,7 +34,7 @@ class WalletListView(AdminBaseView):
         super().__init__()
         self.account_id = account_id
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         if self.account_id:
             self.wallets = await self.client.session.api.admin.wallets.get_list(account_id=self.account_id)

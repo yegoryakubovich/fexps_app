@@ -72,7 +72,7 @@ class MainView(View):
         self.body.controls = controls
         await self.body.update_async()
 
-    async def build(self):
+    async def construct(self):
         self.body = ListView(expand=True, padding=padding.only(bottom=36))
         self.tabs = [
             BottomNavigationTab(
@@ -100,7 +100,7 @@ class MainView(View):
 
         for tab in self.tabs:
             control = tab.control(client=self.client, view=self)
-            await control.build()
+            await control.construct()
             await control.on_load()
             tab.controls = [await control.get()]
 

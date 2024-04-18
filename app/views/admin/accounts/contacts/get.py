@@ -37,7 +37,7 @@ class AccountContactView(AdminBaseView):
         for account_contact in self.accounts_contacts:
             self.accounts_contacts_dict[account_contact.contact_id] = account_contact.value
 
-    async def build(self):
+    async def construct(self):
         self.accounts_contacts_dict = {}
         await self.set_type(loading=True)
         self.contacts = await self.client.session.api.client.contacts.get_list()

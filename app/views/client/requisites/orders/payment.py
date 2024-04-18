@@ -77,7 +77,7 @@ class RequisiteOrderPaymentView(ClientBaseView):
 
         return result
 
-    async def build(self):
+    async def construct(self):
         self.input_fields = {}
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)

@@ -33,7 +33,7 @@ class CommissionPackView(AdminBaseView):
         super().__init__()
         self.commission_pack_id = commission_pack_id
 
-    async def build(self):
+    async def construct(self):
         await self.set_type(loading=True)
         self.commission_pack = await self.client.session.api.admin.commissions_packs.get(id_=self.commission_pack_id)
         await self.set_type(loading=False)

@@ -423,7 +423,7 @@ class RequestView(ClientBaseView):
             *await self.get_help_cards(),
         ]
 
-    async def build(self):
+    async def construct(self):
         self.dialog = AlertDialog(modal=False)
         await self.set_type(loading=True)
         self.request = await self.client.session.api.client.requests.get(id_=self.request_id)
@@ -477,7 +477,7 @@ class RequestView(ClientBaseView):
             before_close=self.edit_name_before,
             after_close=self.edit_name_after,
         )
-        await self.request_edit_name_model.build()
+        await self.request_edit_name_model.construct()
         self.dialog.content = Container(
             content=Column(
                 controls=self.request_edit_name_model.controls,
@@ -494,7 +494,7 @@ class RequestView(ClientBaseView):
 
     async def edit_name_after(self):
         self.reload_stop = False
-        await self.build()
+        await self.construct()
         await self.update_async()
 
     async def order_view(self, order_id: int, _):
@@ -502,7 +502,7 @@ class RequestView(ClientBaseView):
 
     async def waiting_confirm(self, _):
         await self.client.session.api.client.requests.updates.confirmation(id_=self.request_id)
-        await self.build()
+        await self.construct()
         await self.update_async()
 
     async def auto_reloader(self):
@@ -516,6 +516,6 @@ class RequestView(ClientBaseView):
                 return
             if self.reload_stop:
                 continue
-            await self.build()
+            await self.construct()
             await self.update_async()
             await asyncio.sleep(5)

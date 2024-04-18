@@ -80,7 +80,7 @@ class WalletSelectView(ClientBaseView):
             )
         return wallets_list
 
-    async def build(self):
+    async def construct(self):
         self.dialog = AlertDialog()
         await self.set_type(loading=True)
         self.wallets = await self.client.session.api.client.wallets.get_list()
@@ -139,7 +139,7 @@ class WalletSelectView(ClientBaseView):
 
     async def select_wallet(self, wallet_id: int, _):
         self.selected_wallet_id = wallet_id
-        await self.build()
+        await self.construct()
         await self.update_async()
 
     async def dialog_create_open(self, _):

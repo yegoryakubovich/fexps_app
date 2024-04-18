@@ -55,7 +55,7 @@ class RequisiteCreateView(ClientBaseView):
 
     optional: Column
 
-    async def build(self):
+    async def construct(self):
         self.dialog = AlertDialog(modal=False)
         self.methods = await self.client.session.api.client.methods.get_list()
         type_options = [
@@ -248,7 +248,7 @@ class RequisiteCreateView(ClientBaseView):
             before_close=self.create_output_requisite_data_before_clise,
             after_close=self.create_output_requisite_data_after_close,
         )
-        await self.requisite_data_model.build()
+        await self.requisite_data_model.construct()
         self.dialog.content = Container(
             content=Column(
                 controls=self.requisite_data_model.controls,
