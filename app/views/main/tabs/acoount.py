@@ -52,7 +52,7 @@ class Section:
         self.settings = settings_
 
 
-async def support(_):
+async def open_support(_):
     webbrowser.open(settings.url_telegram)
 
 

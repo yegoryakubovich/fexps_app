@@ -41,3 +41,18 @@ def value_to_str(value: Optional[float]) -> Optional[str]:
     if not value and value != 0:
         return
     return f'{float(value):,}'.replace(',', ' ')
+
+
+def requisite_value_to_str(
+        value: Optional[str],
+        card_number_replaces: bool = False,
+) -> Optional[str]:
+    if not value and value != 0:
+        return
+    value = str(value)
+    if len(value) == 16:
+        value_list = [f'{value[i * 4:(i * 4) + 4]}' for i in range(4)]
+        if card_number_replaces:
+            value_list[2], value_list[3] = '****', '****'
+        value = ' '.join(value_list)
+    return value

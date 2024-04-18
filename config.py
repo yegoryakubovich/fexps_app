@@ -23,14 +23,28 @@ class Settings(BaseSettings):
 
     version: str = '0.1'
     language_default: str = 'eng'
+    url_telegram: str = 'https://t.me/fexps_manager'
     url: str
     chat_url: str
-    url_telegram: str = 'https://t.me/fexps_manager'
+
+    test: bool
+    test_url: str
+    test_chat_url: str
 
     default_decimal: int = 2
     datetime_format: str = '%d-%m-%y %H:%M'
 
     model_config = SettingsConfigDict(env_file='.env')
+
+    def get_url(self):
+        if self.test:
+            return self.test_url
+        return self.url
+
+    def get_chat_url(self):
+        if self.test:
+            return self.test_chat_url
+        return self.chat_url
 
 
 settings = Settings()

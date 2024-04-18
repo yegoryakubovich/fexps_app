@@ -15,6 +15,7 @@
 #
 import asyncio
 import logging
+import webbrowser
 from functools import partial
 
 from flet_core import Row, colors, MainAxisAlignment, Image, Column, Control, ScrollMode, Container
@@ -23,7 +24,10 @@ from app.controls.button import StandardButton
 from app.controls.information import SubTitle, Text
 from app.controls.layout import ClientBaseView
 from app.utils import Icons, Fonts, value_to_float
+from app.utils.value import requisite_value_to_str
 from app.views.client.requisites.orders.get import RequisiteOrderView
+from app.views.main.tabs.acoount import open_support
+from config import settings
 
 
 class RequisiteView(ClientBaseView):
@@ -51,6 +55,13 @@ class RequisiteView(ClientBaseView):
             color, bgcolor = colors.ON_PRIMARY, colors.PRIMARY
             if order.state in ['completed', 'canceled']:
                 color, bgcolor = colors.ON_PRIMARY_CONTAINER, colors.PRIMARY_CONTAINER
+            order_info_str = ''
+            if order.requisite_scheme_fields:
+                order_info_key = order.requisite_scheme_fields[0]['key']
+                order_info_str = requisite_value_to_str(
+                    value=order.requisite_fields[order_info_key],
+                    card_number_replaces=True,
+                )
             cards.append(
                 StandardButton(
                     content=Row(
@@ -70,7 +81,7 @@ class RequisiteView(ClientBaseView):
                                     Row(
                                         controls=[
                                             Text(
-                                                value=f'404 CARD NUMBER',
+                                                value=order_info_str,
                                                 size=28,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
@@ -167,7 +178,7 @@ class RequisiteView(ClientBaseView):
                 bgcolor=colors.BACKGROUND,
                 horizontal=0,
                 vertical=0,
-                on_click=None,
+                on_click=open_support,
             ),
         ]
 

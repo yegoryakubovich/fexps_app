@@ -79,12 +79,12 @@ class Session:
         self.text_pack = await self.get_cs(key='text_pack')
         self.current_wallet = await self.get_cs(key='current_wallet')
 
-        self.api = FexpsApiClient(url=settings.url, token=self.token)
+        self.api = FexpsApiClient(url=settings.get_url(), token=self.token)
         try:
             self.account = await self.api.client.accounts.get()
             self.language = self.account.language
             self.timezone = await self.api.client.timezones.get(id_str=self.account.timezone)
-            self.api = FexpsApiClient(url=settings.url, token=self.token, deviation=self.timezone.deviation)
+            self.api = FexpsApiClient(url=settings.get_url(), token=self.token, deviation=self.timezone.deviation)
             if self.language != self.account.language:
                 await self.set_cs(key='language', value=self.language)
             self.wallets = await self.api.client.wallets.get_list()

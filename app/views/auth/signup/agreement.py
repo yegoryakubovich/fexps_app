@@ -87,7 +87,7 @@ class AgreementRegistrationView(AuthView):
 
         token = session.token
         await self.client.session.set_cs(key='token', value=token)
-        self.client.session.api = FexpsApiClient(url=settings.url, token=token)
+        self.client.session.api = FexpsApiClient(url=settings.get_url(), token=token)
 
         for contact_id, value in self.client.session.registration.contacts.items():
             if not contact_id or not value:

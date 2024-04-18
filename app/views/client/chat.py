@@ -37,7 +37,7 @@ from fexps_api_client import FexpsApiClient
 
 class Chat(UserControl):
     running: bool
-    url: str = settings.chat_url
+    url: str = settings.get_chat_url()
     message_column: Column
     control_list: list
 

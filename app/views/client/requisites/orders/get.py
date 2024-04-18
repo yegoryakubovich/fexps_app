@@ -16,7 +16,7 @@
 
 
 import asyncio
-import logging
+import webbrowser
 from functools import partial
 
 from flet_core import Control, Column, Container, Row, Divider, MainAxisAlignment, \
@@ -26,7 +26,9 @@ from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons
-from app.utils.value import value_to_str
+from app.utils.value import value_to_str, requisite_value_to_str
+from app.views.main.tabs.acoount import open_support
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -49,6 +51,47 @@ class RequisiteOrderView(ClientBaseView):
             decimal=self.currency.decimal,
         )
         currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
+        field_controls = []
+        for scheme_field in self.order.requisite_scheme_fields:
+            field_info_str = requisite_value_to_str(value=self.order.requisite_fields.get(scheme_field.get('key')))
+            field_controls.append(
+                Row(
+                    controls=[
+                        Text(
+                            value=await self.client.session.gtv(key=scheme_field.get('name_text_key')),
+                            size=14,
+                            font_family=Fonts.SEMIBOLD,
+                            color=self.method.color,
+                        ),
+                        Row(
+                            controls=[
+                                Text(
+                                    value=field_info_str,
+                                    size=14,
+                                    font_family=Fonts.SEMIBOLD,
+                                    color=self.method.color,
+                                ),
+                                StandardButton(
+                                    content=Image(
+                                        src=Icons.COPY,
+                                        width=18,
+                                        color=self.method.color,
+                                    ),
+                                    on_click=partial(
+                                        self.copy_to_clipboard,
+                                        self.order.requisite_fields.get(scheme_field.get('key')),
+                                    ),
+                                    bgcolor=self.method.bgcolor,
+                                    horizontal=0,
+                                    vertical=0,
+                                ),
+                            ],
+                            spacing=0,
+                        ),
+                    ],
+                    alignment=MainAxisAlignment.SPACE_BETWEEN,
+                )
+            )
         return InformationContainer(
             content=Column(
                 controls=[
@@ -63,45 +106,7 @@ class RequisiteOrderView(ClientBaseView):
                         ],
                     ),
                     Divider(color=self.method.color),
-                    *[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=await self.client.session.gtv(key=scheme_field.get('name_text_key')),
-                                    size=14,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=self.method.color,
-                                ),
-                                Row(
-                                    controls=[
-                                        Text(
-                                            value=self.order.requisite_fields.get(scheme_field.get('key'), 'None'),
-                                            size=14,
-                                            font_family=Fonts.SEMIBOLD,
-                                            color=self.method.color,
-                                        ),
-                                        StandardButton(
-                                            content=Image(
-                                                src=Icons.COPY,
-                                                width=18,
-                                                color=self.method.color,
-                                            ),
-                                            on_click=partial(
-                                                self.copy_to_clipboard,
-                                                self.order.requisite_fields.get(scheme_field.get('key')),
-                                            ),
-                                            bgcolor=self.method.bgcolor,
-                                            horizontal=0,
-                                            vertical=0,
-                                        ),
-                                    ],
-                                    spacing=0,
-                                ),
-                            ],
-                            alignment=MainAxisAlignment.SPACE_BETWEEN,
-                        )
-                        for scheme_field in self.order.requisite_scheme_fields
-                    ],
+                    *field_controls,
                     Row(
                         controls=[
                             Text(
@@ -198,7 +203,7 @@ class RequisiteOrderView(ClientBaseView):
                 bgcolor=colors.BACKGROUND,
                 horizontal=0,
                 vertical=0,
-                on_click=None,
+                on_click=open_support,
             ),
             StandardButton(
                 content=Row(
@@ -224,7 +229,7 @@ class RequisiteOrderView(ClientBaseView):
                 bgcolor=colors.BACKGROUND,
                 horizontal=0,
                 vertical=0,
-                on_click=None,
+                on_click=self.chat_open,
             ),
         ]
 
@@ -430,6 +435,8 @@ class RequisiteOrderView(ClientBaseView):
             await asyncio.sleep(5)
 
     async def copy_to_clipboard(self, data, _):
+        if data is None:
+            return
         await self.client.page.set_clipboard_async(str(data))
 
     async def chat_open(self, _):
