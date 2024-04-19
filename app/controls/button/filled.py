@@ -23,8 +23,8 @@ class FilledButton(FletElevatedButton):
     def __init__(
             self,
             horizontal_padding: int = 27,
-            color: str = colors.GREEN,
-            bg_color: str = colors.BLUE,
+            color: str = colors.ON_BACKGROUND,
+            bg_color: str = colors.BACKGROUND,
             **kwargs
     ):
         super().__init__(**kwargs)

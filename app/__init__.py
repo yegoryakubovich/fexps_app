@@ -21,9 +21,11 @@ from flet_manager import App
 
 from app.views import views, InitView
 from .utils import fonts, themes
+from .utils.logger import config_logger
 
 
 def create_app():
+    config_logger()
     app = App(
         name='Finance Express',
         views=views,
