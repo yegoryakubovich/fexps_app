@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-
 from flet_core import Column, Control, Row, ControlEvent, KeyboardType
 from flet_core.dropdown import Option
 
@@ -85,13 +84,10 @@ class RequisiteDataCreateModel:
             label=await self.session.gtv(key='method'),
             options=method_options,
             on_change=self.change_method,
-            value=self.method_id if self.currency_id_str else None,
         )
         self.optional = Column(controls=[])
         if self.currency_id_str:
             await self.change_currency('')
-            if self.method_id:
-                await self.change_method('')
         self.controls = [
             self.tf_name,
             self.dd_currency,
@@ -128,6 +124,10 @@ class RequisiteDataCreateModel:
         self.dd_method.value = None
         self.optional.controls = []
         await self.update_async()
+        if self.method_id:
+            self.dd_method.value = self.method_id
+            self.method_id = None
+            await self.change_method('')
 
     async def change_method(self, _):
         self.method = await self.session.api.client.methods.get(id_=self.dd_method.value)
