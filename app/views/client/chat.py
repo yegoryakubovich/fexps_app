@@ -18,9 +18,7 @@
 import asyncio
 import datetime
 import json
-import logging
 import os
-from asyncio import create_task
 from base64 import b64encode
 from io import BytesIO
 
@@ -144,21 +142,16 @@ class Chat(UserControl):
 
     async def connect(self):
         self.websocket = await self.session.ws_connect(f'{self.url}?token={self.token}&order_id={self.order_id}')
-        logging.critical('connect...')
-        logging.critical(self.websocket)
 
     async def disconnect(self):
         await self.websocket.close()
 
     async def send(self, data: dict):
-        print(data)
         await self.websocket.send_json(data=data)
 
     def did_mount(self):
-        logging.critical('did_mount_async')
-        logging.critical(self.websocket)
         self.running = True
-        create_task(self.update_chat())
+        asyncio.create_task(self.update_chat())
 
     def will_unmount(self):
         self.running = False
@@ -236,6 +229,7 @@ class ChatView(ClientBaseView):
         self.photo_row = Row()
         self.tf_message = TextField(
             label=await self.client.session.gtv(key='chat_write_message'),
+            on_submit=self.send,
             expand=True,
         )
         title_str = await self.client.session.gtv(key='chat_title')
@@ -266,16 +260,18 @@ class ChatView(ClientBaseView):
                                 bgcolor=colors.BACKGROUND,
                             ),
                             self.tf_message,
-                        ],
-                    ),
-                ),
-                Container(
-                    content=Row(
-                        controls=[
                             StandardButton(
-                                text=await self.client.session.gtv(key='chat_send'),
+                                content=Image(
+                                    src=Icons.PAYMENT,
+                                    color=colors.ON_BACKGROUND,
+                                    height=32,
+                                    width=32,
+                                ),
+                                # text=await self.client.session.gtv(key='chat_send'),
+                                horizontal=0,
+                                vertical=0,
                                 on_click=self.send,
-                                expand=True,
+                                bgcolor=colors.BACKGROUND,
                             ),
                         ],
                     ),

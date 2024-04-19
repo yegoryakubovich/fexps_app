@@ -85,7 +85,7 @@ class RequestCreateView(ClientBaseView):
         self.tf_input_value = TextField(
             label=await self.client.session.gtv(key='value'),
             keyboard_type=KeyboardType.NUMBER,
-            expand=4
+            expand=4,
         )
         self.dd_input_currency = Dropdown(
             label=await self.client.session.gtv(key='currency'),
@@ -117,7 +117,7 @@ class RequestCreateView(ClientBaseView):
         self.tf_output_value = TextField(
             label=await self.client.session.gtv(key='value'),
             keyboard_type=KeyboardType.NUMBER,
-            expand=4
+            expand=4,
         )
         self.dd_output_currency = Dropdown(
             label=await self.client.session.gtv(key='currency'),
