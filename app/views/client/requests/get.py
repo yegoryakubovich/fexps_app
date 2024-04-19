@@ -345,13 +345,21 @@ class RequestView(ClientBaseView):
         return cards
 
     async def get_orders_send(self) -> Row:
-        return Row(
-            controls=[
+        controls = []
+        input_orders = await self.get_orders_cards(type_='input')
+        if input_orders:
+            controls += [
                 SubTitle(value=await self.client.session.gtv(key='request_orders_input_title')),
-                *await self.get_orders_cards(type_='input'),
+                *await self.get_orders_cards(type_='input')
+            ]
+        output_orders = await self.get_orders_cards(type_='output')
+        if output_orders:
+            controls += [
                 SubTitle(value=await self.client.session.gtv(key='request_orders_output_title')),
                 *await self.get_orders_cards(type_='output'),
-            ],
+            ]
+        return Row(
+            controls=controls,
             wrap=True,
         )
 
