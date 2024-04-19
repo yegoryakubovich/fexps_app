@@ -40,10 +40,10 @@ class DynamicTimer(UserControl):
         self.running = True
         self.seconds = seconds
 
-    async def did_mount_async(self):
+    def did_mount(self):
         asyncio.create_task(self.update_second())
 
-    async def will_unmount_async(self):
+    def will_unmount(self):
         self.running = False
 
     def get_time(self):
@@ -62,11 +62,6 @@ class DynamicTimer(UserControl):
             self.seconds -= 1
 
     def build(self):
-        Text(
-            value='',
-            size=16,
-            font_family=Fonts.BOLD,
-        )
         self.time_text = Text(
             value='',
             size=16,
