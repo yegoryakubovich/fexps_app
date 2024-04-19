@@ -16,3 +16,4 @@
 
 
 from .get import RequestOrderView
+from .payment import RequestOrderPaymentView

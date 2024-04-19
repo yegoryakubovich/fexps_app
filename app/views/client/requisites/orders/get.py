@@ -342,8 +342,8 @@ class RequisiteOrderView(ClientBaseView):
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
         self.currency = self.order.currency
-        self.requisite = await self.client.session.api.client.requisites.get(id_=self.order.requisite)
-        self.method = await self.client.session.api.client.methods.get(id_=self.order.method)
+        self.requisite = self.order.requisite
+        self.method = self.order.method
         await self.set_type(loading=False)
         asyncio.create_task(self.auto_reloader())
         controls = [
@@ -429,6 +429,7 @@ class RequisiteOrderView(ClientBaseView):
                 self.reload_bool = False
                 return
             if self.reload_stop:
+                await asyncio.sleep(5)
                 continue
             await self.construct()
             await self.update_async()

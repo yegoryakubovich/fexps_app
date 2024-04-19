@@ -351,8 +351,8 @@ class RequestOrderView(ClientBaseView):
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
         self.currency = self.order.currency
-        self.request = await self.client.session.api.client.requests.get(id_=self.order.request)
-        self.method = await self.client.session.api.client.methods.get(id_=self.order.method)
+        self.request = self.order.request
+        self.method = self.order.method
         await self.set_type(loading=False)
         asyncio.create_task(self.auto_reloader())
         controls = [
@@ -434,6 +434,7 @@ class RequestOrderView(ClientBaseView):
                 self.reload_bool = False
                 return
             if self.reload_stop:
+                await asyncio.sleep(5)
                 continue
             await self.construct()
             await self.update_async()

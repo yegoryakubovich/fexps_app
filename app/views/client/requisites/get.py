@@ -340,6 +340,7 @@ class RequisiteView(ClientBaseView):
                 self.reload_bool = False
                 return
             if self.reload_stop:
+                await asyncio.sleep(5)
                 continue
             await self.construct()
             await self.update_async()

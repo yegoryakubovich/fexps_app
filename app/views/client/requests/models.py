@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import logging
 
 from flet_core import Control, Row
 
@@ -72,14 +72,19 @@ class RequestUpdateNameModel:
         ]
 
     async def edit_name(self, _):
+        request_name = None
+        if self.tf_name.value:
+            request_name = self.tf_name.value
+        logging.critical(1)
         if self.before_close:
             await self.before_close()
         try:
             await self.session.api.client.requests.updates.name(
                 id_=self.request_id,
-                name=self.tf_name.value,
+                name=request_name,
             )
         except ApiException as exception:
+            logging.critical(exception.message)
             return await self.session.error(exception=exception)
         if self.after_close:
             await self.after_close()

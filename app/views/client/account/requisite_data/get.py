@@ -39,7 +39,7 @@ class RequisiteDataView(ClientBaseView):
     async def construct(self):
         await self.set_type(loading=True)
         self.requisite_data = await self.client.session.api.client.requisites_datas.get(id_=self.requisite_data_id)
-        self.method = await self.client.session.api.client.methods.get(id_=self.requisite_data.method)
+        self.method = self.requisite_data.method
         await self.set_type(loading=False)
         self.snack_bar = SnackBar(content=Text(value=await self.client.session.gtv(key='successful')))
         self.details = []

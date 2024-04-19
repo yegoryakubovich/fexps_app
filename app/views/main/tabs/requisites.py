@@ -170,9 +170,9 @@ class RequisiteTab(BaseTab):
         for requisite in self.history_requests:
             currency = requisite.currency
             if requisite.type == 'input':
-                method = await self.client.session.api.client.methods.get(id_=requisite.input_method)
+                method = requisite.input_method
             else:
-                method = await self.client.session.api.client.methods.get(id_=requisite.output_method)
+                method = requisite.output_method
             type_ = await self.client.session.gtv(key=f'requisite_type_{requisite.type}')
             method = await self.client.session.gtv(key=method.name_text)
             type_str = f'{type_} ({method})'

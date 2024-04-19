@@ -29,7 +29,7 @@ from app.utils.value import requisite_value_to_str
 from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView
 from app.views.main.tabs.acoount import open_support
-from fexps_api_client import FexpsApiClient
+from fexps_api_client.utils import ApiException
 
 
 class DynamicTimer(UserControl):
@@ -84,6 +84,7 @@ class RequestView(ClientBaseView):
         self.request_id = request_id
         self.reload_bool = False
         self.reload_stop = False
+        self.dialog = AlertDialog(modal=True)
 
     async def get_info_card(self):
         rate = value_to_float(
@@ -148,9 +149,11 @@ class RequestView(ClientBaseView):
                                 content=Image(
                                     src=Icons.EDIT,
                                     color=colors.ON_PRIMARY_CONTAINER,
+                                    height=24,
+                                    width=24,
                                 ),
-                                height=32,
-                                width=32,
+                                horizontal=0,
+                                vertical=0,
                                 bgcolor=colors.PRIMARY_CONTAINER,
                                 on_click=self.request_edit_name,
                             ),
@@ -427,7 +430,6 @@ class RequestView(ClientBaseView):
         ]
 
     async def construct(self):
-        self.dialog = AlertDialog(modal=False)
         await self.set_type(loading=True)
         self.request = await self.client.session.api.client.requests.get(id_=self.request_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_request(request_id=self.request_id)
@@ -504,9 +506,12 @@ class RequestView(ClientBaseView):
         await self.client.change_view(view=RequestOrderView(order_id=order_id))
 
     async def waiting_confirm(self, _):
-        await self.client.session.api.client.requests.updates.confirmation(id_=self.request_id)
-        await self.construct()
-        await self.update_async()
+        try:
+            await self.client.session.api.client.requests.updates.confirmation(id_=self.request_id)
+            await self.construct()
+            await self.update_async()
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
 
     async def auto_reloader(self):
         if self.reload_bool:
@@ -518,6 +523,7 @@ class RequestView(ClientBaseView):
                 self.reload_bool = False
                 return
             if self.reload_stop:
+                await asyncio.sleep(5)
                 continue
             await self.construct()
             await self.update_async()
