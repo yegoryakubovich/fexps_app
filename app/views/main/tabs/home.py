@@ -15,7 +15,8 @@
 #
 
 
-from datetime import timedelta, datetime
+import logging
+import datetime
 from functools import partial
 
 from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, TextAlign, \
@@ -49,7 +50,9 @@ class HomeTab(BaseTab):
         self.selected_chip = Chips.all
 
     async def get_account(self):
-        time_now = datetime.now().replace(tzinfo=None) + timedelta(hours=self.client.session.timezone.deviation)
+        time_utcnow = datetime.datetime.now(tz=datetime.UTC).replace(tzinfo=None)
+        time_delta = datetime.timedelta(hours=self.client.session.timezone.deviation)
+        time_now = time_utcnow + time_delta
         if time_now.hour < 6:
             hello_text_str = await self.client.session.gtv(key='good_night')
         elif time_now.hour < 12:

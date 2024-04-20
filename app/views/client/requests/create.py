@@ -28,6 +28,7 @@ from app.utils import Icons
 from app.utils.value import value_to_int
 from app.views.client.account.requisite_data.models import RequisiteDataCreateModel
 from app.views.client.requests.get import RequestView
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -63,11 +64,11 @@ class RequestCreateView(ClientBaseView):
     """
 
     async def get_currency_options(self, exclude_currency_id_str: str = None) -> list[Option]:
-        options = [Option(text='YA COIN', key='ya_coins')] if exclude_currency_id_str != 'ya_coins' else []
+        options = []
         for currency in self.currencies:
-            if currency.id_str == exclude_currency_id_str:
+            if currency['id_str'] == exclude_currency_id_str:
                 continue
-            options.append(Option(text=currency.id_str.upper(), key=currency.id_str))
+            options.append(Option(text=currency['id_str'].upper(), key=currency['id_str']))
         return options
 
     async def get_method_options(self, currency_id_str: str) -> list[Option]:
@@ -168,6 +169,16 @@ class RequestCreateView(ClientBaseView):
         await self.set_type(loading=True)
         self.methods = await self.client.session.api.client.methods.get_list()
         self.currencies = await self.client.session.api.client.currencies.get_list()
+        self.currencies.insert(
+            0,
+            {
+                'id': 0,
+                'id_str': 'ya_coin',
+                'decimal': 2,
+                'rate_decimal': 2,
+                'div': 100,
+            }
+        )
         await self.set_type(loading=False)
         self.controls = await self.get_controls(
             with_expand=True,
@@ -226,7 +237,7 @@ class RequestCreateView(ClientBaseView):
         requisites_datas = await self.client.session.api.client.requisites_datas.get_list()
         options = []
         for requisite_data in requisites_datas:
-            if int(requisite_data.method) != int(self.dd_output_method.value):
+            if int(requisite_data.method.id) != int(self.dd_output_method.value):
                 continue
             options.append(Option(
                 text=f'{requisite_data.name}',
@@ -276,6 +287,7 @@ class RequestCreateView(ClientBaseView):
             return await self.go_request_create(wallet_id=self.client.session.wallets[0]['id'])
 
     async def go_request_create(self, wallet_id: int):
+        input_currency, output_currency = None, None
         input_method_id, input_currency_value, input_value = None, None, None
         output_requisite_data_id, output_currency_value, output_value = None, None, None
         for field in [self.dd_input_currency, self.dd_output_currency]:
@@ -286,26 +298,53 @@ class RequestCreateView(ClientBaseView):
             return
 
         await self.set_type(loading=True)
-        if self.dd_output_currency.value == 'ya_coins':
+        if self.dd_output_currency.value == 'ya_coin':
             input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
             type_ = RequestTypes.INPUT
-            input_method_id = self.dd_input_method.value
+            if self.dd_input_method.value:
+                input_method_id = self.dd_input_method.value
             input_currency_value = value_to_int(value=self.tf_input_value.value, decimal=input_currency.decimal)
             input_value = value_to_int(value=self.tf_output_value.value)
-        elif self.dd_input_currency.value == 'ya_coins':
+        elif self.dd_input_currency.value == 'ya_coin':
             output_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_output_currency.value)
             type_ = RequestTypes.OUTPUT
-            output_requisite_data_id = self.dd_output_requisite_data.value
+            if self.dd_output_requisite_data.value:
+                output_requisite_data_id = self.dd_output_requisite_data.value
             output_currency_value = value_to_int(value=self.tf_output_value.value, decimal=output_currency.decimal)
             output_value = value_to_int(value=self.tf_input_value.value)
         else:
             input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
             output_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_output_currency.value)
             type_ = RequestTypes.ALL
-            input_method_id = self.dd_input_method.value
+            if self.dd_input_method.value:
+                input_method_id = self.dd_input_method.value
             input_currency_value = value_to_int(value=self.tf_input_value.value, decimal=input_currency.decimal)
-            output_requisite_data_id = self.dd_output_requisite_data.value
+            if self.dd_output_requisite_data.value:
+                output_requisite_data_id = self.dd_output_requisite_data.value
             output_currency_value = value_to_int(value=self.tf_output_value.value, decimal=output_currency.decimal)
+        error_less_div_str = await self.client.session.gtv(key='error_less_div')
+        error_div_str = await self.client.session.gtv(key='error_div')
+        for value, field, currency in [
+            (input_currency_value, self.tf_input_value, input_currency),
+            (input_value, self.tf_output_value, None),
+            (output_currency_value, self.tf_output_value, output_currency),
+            (output_value, self.tf_input_value, None),
+        ]:
+            if value is None:
+                continue
+            div, decimal = settings.default_div, settings.default_decimal
+            if currency:
+                div, decimal = currency['div'], currency['decimal']
+                if int(value) % div != 0:
+                    field.error_text = f'{error_div_str} {div / (10 ** decimal)}'
+                    await self.set_type(loading=False)
+                    await self.update_async()
+                    return
+            if int(value) < div:
+                field.error_text = f'{error_less_div_str} {div / (10 ** decimal)}'
+                await self.set_type(loading=False)
+                await self.update_async()
+                return
         try:
             request_id = await self.client.session.api.client.requests.create(
                 wallet_id=wallet_id,

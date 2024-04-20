@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     test_chat_url: str
 
     default_decimal: int = 2
+    default_div: int = 100
     datetime_format: str = '%d-%m-%y %H:%M'
 
     model_config = SettingsConfigDict(env_file='.env')
