@@ -22,22 +22,30 @@ from config import settings
 
 
 def get_decimal_places(value: float):
+    if isinstance(value, str):
+        value = value.replace(',', '.')
     return Decimal(str(value)).as_tuple().exponent * -1
 
 
 def value_to_int(value: Optional[float], decimal: int = settings.default_decimal) -> Optional[int]:
+    if isinstance(value, str):
+        value = value.replace(',', '.')
     if not value and value != 0:
         return
     return round(float(value) * (10 ** decimal))
 
 
 def value_to_float(value: Optional[int], decimal: int = settings.default_decimal) -> Optional[float]:
+    if isinstance(value, str):
+        value = value.replace(',', '.')
     if not value and value != 0:
         return
     return round(float(value) / (10 ** decimal), 2)
 
 
 def value_to_str(value: Optional[float]) -> Optional[str]:
+    if isinstance(value, str):
+        value = value.replace(',', '.')
     if not value and value != 0:
         return
     return f'{float(value):,}'.replace(',', ' ')

@@ -221,11 +221,11 @@ class HomeTab(BaseTab):
             if request.type == 'input':
                 input_currency = request.input_currency
                 input_currency_value = value_to_float(
-                    value=request.input_currency_value_raw,
+                    value=request.input_currency_value,
                     decimal=input_currency.decimal,
                 )
                 input_value = value_to_float(
-                    value=request.input_value_raw,
+                    value=request.input_value,
                     decimal=input_currency.decimal,
                 )
                 value_str = (
@@ -236,11 +236,11 @@ class HomeTab(BaseTab):
             elif request.type == 'output':
                 output_currency = request.output_currency
                 output_currency_value = value_to_float(
-                    value=request.output_currency_value_raw,
+                    value=request.output_currency_value,
                     decimal=output_currency.decimal,
                 )
                 output_value = value_to_float(
-                    value=request.output_value_raw,
+                    value=request.output_value,
                     decimal=output_currency.decimal,
                 )
                 value_str = (
@@ -252,11 +252,11 @@ class HomeTab(BaseTab):
                 input_currency = request.input_currency
                 output_currency = request.output_currency
                 input_currency_value = value_to_float(
-                    value=request.input_currency_value_raw,
+                    value=request.input_currency_value,
                     decimal=input_currency.decimal,
                 )
                 output_currency_value = value_to_float(
-                    value=request.output_currency_value_raw,
+                    value=request.output_currency_value,
                     decimal=output_currency.decimal,
                 )
                 value_str = (
