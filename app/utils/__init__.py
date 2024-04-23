@@ -15,6 +15,7 @@
 #
 
 
+from .chat import Chat
 from .error import Error
 from .fonts import Fonts, fonts
 from .icons import Icons
