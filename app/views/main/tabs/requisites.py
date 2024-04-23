@@ -36,6 +36,8 @@ class Chips:
 
 class RequisiteTab(BaseTab):
     requisites = list[dict]
+    control_dict: dict
+
     history_requests = dict
     currency_orders = dict
     column: Column
@@ -48,6 +50,10 @@ class RequisiteTab(BaseTab):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.selected_chip = Chips.ALL
+        self.control_dict = {
+            'currently_orders': None,
+            'history_requisites': None,
+        }
 
     """
     CURRENCY ORDERS
@@ -120,17 +126,19 @@ class RequisiteTab(BaseTab):
             )
         return cards
 
-    async def get_currently_orders(self):
+    async def update_currently_orders(self, update: bool = True):
         cards = await self.get_currently_orders_cards()
-        if not cards:
-            return Row()
-        return Row(
-            controls=[
-                SubTitle(value=await self.client.session.gtv(key='requisite_currently_orders_title')),
-                *cards,
-            ],
-            wrap=True,
-        )
+        self.control_dict['currently_orders'] = Row()
+        if cards:
+            self.control_dict['currently_orders'] = Row(
+                controls=[
+                    SubTitle(value=await self.client.session.gtv(key='requisite_currently_orders_title')),
+                    *cards,
+                ],
+                wrap=True,
+            )
+        if update:
+            await self.update_async()
 
     """
     REQUISITE HISTORY
@@ -235,8 +243,8 @@ class RequisiteTab(BaseTab):
             )
         return cards
 
-    async def get_requisite_history(self):
-        return Row(
+    async def update_history_requisites(self, update: bool = True):
+        self.control_dict['history_requisites'] = Row(
             controls=[
                 SubTitle(value=await self.client.session.gtv(key='requisite_history_title')),
                 *await self.get_requisite_history_chips(),
@@ -252,8 +260,12 @@ class RequisiteTab(BaseTab):
             ],
             wrap=True,
         )
+        if update:
+            await self.update_async()
 
     async def construct(self):
+        await self.update_currently_orders(update=False)
+        await self.update_history_requisites(update=False)
         self.scroll = ScrollMode.AUTO
         self.controls = [
             Container(
@@ -264,8 +276,8 @@ class RequisiteTab(BaseTab):
                             create_name_text=await self.client.session.gtv(key='create'),
                             on_create=self.requisite_create,
                         ),
-                        await self.get_currently_orders(),
-                        await self.get_requisite_history(),
+                        self.control_dict['currently_orders'],
+                        self.control_dict['history_requisites'],
                     ]
                 ),
                 padding=10,

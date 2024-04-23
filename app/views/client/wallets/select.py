@@ -31,8 +31,10 @@ class WalletSelectView(ClientBaseView):
     route = '/client/wallets/select'
     wallets: list
     wallet = dict
+
     wallets_column: Column
     selected_wallet_id: int
+
     dialog: AlertDialog
     tf_name: TextField
 

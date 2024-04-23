@@ -37,9 +37,11 @@ class Chips:
 
 class RequestTab(BaseTab):
     scopes: list[ActionItem]
-    column: Column
+    control_dict: dict
+
     current_requests = list[dict]
     history_requests = list[dict]
+    
     page_request: int = 1
     total_pages: int = 1
     selected_chip: str
@@ -47,6 +49,10 @@ class RequestTab(BaseTab):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.selected_chip = Chips.COMPLETED
+        self.control_dict = {
+            'currently_request': None,
+            'history_request': None,
+        }
 
     """
     CURRENTLY REQUESTS
@@ -149,17 +155,19 @@ class RequestTab(BaseTab):
             )
         return cards
 
-    async def get_currently_request(self):
+    async def update_currently_request(self, update: bool = True):
         cards = await self.get_currently_request_cards()
-        if not cards:
-            return Row()
-        return Row(
-            controls=[
-                SubTitle(value=await self.client.session.gtv(key='requests_currently_title')),
-                *cards,
-            ],
-            wrap=True,
-        )
+        self.control_dict['currently_request'] = Row()
+        if cards:
+            self.control_dict['currently_request'] = Row(
+                controls=[
+                    SubTitle(value=await self.client.session.gtv(key='requests_currently_title')),
+                    *cards,
+                ],
+                wrap=True,
+            )
+        if update:
+            await self.update_async()
 
     """
     HISTORY REQUESTS
@@ -302,8 +310,8 @@ class RequestTab(BaseTab):
             )
         return cards
 
-    async def get_history_request(self):
-        return Row(
+    async def update_history_request(self, update: bool = True):
+        self.control_dict['history_request'] = Row(
             controls=[
                 SubTitle(value=await self.client.session.gtv(key='request_history_title')),
                 *await self.get_history_request_chips(),
@@ -319,12 +327,16 @@ class RequestTab(BaseTab):
             ],
             wrap=True,
         )
+        if update:
+            await self.update_async()
 
     async def construct(self):
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
             id_=self.client.session.current_wallet.id,
         )
+        await self.update_currently_request(update=False)
+        await self.update_history_request(update=False)
         self.scroll = ScrollMode.AUTO
         self.controls = [
             Container(
@@ -335,8 +347,8 @@ class RequestTab(BaseTab):
                             create_name_text=await self.client.session.gtv(key='create'),
                             on_create=self.request_create,
                         ),
-                        await self.get_currently_request(),
-                        await self.get_history_request(),
+                        self.control_dict['currently_request'],
+                        self.control_dict['history_request'],
                     ]
                 ),
                 padding=10,

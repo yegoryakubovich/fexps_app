@@ -15,7 +15,6 @@
 #
 
 
-import logging
 import datetime
 from functools import partial
 
@@ -38,9 +37,11 @@ class Chips:
 
 class HomeTab(BaseTab):
     transfers = list[dict]
-    column: Column
+    control_dict: dict
+
     cards: list[Card]
     current_requests = list[dict]
+
     page_transfer: int = 1
     total_pages: int = 1
     selected_chip: str
@@ -48,8 +49,15 @@ class HomeTab(BaseTab):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.selected_chip = Chips.all
+        self.control_dict = {
+            'account': None,
+            'balance': None,
+            'actions': None,
+            'currently_request': None,
+            'history_transfer': None,
+        }
 
-    async def get_account(self):
+    async def update_account(self, update: bool = True):
         time_utcnow = datetime.datetime.now(tz=datetime.UTC).replace(tzinfo=None)
         time_delta = datetime.timedelta(hours=self.client.session.timezone.deviation)
         time_now = time_utcnow + time_delta
@@ -62,7 +70,7 @@ class HomeTab(BaseTab):
         else:
             hello_text_str = await self.client.session.gtv(key='good_evening')
         hello_text_str = f'{hello_text_str},'
-        return Row(
+        self.control_dict['account'] = Row(
             controls=[
                 Text(
                     value=hello_text_str,
@@ -79,12 +87,14 @@ class HomeTab(BaseTab):
             ],
             wrap=True,
         )
+        if update:
+            await self.update_async()
 
-    async def get_balance(self):
+    async def update_balance(self, update: bool = True):
         wallet_name = self.client.session.current_wallet.name
         value = value_to_float(value=self.client.session.current_wallet.value)
         value_str = value_to_str(value=value)
-        return InformationContainer(
+        self.control_dict['balance'] = InformationContainer(
             content=Stack(
                 controls=[
                     Column(
@@ -138,9 +148,11 @@ class HomeTab(BaseTab):
             ),
             height=150,
         )
+        if update:
+            await self.update_async()
 
-    async def get_actions(self):
-        return Row(
+    async def update_actions(self, update: bool = True):
+        self.control_dict['actions'] = Row(
             controls=[
                 StandardButton(
                     content=Row(
@@ -207,6 +219,8 @@ class HomeTab(BaseTab):
             ],
             spacing=10,
         )
+        if update:
+            await self.update_async()
 
     """
     CURRENTLY REQUESTS
@@ -309,17 +323,19 @@ class HomeTab(BaseTab):
             )
         return cards
 
-    async def get_currently_request(self):
+    async def update_currently_request(self, update: bool = True):
         cards = await self.get_currently_request_cards()
-        if not cards:
-            return Row()
-        return Row(
-            controls=[
-                SubTitle(value=await self.client.session.gtv(key='requests_currently_title')),
-                *cards,
-            ],
-            wrap=True,
-        )
+        self.control_dict['currently_request'] = Row()
+        if cards:
+            self.control_dict['currently_request'] = Row(
+                controls=[
+                    SubTitle(value=await self.client.session.gtv(key='requests_currently_title')),
+                    *cards,
+                ],
+                wrap=True,
+            )
+        if update:
+            await self.update_async()
 
     """
     HISTORY TRANSFER
@@ -409,8 +425,8 @@ class HomeTab(BaseTab):
             )
         return cards
 
-    async def get_history_transfer(self):
-        return Row(
+    async def update_history_transfer(self, update: bool = True):
+        self.control_dict['history_transfer'] = Row(
             controls=[
                 SubTitle(value=await self.client.session.gtv(key='last_transfers_title')),
                 *await self.get_history_transfer_chips(),
@@ -426,38 +442,42 @@ class HomeTab(BaseTab):
             ],
             wrap=True,
         )
+        if update:
+            await self.update_async()
 
     async def construct(self):
         self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
         self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
             id_=self.client.session.current_wallet['id'],
         )
+        await self.update_account(update=False)
+        await self.update_balance(update=False)
+        await self.update_actions(update=False)
+        await self.update_currently_request(update=False)
+        await self.update_history_transfer(update=False)
         self.scroll = ScrollMode.AUTO
         self.controls = [
             Container(
                 content=Column(
                     controls=[
-                        await self.get_account(),
-                        await self.get_balance(),
-                        await self.get_actions(),
-                        await self.get_currently_request(),
-                        await self.get_history_transfer(),
+                        self.control_dict['account'],
+                        self.control_dict['balance'],
+                        self.control_dict['actions'],
+                        self.control_dict['currently_request'],
+                        self.control_dict['history_transfer'],
                     ]
                 ),
                 padding=10,
             )
         ]
 
-    async def change_wallet(self, event: ControlEvent):
-        self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
-        self.client.session.current_wallet = await self.client.session.api.client.wallets.get(id_=event.data)
-        self.column.controls[1] = await self.get_balance()
-        self.column.controls[3] = await self.get_history_transfer()
-        await self.update_async()
-
     async def select_wallet_view(self, _):
         from app.views.client.wallets import WalletSelectView
-        await self.client.change_view(view=WalletSelectView(current_wallet_id=self.client.session.current_wallet.id))
+        await self.client.change_view(
+            view=WalletSelectView(
+                current_wallet_id=self.client.session.current_wallet.id,
+            ),
+        )
 
     async def request_create(self, _):
         from app.views.client.requests import RequestCreateView
