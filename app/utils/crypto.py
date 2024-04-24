@@ -15,12 +15,10 @@
 #
 
 
-from .error import Error
-from .fonts import Fonts, fonts
-from .icons import Icons
-from .image import get_image_src
-from .registration import Registration
-from .session import Session
-from .themes import themes
-from .validation import validation_int, validation_float
-from .value import value_to_float, value_to_int, get_decimal_places, value_to_str
+from hashlib import md5
+from secrets import token_hex
+
+
+def create_id_str():
+    return token_hex(8)
+
