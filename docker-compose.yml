@@ -11,4 +11,4 @@ services:
       - "${APP_PORT}:80"
     volumes:
       - ./assets/texts_packs:/app/assets/texts_packs
-      - ./assets/images:/app/assets/images
+      - ./assets/files:/app/assets/files
