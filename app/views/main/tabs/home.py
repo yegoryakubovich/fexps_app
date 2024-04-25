@@ -460,10 +460,6 @@ class HomeTab(BaseTab):
             Container(
                 content=Column(
                     controls=[
-                        StandardButton(
-                            content=Text(value='HIIIII'),
-                            on_click=self.test,
-                        ),
                         self.control_dict['account'],
                         self.control_dict['balance'],
                         self.control_dict['actions'],
@@ -474,10 +470,6 @@ class HomeTab(BaseTab):
                 padding=10,
             )
         ]
-
-    async def test(self, _):
-        from app.views.client.chat import ChatView
-        await self.client.change_view(view=ChatView(order_id=4))
 
     async def select_wallet_view(self, _):
         from app.views.client.wallets import WalletSelectView
