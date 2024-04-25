@@ -16,12 +16,13 @@
 
 
 import io
+import logging
 import os
 from base64 import b64encode
 from functools import partial
 
-from flet_core import Container, Row, colors, Image, FilePickerUploadFile, FilePickerUploadEvent, Stack, ImageFit, \
-    IconButton, icons, alignment
+from flet_core import Container, Row, colors, Image, FilePickerUploadEvent, Stack, ImageFit, \
+    IconButton, icons, alignment, FilePickerUploadFile
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -67,7 +68,6 @@ class ChatView(ClientBaseView):
         old_messages = await self.client.session.api.client.messages.get_list(order_id=self.order_id)
         old_messages_controls = [
             await Chat.create_message_card(
-                api=self.client.session.api,
                 account_id=account.id,
                 message=message,
                 positions=self.positions,
@@ -104,7 +104,6 @@ class ChatView(ClientBaseView):
         self.controls = await self.get_controls(
             title=f'{title_str} order.{self.order_id}',
             with_expand=True,
-            go_back_func=self.go_back,
             main_section_controls=[
                 Container(
                     content=self.chat,
@@ -139,9 +138,6 @@ class ChatView(ClientBaseView):
             ],
         )
 
-    async def go_back(self, _):
-        await self.chat.disconnect()
-        await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
 
     async def send(self, _):
         text = None
@@ -161,17 +157,19 @@ class ChatView(ClientBaseView):
                 ],
             },
         )
-        self.text_error.value = None
-        await self.text_error.update_async()
         self.photos = {}
         self.tf_message.value = None
+        await self.set_text_error()
         await self.update_photo_row()
 
     """PHOTO"""
+    async def set_text_error(self, text_value: str = None):
+        logging.critical(self.page)
+        self.text_error.value = text_value
+        await self.text_error.update_async()
 
     async def add_photo(self, _):
-        self.text_error.value = None
-        await self.text_error.update_async()
+        await self.set_text_error()
         await self.client.session.filepicker.open_(
             on_select=self.upload_files,
             on_upload=self.on_upload_progress,
@@ -205,6 +203,13 @@ class ChatView(ClientBaseView):
                     content=Stack(
                         controls=[
                             file_image,
+                            Container(
+                                content=Text(
+                                    value=value['filename'],
+                                    color=colors.ON_SECONDARY
+                                ),
+                                alignment=alignment.bottom_center,
+                            ),
                             IconButton(
                                 icon=icons.CLOSE,
                                 on_click=partial(
@@ -215,13 +220,6 @@ class ChatView(ClientBaseView):
                                 right=0,
                                 icon_color=colors.ON_SECONDARY,
                             ),
-                            Container(
-                                content=Text(
-                                    value=value['filename'],
-                                    color=colors.ON_SECONDARY
-                                ),
-                                alignment=alignment.bottom_center,
-                            )
                         ],
                     ),
                     bgcolor=colors.SECONDARY,
@@ -231,26 +229,19 @@ class ChatView(ClientBaseView):
             ]
         await self.photo_row.update_async()
 
-    async def photo_delete(self, id_str, _):
-        del self.photos[id_str]
-        await self.update_photo_row()
-
     async def upload_files(self, _):
         uf = []
+        await self.set_text_error()
         if not self.client.session.filepicker.result.files:
             return
         for f in self.client.session.filepicker.result.files:
-            self.text_error.value = None
-            await self.text_error.update_async()
             if len(f.name.split('.')) < 2:
                 continue
             if f.size > 2097152:
-                self.text_error.value = await self.client.session.gtv(key='file_max_size_2mb')
-                await self.text_error.update_async()
+                await self.set_text_error(text_value=await self.client.session.gtv(key='file_max_size_2mb'))
                 continue
             if len(self.photos) > 3:
-                self.text_error.value = await self.client.session.gtv(key='files_max_count')
-                await self.text_error.update_async()
+                await self.set_text_error(text_value=await self.client.session.gtv(key='files_max_count'))
                 continue
             uf.append(
                 FilePickerUploadFile(
@@ -259,11 +250,10 @@ class ChatView(ClientBaseView):
                 )
             )
             await self.client.session.filepicker.upload_async([uf[-1]])
-            await self.on_upload_progress(
-                e=FilePickerUploadEvent(file_name=f.name, progress=1.0, error=None),
-            )
+            await self.on_upload_progress(e=FilePickerUploadEvent(file_name=f.name, progress=1.0, error=None))
 
     async def on_upload_progress(self, e: FilePickerUploadEvent):
+        await self.set_text_error()
         if e.progress is not None and e.progress < 1.0:
             return
         path = f'uploads/{e.file_name}'
@@ -278,4 +268,9 @@ class ChatView(ClientBaseView):
             'size': len(file_data),
         }
         os.remove(path)
+        await self.update_photo_row()
+
+    async def photo_delete(self, id_str, _):
+        await self.set_text_error()
+        del self.photos[id_str]
         await self.update_photo_row()

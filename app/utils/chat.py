@@ -18,7 +18,6 @@
 import asyncio
 import datetime
 import json
-import logging
 import webbrowser
 from base64 import b64encode
 from functools import partial
@@ -42,7 +41,6 @@ class Chat(UserControl):
 
     @staticmethod
     async def create_message_card(
-            api: FexpsApiClient,
             account_id: int,
             message: dict,
             positions: dict = None,
@@ -97,19 +95,6 @@ class Chat(UserControl):
                         bgcolor=colors.PRIMARY_CONTAINER,
                         color=colors.ON_PRIMARY_CONTAINER,
                     )
-                # elif file['extension'] in ['pdf']:
-                #     file_byte = file['value'].encode('ISO-8859-1')
-                #     file_container = StandardButton(
-                #         content=Image(
-                #             src=f'data:application/pdf;base64,{b64encode(file_byte).decode()}',
-                #             width=150,
-                #             height=150,
-                #             fit=ImageFit.CONTAIN,
-                #         ),
-                #         on_click=partial(open_file, file['url']),
-                #         bgcolor=colors.PRIMARY_CONTAINER,
-                #         color=colors.ON_PRIMARY_CONTAINER,
-                #     )
                 else:
                     file_container = StandardButton(
                         content=Image(
@@ -187,6 +172,7 @@ class Chat(UserControl):
 
     def will_unmount(self):
         self.running = False
+        asyncio.create_task(self.disconnect())
 
     async def update_chat(self):
         await self.connect()
@@ -196,7 +182,6 @@ class Chat(UserControl):
 
             self.control_list.append(
                 await self.create_message_card(
-                    api=self.api,
                     account_id=self.account_id,
                     message=json.loads(message.data),
                     positions=self.positions,
