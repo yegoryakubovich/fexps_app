@@ -64,3 +64,16 @@ def requisite_value_to_str(
             value_list[2], value_list[3] = '****', '****'
         value = ' '.join(value_list)
     return value
+
+
+def size_value_to_str(value: Optional[int]) -> str:
+    if value is None:
+        return ''
+    value = float(value)
+    n, power = 0, 2 ** 10
+    power_labels = {0: '', 1: 'K', 2: 'M', 3: 'G', 4: 'T'}
+    while value > power:
+        value /= power
+        n += 1
+    value = round(value, 1)
+    return f'{value} {power_labels[n]}B'

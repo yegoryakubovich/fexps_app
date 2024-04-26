@@ -24,13 +24,18 @@ from functools import partial
 
 import aiohttp
 from flet_core import Row, Column, UserControl, Control, colors, MainAxisAlignment, padding, \
-    Image, ScrollMode, ImageFit
+    Image, ScrollMode, Container, alignment
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, InformationContainer
 from app.utils import Fonts, Icons
+from app.utils.value import size_value_to_str
 from config import settings
 from fexps_api_client import FexpsApiClient
+
+
+async def open_file(url: str, _):
+    webbrowser.open(url)
 
 
 class Chat(UserControl):
@@ -46,9 +51,6 @@ class Chat(UserControl):
             positions: dict = None,
             deviation: int = 0,
     ) -> Control:
-        async def open_file(url: str, _):
-            webbrowser.open(url)
-
         if not positions:
             positions = {}
         position = message['account_position'].title()
@@ -80,36 +82,49 @@ class Chat(UserControl):
             ),
         ]
         if message['files']:
-            image_row = Row(controls=[])
+            image_column = Column(controls=[])
             for file in message['files']:
                 if file['extension'] in ['jpg', 'jpeg', 'png']:
                     file_byte = file['value'].encode('ISO-8859-1')
-                    file_container = StandardButton(
-                        content=Image(
-                            src=f'data:image/jpeg;base64,{b64encode(file_byte).decode()}',
-                            width=150,
-                            height=150,
-                            fit=ImageFit.CONTAIN,
-                        ),
-                        on_click=partial(open_file, file['url']),
-                        bgcolor=colors.PRIMARY_CONTAINER,
-                        color=colors.ON_PRIMARY_CONTAINER,
+                    file_image = Image(
+                        src=f'data:image/jpeg;base64,{b64encode(file_byte).decode()}',
+                        width=30,
+                        height=30,
                     )
                 else:
-                    file_container = StandardButton(
-                        content=Image(
-                            src=Icons.FILE,
-                            width=100,
-                            height=100,
-                            fit=ImageFit.CONTAIN,
+                    file_image = Image(
+                        src=Icons.FILE,
+                        width=30,
+                        height=30,
+                    )
+                image_column.controls += [
+                    StandardButton(
+                        content=Row(
+                            controls=[
+                                Container(
+                                    content=file_image,
+                                    height=50,
+                                    width=50,
+                                ),
+                                Column(
+                                    controls=[
+                                        Text(
+                                            value=file['filename'],
+                                        ),
+                                        Text(
+                                            value=size_value_to_str(value=len(file['value'])),
+                                        ),
+                                    ],
+                                    expand=True,
+                                ),
+                            ]
                         ),
                         on_click=partial(open_file, file['url']),
                         bgcolor=colors.PRIMARY_CONTAINER,
                         color=colors.ON_PRIMARY_CONTAINER,
-                    )
-                image_row.controls.append(file_container)
-
-            column_controls.append(image_row)
+                    ),
+                ]
+            column_controls.append(image_column)
         if message['text']:
             column_controls += [
                 Row(

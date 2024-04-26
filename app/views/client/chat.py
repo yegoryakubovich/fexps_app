@@ -54,7 +54,7 @@ class ChatView(ClientBaseView):
         self.photos = {}
         self.photo_size = 0
         self.photo_row = Row(controls=[])
-        self.text_error = Text()
+        self.text_error = Text(value=None)
 
     async def construct(self):
         account = self.client.session.account
@@ -64,7 +64,7 @@ class ChatView(ClientBaseView):
             'sender': await self.client.session.gtv(key='chat_sender'),
             'receiver': await self.client.session.gtv(key='chat_receiver'),
         }
-        await self.set_type(loading=True)
+        # await self.set_type(loading=True)
         old_messages = await self.client.session.api.client.messages.get_list(order_id=self.order_id)
         old_messages_controls = [
             await Chat.create_message_card(
@@ -74,7 +74,7 @@ class ChatView(ClientBaseView):
             )
             for message in old_messages[::-1]
         ]
-        await self.set_type(loading=False)
+        # await self.set_type(loading=False)
         self.chat = Chat(
             account_id=account.id,
             api=self.client.session.api,
@@ -163,10 +163,12 @@ class ChatView(ClientBaseView):
         await self.update_photo_row()
 
     """PHOTO"""
+
     async def set_text_error(self, text_value: str = None):
-        logging.critical(self.page)
+        logging.critical(id(self.text_error))
         self.text_error.value = text_value
-        await self.text_error.update_async()
+        # await self.text_error.update_async()
+        await self.client.session.page.update_async()
 
     async def add_photo(self, _):
         await self.set_text_error()
@@ -231,7 +233,11 @@ class ChatView(ClientBaseView):
 
     async def upload_files(self, _):
         uf = []
-        await self.set_text_error()
+        # logging.critical(self.page)
+        # logging.critical(self.client.session.page.update_async())
+        # logging.critical(id(self.text_error))
+        self.text_error.value = None
+        await self.text_error.update_async()
         if not self.client.session.filepicker.result.files:
             return
         for f in self.client.session.filepicker.result.files:
@@ -253,7 +259,10 @@ class ChatView(ClientBaseView):
             await self.on_upload_progress(e=FilePickerUploadEvent(file_name=f.name, progress=1.0, error=None))
 
     async def on_upload_progress(self, e: FilePickerUploadEvent):
-        await self.set_text_error()
+        logging.critical(id(self.text_error))
+        self.text_error.value = None
+        await self.text_error.update_async()
+        # await self.set_text_error()
         if e.progress is not None and e.progress < 1.0:
             return
         path = f'uploads/{e.file_name}'
