@@ -28,9 +28,16 @@ from app.utils import value_to_float, Fonts, Icons
 from app.views.main.tabs.base import BaseTab
 
 
-class Chips:
+class TypeChips:
     INPUT = 'input'
     OUTPUT = 'output'
+    ALL = 'all'
+
+
+class StateChips:
+    ENABLE = 'enable'
+    STOP = 'stop'
+    DISABLE = 'disable'
     ALL = 'all'
 
 
@@ -43,13 +50,15 @@ class RequisiteTab(BaseTab):
     column: Column
 
     # History
-    selected_chip: str
+    selected_type_chip: str
+    selected_state_chip: str
     page_requisites: int = 1
     total_pages: int = 1
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.selected_chip = Chips.ALL
+        self.selected_type_chip = TypeChips.ALL
+        self.selected_state_chip = StateChips.ENABLE
         self.control_dict = {
             'currently_orders': None,
             'history_requisites': None,
@@ -144,35 +153,103 @@ class RequisiteTab(BaseTab):
     REQUISITE HISTORY
     """
 
-    async def get_requisite_history_chips(self) -> list[Chip]:
+    async def get_requisite_history_chips(self) -> list[Row]:
+        type_chips = [
+            Chip(
+                name=await self.client.session.gtv(key=f'chip_{TypeChips.INPUT}'),
+                key=TypeChips.INPUT,
+                on_select=partial(
+                    self.chip_type_select,
+                    TypeChips.INPUT,
+                ),
+                selected=True if self.selected_type_chip == TypeChips.INPUT else False,
+            ),
+            Chip(
+                name=await self.client.session.gtv(key=f'chip_{TypeChips.OUTPUT}'),
+                key=TypeChips.OUTPUT,
+                on_select=partial(
+                    self.chip_type_select,
+                    TypeChips.OUTPUT,
+                ),
+                selected=True if self.selected_type_chip == TypeChips.OUTPUT else False,
+            ),
+            Chip(
+                name=await self.client.session.gtv(key=f'chip_{TypeChips.ALL}'),
+                key=TypeChips.ALL,
+                on_select=partial(
+                    self.chip_type_select,
+                    TypeChips.ALL,
+                ),
+                selected=True if self.selected_type_chip == TypeChips.ALL else False,
+            ),
+        ]
+        state_chips = [
+            Chip(
+                name=await self.client.session.gtv(key=f'chip_{StateChips.ENABLE}'),
+                key=StateChips.ENABLE,
+                on_select=partial(
+                    self.chip_state_select,
+                    StateChips.ENABLE,
+                ),
+                selected=True if self.selected_state_chip == StateChips.ENABLE else False,
+            ),
+            Chip(
+                name=await self.client.session.gtv(key=f'chip_{StateChips.STOP}'),
+                key=StateChips.STOP,
+                on_select=partial(
+                    self.chip_state_select,
+                    StateChips.STOP,
+                ),
+                selected=True if self.selected_state_chip == StateChips.STOP else False,
+            ),
+            Chip(
+                name=await self.client.session.gtv(key=f'chip_{StateChips.DISABLE}'),
+                key=StateChips.DISABLE,
+                on_select=partial(
+                    self.chip_state_select,
+                    StateChips.DISABLE,
+                ),
+                selected=True if self.selected_state_chip == StateChips.DISABLE else False,
+            ),
+            Chip(
+                name=await self.client.session.gtv(key=f'chip_{StateChips.ALL}'),
+                key=StateChips.ALL,
+                on_select=partial(
+                    self.chip_state_select,
+                    StateChips.ALL,
+                ),
+                selected=True if self.selected_state_chip == StateChips.ALL else False,
+            ),
+        ]
+
         return [
-            Chip(
-                name=await self.client.session.gtv(key=f'chip_{Chips.INPUT}'),
-                key=Chips.INPUT,
-                on_select=self.chip_select,
-                selected=True if self.selected_chip == Chips.INPUT else False,
+            Row(
+                controls=type_chips,
             ),
-            Chip(
-                name=await self.client.session.gtv(key=f'chip_{Chips.OUTPUT}'),
-                key=Chips.OUTPUT,
-                on_select=self.chip_select,
-                selected=True if self.selected_chip == Chips.OUTPUT else False,
-            ),
-            Chip(
-                name=await self.client.session.gtv(key=f'chip_{Chips.ALL}'),
-                key=Chips.ALL,
-                on_select=self.chip_select,
-                selected=True if self.selected_chip == Chips.ALL else False,
+            Row(
+                controls=state_chips,
             ),
         ]
 
     async def get_requisite_history_cards(self) -> list[StandardButton]:
-        params = dict(is_input=False, is_output=False)
-        if self.selected_chip in [Chips.INPUT, Chips.ALL]:
-            params['is_input'] = True
-        if self.selected_chip in [Chips.OUTPUT, Chips.ALL]:
-            params['is_output'] = True
-        response = await self.client.session.api.client.requisites.search(**params, page=1)
+        params = dict(
+            is_type_input=False,
+            is_type_output=False,
+            is_state_enable=False,
+            is_state_stop=False,
+            is_state_disable=False,
+        )
+        if self.selected_type_chip in [TypeChips.INPUT, TypeChips.ALL]:
+            params['is_type_input'] = True
+        if self.selected_type_chip in [TypeChips.OUTPUT, TypeChips.ALL]:
+            params['is_type_output'] = True
+        if self.selected_state_chip in [StateChips.ENABLE, StateChips.ALL]:
+            params['is_state_enable'] = True
+        if self.selected_state_chip in [StateChips.STOP, StateChips.ALL]:
+            params['is_state_stop'] = True
+        if self.selected_state_chip in [StateChips.DISABLE, StateChips.ALL]:
+            params['is_state_disable'] = True
+        response = await self.client.session.api.client.requisites.search(**params, page=self.page_requisites)
         self.history_requests = response.requisites
         cards: list[StandardButton] = []
         for requisite in self.history_requests:
@@ -292,8 +369,13 @@ class RequisiteTab(BaseTab):
         from app.views.client.requisites.orders import RequisiteOrderView
         await self.client.change_view(view=RequisiteOrderView(order_id=order_id))
 
-    async def chip_select(self, event: ControlEvent):
-        self.selected_chip = event.control.key
+    async def chip_type_select(self, type_: str, _):
+        self.selected_type_chip = type_
+        await self.construct()
+        await self.update_async()
+
+    async def chip_state_select(self, state: str, _):
+        self.selected_state_chip = state
         await self.construct()
         await self.update_async()
 
