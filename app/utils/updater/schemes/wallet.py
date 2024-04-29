@@ -15,9 +15,6 @@
 #
 
 
-from typing import Optional
-
-
 def get_wallet_list_scheme(wallets: list[dict] = None) -> list:
     if wallets is None:
         return []

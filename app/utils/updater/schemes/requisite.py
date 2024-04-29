@@ -15,8 +15,6 @@
 #
 
 
-from typing import Optional
-
 from .currency import get_currency_scheme
 from .method import get_method_scheme
 from .requisite_data import get_requisite_data_scheme

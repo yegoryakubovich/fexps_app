@@ -15,10 +15,9 @@
 #
 
 
-from typing import Optional
-
 from .currency import get_currency_scheme
 from .method import get_method_scheme
+from .order_request import get_order_request_scheme
 from .request import get_request_scheme
 from .requisite import get_requisite_scheme
 
@@ -52,4 +51,5 @@ def get_order_scheme(order: dict = None) -> list:
         order['requisite_fields'],
         order['input_scheme_fields'],
         order['input_fields'],
+        *get_order_request_scheme(order['order_request']),
     ]

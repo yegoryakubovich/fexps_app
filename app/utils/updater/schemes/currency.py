@@ -15,9 +15,6 @@
 #
 
 
-from typing import Optional
-
-
 def get_currency_list_scheme(currencys: list[dict] = None) -> list:
     if currencys is None:
         return []

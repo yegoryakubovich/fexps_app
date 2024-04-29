@@ -15,8 +15,6 @@
 #
 
 
-from typing import Optional
-
 from .currency import get_currency_scheme
 
 
