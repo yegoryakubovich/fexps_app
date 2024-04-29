@@ -343,7 +343,7 @@ class RequisiteOrderView(ClientBaseView):
             await self.value_edit_button.update_async()
 
     async def update_cancel_button(self, update: bool = True) -> None:
-        self.chat_button = StandardButton(
+        self.cancel_button = StandardButton(
             content=Row(
                 controls=[
                     Text(
@@ -356,11 +356,11 @@ class RequisiteOrderView(ClientBaseView):
                 alignment=MainAxisAlignment.CENTER,
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
-            on_click=self.on_dev,
+            on_click=self.requisite_order_cancel,
             expand=1,
         )
         if update:
-            await self.chat_button.update_async()
+            await self.cancel_button.update_async()
 
     async def construct(self):
         controls, buttons = [], []
@@ -381,8 +381,16 @@ class RequisiteOrderView(ClientBaseView):
             if self.order.state == 'waiting':
                 pass
             elif self.order.state == 'payment':
+                await self.update_value_edit_button(update=False)
+                await self.update_cancel_button(update=False)
                 await self.update_chat_button(update=False)
                 buttons += [
+                    Row(
+                        controls=[
+                            self.value_edit_button,
+                            self.chat_button,
+                        ],
+                    ),
                     Row(
                         controls=[
                             self.chat_button,
@@ -479,6 +487,14 @@ class RequisiteOrderView(ClientBaseView):
         try:
             await self.client.session.api.client.orders.updates.completed(id_=self.order_id)
             await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
+
+    async def request_order_cancel(self, _):
+        try:
+            await self.client.session.api.client.orders.requests.create(order_id=self.order_id, type_='cancel')
+            await asyncio.sleep(0.05)
+            await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 
