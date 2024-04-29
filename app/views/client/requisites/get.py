@@ -18,12 +18,14 @@
 import asyncio
 from functools import partial
 
-from flet_core import Row, colors, MainAxisAlignment, Image, Column, Control, ScrollMode, Container
+from flet_core import Row, colors, MainAxisAlignment, Image, Column, ScrollMode, Container
 
 from app.controls.button import StandardButton
 from app.controls.information import SubTitle, Text
 from app.controls.layout import ClientBaseView
 from app.utils import Icons, Fonts, value_to_float
+from app.utils.updater import UpdateChecker
+from app.utils.updater.schemes import get_order_list_scheme, get_requisite_scheme
 from app.utils.value import requisite_value_to_str
 from app.views.client.requisites.orders.get import RequisiteOrderView
 from app.views.main.tabs.acoount import open_support
@@ -34,6 +36,12 @@ class RequisiteView(ClientBaseView):
     route = '/client/requisite/get'
     requisite = dict
     orders = list[dict]
+
+    orders_row: Row
+    help_column: Column
+    enable_button: StandardButton
+    stop_button: StandardButton
+    disable_button: StandardButton
 
     def __init__(self, requisite_id: int):
         super().__init__()
@@ -116,109 +124,84 @@ class RequisiteView(ClientBaseView):
             )
         return cards
 
-    async def get_order_row(self) -> Row:
-        return Row(
+    async def update_order_row(self, update: bool = True) -> None:
+        self.orders_row = Row(
             controls=[
                 SubTitle(value=await self.client.session.gtv(key='requisite_orders_title')),
                 *await self.get_orders_cards(),
             ],
             wrap=True,
         )
+        if update:
+            await self.orders_row.update_async()
 
-    async def get_help_cards(self) -> list[Control]:
-        return [
-            SubTitle(value=await self.client.session.gtv(key='requisite_help_title')),
-            StandardButton(
-                content=Row(
-                    controls=[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=await self.client.session.gtv(key='help_faq'),
-                                    size=28,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                            ],
-                            expand=True,
-                        ),
-                        Image(
-                            src=Icons.OPEN,
-                            height=28,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                    ],
+    async def update_help_column(self, update: bool = True) -> None:
+        self.help_column = Column(
+            controls=[
+                SubTitle(value=await self.client.session.gtv(key='requisite_help_title')),
+                StandardButton(
+                    content=Row(
+                        controls=[
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=await self.client.session.gtv(key='help_faq'),
+                                        size=28,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_BACKGROUND,
+                                    ),
+                                ],
+                                expand=True,
+                            ),
+                            Image(
+                                src=Icons.OPEN,
+                                height=28,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                    ),
+                    bgcolor=colors.BACKGROUND,
+                    horizontal=0,
+                    vertical=0,
+                    on_click=None,
                 ),
-                bgcolor=colors.BACKGROUND,
-                horizontal=0,
-                vertical=0,
-                on_click=None,
-            ),
-            StandardButton(
-                content=Row(
-                    controls=[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=await self.client.session.gtv(key='help_telegram_contact_title'),
-                                    size=28,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                            ],
-                            expand=True,
-                        ),
-                        Image(
-                            src=Icons.OPEN,
-                            height=28,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                    ]
+                StandardButton(
+                    content=Row(
+                        controls=[
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=await self.client.session.gtv(key='help_telegram_contact_title'),
+                                        size=28,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_BACKGROUND,
+                                    ),
+                                ],
+                                expand=True,
+                            ),
+                            Image(
+                                src=Icons.OPEN,
+                                height=28,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                        ]
+                    ),
+                    bgcolor=colors.BACKGROUND,
+                    horizontal=0,
+                    vertical=0,
+                    on_click=open_support,
                 ),
-                bgcolor=colors.BACKGROUND,
-                horizontal=0,
-                vertical=0,
-                on_click=open_support,
-            ),
-        ]
-
-    """
-    INPUT
-    """
-
-    async def get_controls_input(self) -> list[Control]:
-        return [
-            *await self.get_help_cards(),
-        ]
-
-    """
-    OUTPUT
-    """
-
-    async def get_controls_output(self) -> list[Control]:
-        return [
-            *await self.get_help_cards(),
-        ]
+            ],
+        )
+        if update:
+            await self.help_column.update_async()
 
     """
     BUTTON
     """
 
-    async def get_stop_button(self):
-        return StandardButton(
-            content=Text(
-                value=await self.client.session.gtv(key='requisite_stop_button'),
-                size=20,
-                font_family=Fonts.SEMIBOLD,
-                color=colors.ON_PRIMARY,
-            ),
-            bgcolor=colors.PRIMARY,
-            on_click=self.requisite_state_stop,
-            expand=1,
-        )
-
-    async def get_enable_button(self):
-        return StandardButton(
+    async def update_enable_button(self, update: bool = True) -> None:
+        self.enable_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(key='requisite_enable_button'),
                 size=20,
@@ -229,9 +212,26 @@ class RequisiteView(ClientBaseView):
             on_click=self.requisite_state_enable,
             expand=1,
         )
+        if update:
+            await self.enable_button.update_async()
 
-    async def get_disable_button(self):
-        return StandardButton(
+    async def update_stop_button(self, update: bool = True) -> None:
+        self.stop_button = StandardButton(
+            content=Text(
+                value=await self.client.session.gtv(key='requisite_stop_button'),
+                size=20,
+                font_family=Fonts.SEMIBOLD,
+                color=colors.ON_PRIMARY,
+            ),
+            bgcolor=colors.PRIMARY,
+            on_click=self.requisite_state_stop,
+            expand=1,
+        )
+        if update:
+            await self.stop_button.update_async()
+
+    async def update_disable_button(self, update: bool = True) -> None:
+        self.disable_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(key='requisite_disable_button'),
                 size=20,
@@ -242,35 +242,47 @@ class RequisiteView(ClientBaseView):
             on_click=self.requisite_state_disable,
             expand=1,
         )
+        if update:
+            await self.disable_button.update_async()
 
     async def construct(self):
+        controls, buttons = [], []
+        asyncio.create_task(self.auto_reloader())
         await self.set_type(loading=True)
         self.requisite = await self.client.session.api.client.requisites.get(id_=self.requisite_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_requisite(requisite_id=self.requisite_id)
         await self.set_type(loading=False)
-        asyncio.create_task(self.auto_reloader())
-        controls = [
-            await self.get_order_row(),
+        await self.update_order_row(update=False)
+        controls += [
+            self.orders_row,
         ]
-        buttons = []
         if self.requisite.type == 'input':
-            controls += await self.get_controls_input()
+            await self.update_help_column(update=False)
+            controls += [
+                self.help_column,
+            ]
         elif self.requisite.type == 'output':
-            controls += await self.get_controls_output()
+            await self.update_help_column(update=False)
+            controls += [
+                self.help_column,
+            ]
         if self.requisite.state == 'enable':
+            await self.update_stop_button(update=False)
             buttons += [
                 Row(
                     controls=[
-                        await self.get_stop_button(),
+                        self.stop_button,
                     ],
                 ),
             ]
         elif self.requisite.state == 'stop':
+            await self.update_enable_button(update=False)
+            await self.update_disable_button(update=False)
             buttons += [
                 Row(
                     controls=[
-                        await self.get_enable_button(),
-                        await self.get_disable_button(),
+                        self.enable_button,
+                        self.disable_button,
                     ],
                 ),
             ]
@@ -334,7 +346,7 @@ class RequisiteView(ClientBaseView):
         if self.reload_bool:
             return
         self.reload_bool = True
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
         while self.reload_bool:
             if self.client.page.route != self.route:
                 self.reload_bool = False
@@ -342,6 +354,19 @@ class RequisiteView(ClientBaseView):
             if self.reload_stop:
                 await asyncio.sleep(5)
                 continue
-            await self.construct()
-            await self.update_async()
+            requisite = await self.client.session.api.client.requisites.get(id_=self.requisite_id)
+            requisite_check = UpdateChecker().check(
+                scheme=get_requisite_scheme,
+                obj_1=self.requisite,
+                obj_2=requisite,
+            )
+            orders = await self.client.session.api.client.orders.list_get.by_requisite(requisite_id=self.requisite_id)
+            orders_check = UpdateChecker().check(
+                scheme=get_order_list_scheme,
+                obj_1=self.orders,
+                obj_2=orders,
+            )
+            if requisite_check or orders_check:
+                await self.construct()
+                await self.update_async()
             await asyncio.sleep(5)

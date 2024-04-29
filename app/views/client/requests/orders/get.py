@@ -16,20 +16,19 @@
 
 
 import asyncio
-import logging
-import webbrowser
 from functools import partial
 
-from flet_core import Control, Column, Container, Row, Divider, MainAxisAlignment, \
+from flet_core import Column, Container, Row, Divider, MainAxisAlignment, \
     padding, Image, colors, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons
+from app.utils.updater import UpdateChecker
+from app.utils.updater.schemes import get_order_scheme
 from app.utils.value import value_to_str, requisite_value_to_str
 from app.views.main.tabs.acoount import open_support
-from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -40,13 +39,21 @@ class RequestOrderView(ClientBaseView):
     method = dict
     currency = dict
 
+    info_card: InformationContainer
+    help_column: Column
+    input_payment_button: StandardButton
+    output_confirmation_button: StandardButton
+    chat_button: StandardButton
+    value_edit_button: StandardButton
+    cancel_button: StandardButton
+
     def __init__(self, order_id: int):
         super().__init__()
         self.reload_bool = False
         self.reload_stop = False
         self.order_id = order_id
 
-    async def get_info_card(self):
+    async def update_info_card(self, update: bool = True) -> None:
         currency_value = value_to_float(
             value=self.order.currency_value,
             decimal=self.currency.decimal,
@@ -93,7 +100,7 @@ class RequestOrderView(ClientBaseView):
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
                 )
             )
-        return InformationContainer(
+        self.info_card = InformationContainer(
             content=Column(
                 controls=[
                     Row(
@@ -150,102 +157,108 @@ class RequestOrderView(ClientBaseView):
             bgcolor=self.method.bgcolor,
             padding=padding.symmetric(vertical=32, horizontal=32),
         )
+        if update:
+            await self.info_card.update_async()
 
-    async def get_help_cards(self) -> list[Control]:
-        return [
-            SubTitle(value=await self.client.session.gtv(key='request_order_help_title')),
-            StandardButton(
-                content=Row(
-                    controls=[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=await self.client.session.gtv(key='help_faq'),
-                                    size=28,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                            ],
-                            expand=True,
-                        ),
-                        Image(
-                            src=Icons.OPEN,
-                            height=28,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                    ],
+    async def update_help_column(self, update: bool = True) -> None:
+        self.help_column = Column(
+            controls=[
+                SubTitle(value=await self.client.session.gtv(key='request_order_help_title')),
+                StandardButton(
+                    content=Row(
+                        controls=[
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=await self.client.session.gtv(key='help_faq'),
+                                        size=28,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_BACKGROUND,
+                                    ),
+                                ],
+                                expand=True,
+                            ),
+                            Image(
+                                src=Icons.OPEN,
+                                height=28,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                    ),
+                    bgcolor=colors.BACKGROUND,
+                    horizontal=0,
+                    vertical=0,
+                    on_click=None,
                 ),
-                bgcolor=colors.BACKGROUND,
-                horizontal=0,
-                vertical=0,
-                on_click=None,
-            ),
-            StandardButton(
-                content=Row(
-                    controls=[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=await self.client.session.gtv(key='help_telegram_contact_title'),
-                                    size=28,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                            ],
-                            expand=True,
-                        ),
-                        Image(
-                            src=Icons.OPEN,
-                            height=28,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                    ]
+                StandardButton(
+                    content=Row(
+                        controls=[
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=await self.client.session.gtv(key='help_telegram_contact_title'),
+                                        size=28,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_BACKGROUND,
+                                    ),
+                                ],
+                                expand=True,
+                            ),
+                            Image(
+                                src=Icons.OPEN,
+                                height=28,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                        ]
+                    ),
+                    bgcolor=colors.BACKGROUND,
+                    horizontal=0,
+                    vertical=0,
+                    on_click=open_support,
                 ),
-                bgcolor=colors.BACKGROUND,
-                horizontal=0,
-                vertical=0,
-                on_click=open_support,
-            ),
-            StandardButton(
-                content=Row(
-                    controls=[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=await self.client.session.gtv(key='help_chat_title'),
-                                    size=28,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                            ],
-                            expand=True,
-                        ),
-                        Image(
-                            src=Icons.OPEN,
-                            height=28,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                    ]
+                StandardButton(
+                    content=Row(
+                        controls=[
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=await self.client.session.gtv(key='help_chat_title'),
+                                        size=28,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_BACKGROUND,
+                                    ),
+                                ],
+                                expand=True,
+                            ),
+                            Image(
+                                src=Icons.OPEN,
+                                height=28,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                        ]
+                    ),
+                    bgcolor=colors.BACKGROUND,
+                    horizontal=0,
+                    vertical=0,
+                    on_click=self.chat_open,
                 ),
-                bgcolor=colors.BACKGROUND,
-                horizontal=0,
-                vertical=0,
-                on_click=self.chat_open,
-            ),
-        ]
+            ],
+        )
+        if update:
+            await self.info_card.update_async()
 
     """
     INPUT PAYMENT
     """
 
-    async def get_input_payment_button(self) -> StandardButton:
+    async def update_input_payment_button(self, update: bool = True) -> None:
         currency_value = value_to_float(
             value=self.order.currency_value,
             decimal=self.currency.decimal,
         )
         currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
         input_payment_confirm = await self.client.session.gtv(key='request_order_input_payment_button')
-        return StandardButton(
+        self.input_payment_button = StandardButton(
             content=Text(
                 value=f'{input_payment_confirm} {currency_value_str}',
                 size=20,
@@ -256,19 +269,21 @@ class RequestOrderView(ClientBaseView):
             on_click=self.order_payment,
             expand=2,
         )
+        if update:
+            await self.input_payment_button.update_async()
 
     """
     OUTPUT CONFIRMATION
     """
 
-    async def get_output_confirmation_button(self) -> StandardButton:
+    async def update_output_confirmation_button(self, update: bool = True) -> None:
         currency_value = value_to_float(
             value=self.order.currency_value,
             decimal=self.currency.decimal,
         )
         currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
         output_confirmation = await self.client.session.gtv(key='request_order_output_confirmation_button')
-        return StandardButton(
+        self.output_confirmation_button = StandardButton(
             content=Text(
                 value=f'{output_confirmation} {currency_value_str}',
                 size=20,
@@ -279,13 +294,15 @@ class RequestOrderView(ClientBaseView):
             on_click=self.output_confirmation_confirm,
             expand=2,
         )
+        if update:
+            await self.output_confirmation_button.update_async()
 
     """
     CHAT
     """
 
-    async def get_chat_button(self) -> StandardButton:
-        return StandardButton(
+    async def update_chat_button(self, update: bool = True) -> None:
+        self.chat_button = StandardButton(
             content=Row(
                 controls=[
                     Image(
@@ -306,13 +323,15 @@ class RequestOrderView(ClientBaseView):
             on_click=self.chat_open,
             expand=1,
         )
+        if update:
+            await self.chat_button.update_async()
 
     """
     UPDATES
     """
 
-    async def get_value_edit_button(self) -> StandardButton:
-        return StandardButton(
+    async def update_value_edit_button(self, update: bool = True) -> None:
+        self.value_edit_button = StandardButton(
             content=Row(
                 controls=[
                     Text(
@@ -328,9 +347,11 @@ class RequestOrderView(ClientBaseView):
             on_click=self.on_dev,
             expand=2,
         )
+        if update:
+            await self.chat_button.update_async()
 
-    async def get_cancel_button(self) -> StandardButton:
-        return StandardButton(
+    async def update_cancel_button(self, update: bool = True) -> None:
+        self.cancel_button = StandardButton(
             content=Row(
                 controls=[
                     Text(
@@ -346,43 +367,53 @@ class RequestOrderView(ClientBaseView):
             on_click=self.request_order_cancel,
             expand=1,
         )
+        if update:
+            await self.chat_button.update_async()
 
     async def construct(self):
+        controls, buttons = [], []
+        asyncio.create_task(self.auto_reloader())
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
         self.currency = self.order.currency
         self.request = self.order.request
         self.method = self.order.method
         await self.set_type(loading=False)
-        asyncio.create_task(self.auto_reloader())
-        controls = [
-            await self.get_info_card(),
-            *await self.get_help_cards(),
+        await self.update_info_card(update=False)
+        await self.update_help_column(update=False)
+        controls += [
+            self.info_card,
+            self.help_column,
         ]
         buttons = []
         if self.order.type == 'input':
             if self.order.state == 'waiting':
                 pass
             elif self.order.state == 'payment':
+                await self.update_value_edit_button(update=False)
+                await self.update_cancel_button(update=False)
+                await self.update_input_payment_button(update=False)
+                await self.update_chat_button(update=False)
                 buttons += [
                     Row(
                         controls=[
-                            await self.get_value_edit_button(),
-                            await self.get_cancel_button(),
+                            self.value_edit_button,
+                            self.cancel_button,
                         ]
                     ),
                     Row(
                         controls=[
-                            await self.get_input_payment_button(),
-                            await self.get_chat_button(),
+                            self.input_payment_button,
+                            self.chat_button,
                         ]
                     ),
                 ]
             elif self.order.state == 'confirmation':
+                await self.update_chat_button(update=False)
                 buttons += [
                     Row(
                         controls=[
-                            await self.get_chat_button(),
+                            self.chat_button,
                         ]
                     ),
                 ]
@@ -392,15 +423,18 @@ class RequestOrderView(ClientBaseView):
             if self.order.state == 'waiting':
                 pass
             elif self.order.state == 'payment':
+                await self.update_chat_button(update=False)
                 buttons += [
-                    await self.get_chat_button(),
+                    self.chat_button,
                 ]
             elif self.order.state == 'confirmation':
+                await self.update_output_confirmation_button(update=False),
+                await self.update_chat_button(update=False),
                 buttons += [
                     Row(
                         controls=[
-                            await self.get_output_confirmation_button(),
-                            await self.get_chat_button(),
+                            self.output_confirmation_button,
+                            self.chat_button,
                         ]
                     ),
                 ]
@@ -423,22 +457,6 @@ class RequestOrderView(ClientBaseView):
                 ],
             ],
         )
-
-    async def auto_reloader(self):
-        if self.reload_bool:
-            return
-        self.reload_bool = True
-        await asyncio.sleep(5)
-        while self.reload_bool:
-            if self.client.page.route != self.route:
-                self.reload_bool = False
-                return
-            if self.reload_stop:
-                await asyncio.sleep(5)
-                continue
-            await self.construct()
-            await self.update_async()
-            await asyncio.sleep(5)
 
     async def copy_to_clipboard(self, data, _):
         await self.client.page.set_clipboard_async(str(data))
@@ -476,3 +494,26 @@ class RequestOrderView(ClientBaseView):
             await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
+
+    async def auto_reloader(self):
+        if self.reload_bool:
+            return
+        self.reload_bool = True
+        await asyncio.sleep(10)
+        while self.reload_bool:
+            if self.client.page.route != self.route:
+                self.reload_bool = False
+                return
+            if self.reload_stop:
+                await asyncio.sleep(5)
+                continue
+            order = await self.client.session.api.client.orders.get(id_=self.order_id)
+            order_check = UpdateChecker().check(
+                scheme=get_order_scheme,
+                obj_1=self.order,
+                obj_2=order,
+            )
+            if order_check:
+                await self.construct()
+                await self.update_async()
+            await asyncio.sleep(5)

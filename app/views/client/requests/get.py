@@ -18,13 +18,15 @@
 import asyncio
 from functools import partial
 
-from flet_core import Column, colors, Control, Row, MainAxisAlignment, Container, \
+from flet_core import Column, colors, Row, MainAxisAlignment, Container, \
     padding, Image, Divider, UserControl, AlertDialog, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons
+from app.utils.updater import UpdateChecker
+from app.utils.updater.schemes import get_request_scheme, get_order_list_scheme
 from app.utils.value import requisite_value_to_str
 from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView
@@ -57,7 +59,7 @@ class DynamicTimer(UserControl):
     async def update_second(self):
         while self.seconds and self.running:
             self.time_text.value = self.get_time()
-            await self.update_async()
+            await self.time_text.update_async()
             await asyncio.sleep(1)
             self.seconds -= 1
 
@@ -73,11 +75,15 @@ class DynamicTimer(UserControl):
 class RequestView(ClientBaseView):
     route = '/client/request/get'
     dialog: AlertDialog
+
     request_edit_name_model: RequestUpdateNameModel
     request = dict
-    orders: list
-    custom_info: list
-    custom_controls: list[Control]
+    orders = list[dict]
+
+    info_card: InformationContainer
+    waiting_button: StandardButton
+    orders_row: Row
+    help_column: Column
 
     def __init__(self, request_id: int):
         super().__init__()
@@ -86,7 +92,7 @@ class RequestView(ClientBaseView):
         self.reload_stop = False
         self.dialog = AlertDialog(modal=True)
 
-    async def get_info_card(self):
+    async def update_info_card(self, update: bool = True) -> None:
         rate = value_to_float(
             value=self.request.rate, decimal=self.request.rate_decimal
         )
@@ -134,7 +140,7 @@ class RequestView(ClientBaseView):
         if self.request.name:
             value_str = f'{self.request.name} ({value_str})'
         state_row = await self.client.session.gtv(key=f'request_state_{self.request.state}')
-        return InformationContainer(
+        self.info_card = InformationContainer(
             content=Column(
                 controls=[
                     Row(
@@ -252,9 +258,11 @@ class RequestView(ClientBaseView):
             bgcolor=colors.PRIMARY_CONTAINER,
             padding=padding.symmetric(vertical=32, horizontal=32),
         )
+        if update:
+            await self.info_card.update_async()
 
-    async def get_waiting_button(self):
-        return StandardButton(
+    async def update_waiting_button(self, update: bool = True) -> None:
+        self.waiting_button = StandardButton(
             content=Row(
                 controls=[
                     Text(
@@ -269,6 +277,8 @@ class RequestView(ClientBaseView):
             on_click=self.waiting_confirm,
             expand=1,
         )
+        if update:
+            await self.waiting_button.update_async()
 
     """
     ORDERS SEND
@@ -347,110 +357,117 @@ class RequestView(ClientBaseView):
             )
         return cards
 
-    async def get_orders_send(self) -> Row:
+    async def update_orders_row(self, update: bool = True) -> None:
         controls = []
         input_orders = await self.get_orders_cards(type_='input')
         if input_orders:
             controls += [
                 SubTitle(value=await self.client.session.gtv(key='request_orders_input_title')),
-                *await self.get_orders_cards(type_='input')
+                *input_orders,
             ]
         output_orders = await self.get_orders_cards(type_='output')
         if output_orders:
             controls += [
                 SubTitle(value=await self.client.session.gtv(key='request_orders_output_title')),
-                *await self.get_orders_cards(type_='output'),
+                *output_orders,
             ]
-        return Row(
+        self.orders_row = Row(
             controls=controls,
             wrap=True,
         )
+        if update:
+            await self.orders_row.update_async()
 
-    async def get_help_cards(self) -> list[Control]:
-        return [
-            SubTitle(value=await self.client.session.gtv(key='request_help_title')),
-            StandardButton(
-                content=Row(
-                    controls=[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=await self.client.session.gtv(key='faq'),
-                                    size=28,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                            ],
-                            expand=True,
-                        ),
-                        Image(
-                            src=Icons.OPEN,
-                            height=28,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                    ],
+    async def update_help_column(self, update: bool = True) -> None:
+        self.help_column = Column(
+            controls=[
+                SubTitle(value=await self.client.session.gtv(key='request_help_title')),
+                StandardButton(
+                    content=Row(
+                        controls=[
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=await self.client.session.gtv(key='faq'),
+                                        size=28,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_BACKGROUND,
+                                    ),
+                                ],
+                                expand=True,
+                            ),
+                            Image(
+                                src=Icons.OPEN,
+                                height=28,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                    ),
+                    bgcolor=colors.BACKGROUND,
+                    horizontal=0,
+                    vertical=0,
+                    on_click=None,
                 ),
-                bgcolor=colors.BACKGROUND,
-                horizontal=0,
-                vertical=0,
-                on_click=None,
-            ),
-            StandardButton(
-                content=Row(
-                    controls=[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=await self.client.session.gtv(key='help_telegram_contact_title'),
-                                    size=28,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                            ],
-                            expand=True,
-                        ),
-                        Image(
-                            src=Icons.OPEN,
-                            height=28,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                    ]
+                StandardButton(
+                    content=Row(
+                        controls=[
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=await self.client.session.gtv(key='help_telegram_contact_title'),
+                                        size=28,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_BACKGROUND,
+                                    ),
+                                ],
+                                expand=True,
+                            ),
+                            Image(
+                                src=Icons.OPEN,
+                                height=28,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                        ]
+                    ),
+                    bgcolor=colors.BACKGROUND,
+                    horizontal=0,
+                    vertical=0,
+                    on_click=open_support,
                 ),
-                bgcolor=colors.BACKGROUND,
-                horizontal=0,
-                vertical=0,
-                on_click=open_support,
-            ),
-        ]
-
-    async def get_controls_other(self) -> list[Control]:
-        return [
-            await self.get_orders_send(),
-            *await self.get_help_cards(),
-        ]
+            ],
+        )
+        if update:
+            await self.help_column.update_async()
 
     async def construct(self):
+        controls, buttons = [], []
+        asyncio.create_task(self.auto_reloader())
         await self.set_type(loading=True)
         self.request = await self.client.session.api.client.requests.get(id_=self.request_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_request(request_id=self.request_id)
         await self.set_type(loading=False)
-        asyncio.create_task(self.auto_reloader())
-        controls = [
-            await self.get_info_card(),
+        await self.update_info_card(update=False)
+        controls += [
+            self.info_card,
         ]
-        buttons = []
         if self.request.state == 'loading':
             pass
         elif self.request.state == 'waiting':
+            await self.update_waiting_button(update=False)
             buttons += [
                 Row(
                     controls=[
-                        await self.get_waiting_button(),
+                        self.waiting_button,
                     ]
                 ),
             ]
         else:
-            controls += await self.get_controls_other()
+            await self.update_orders_row(update=False)
+            await self.update_help_column(update=False)
+            controls += [
+                self.orders_row,
+                self.help_column,
+            ]
         title_str = await self.client.session.gtv(key='request_get_title')
         self.controls = await self.get_controls(
             title=f'{title_str} #{self.request.id:08}',
@@ -517,7 +534,7 @@ class RequestView(ClientBaseView):
         if self.reload_bool:
             return
         self.reload_bool = True
-        await asyncio.sleep(5)
+        await asyncio.sleep(10)
         while self.reload_bool:
             if self.client.page.route != self.route:
                 self.reload_bool = False
@@ -525,6 +542,19 @@ class RequestView(ClientBaseView):
             if self.reload_stop:
                 await asyncio.sleep(5)
                 continue
-            await self.construct()
-            await self.update_async()
+            request = await self.client.session.api.client.requests.get(id_=self.request_id)
+            request_check = UpdateChecker().check(
+                scheme=get_request_scheme,
+                obj_1=self.request,
+                obj_2=request,
+            )
+            orders = await self.client.session.api.client.orders.list_get.by_request(request_id=self.request_id)
+            orders_check = UpdateChecker().check(
+                scheme=get_order_list_scheme,
+                obj_1=self.orders,
+                obj_2=orders,
+            )
+            if request_check or orders_check:
+                await self.construct()
+                await self.update_async()
             await asyncio.sleep(5)
