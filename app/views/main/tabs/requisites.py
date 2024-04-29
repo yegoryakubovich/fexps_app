@@ -17,7 +17,7 @@
 
 from functools import partial
 
-from flet_core import Column, ScrollMode, Row, ControlEvent, colors, Image, MainAxisAlignment, Container
+from flet_core import Column, ScrollMode, Row, ControlEvent, colors, Image, MainAxisAlignment, Container, Divider
 
 from app.controls.button import Chip, StandardButton
 from app.controls.information import Text
@@ -261,6 +261,7 @@ class RequisiteTab(BaseTab):
             type_ = await self.client.session.gtv(key=f'requisite_type_{requisite.type}')
             method = await self.client.session.gtv(key=method.name_text)
             type_str = f'{type_} ({method})'
+            state_str = await self.client.session.gtv(key=f'requisite_state_{requisite.state}')
             name_str = f'No Name'
             currency_value = value_to_float(value=requisite.currency_value, decimal=currency.decimal)
             total_currency_value = value_to_float(value=requisite.total_currency_value, decimal=currency.decimal)
@@ -275,6 +276,18 @@ class RequisiteTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=type_str,
+                                                size=12,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY_CONTAINER,
+                                            ),
+                                            Text(
+                                                value='|',
+                                                size=12,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY_CONTAINER,
+                                            ),
+                                            Text(
+                                                value=state_str,
                                                 size=12,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY_CONTAINER,

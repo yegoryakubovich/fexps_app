@@ -131,7 +131,7 @@ class Chat(UserControl):
                     controls=[
                         Text(
                             value=message['text'],
-                            size=28,
+                            size=14,
                             font_family=Fonts.SEMIBOLD,
                             color=colors.ON_PRIMARY_CONTAINER,
                         ),
