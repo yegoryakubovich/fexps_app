@@ -35,6 +35,7 @@ from fexps_api_client.utils import ApiException
 class RequisiteOrderView(ClientBaseView):
     route = '/client/requisite/order/get'
     order = dict
+    order_request = dict
     requisite = dict
     method = dict
     currency = dict
@@ -47,6 +48,8 @@ class RequisiteOrderView(ClientBaseView):
     value_edit_button: StandardButton
     cancel_button: StandardButton
     recreate_button: StandardButton
+    order_request_completed_button: StandardButton
+    order_request_canceled_button: StandardButton
 
     def __init__(self, order_id: int):
         super().__init__()
@@ -249,7 +252,7 @@ class RequisiteOrderView(ClientBaseView):
             await self.help_column.update_async()
 
     """
-    INPUT
+    INPUT CONFIRMATION
     """
 
     async def update_input_confirmation_button(self, update: bool = True) -> None:
@@ -274,7 +277,7 @@ class RequisiteOrderView(ClientBaseView):
             await self.input_confirmation_button.update_async()
 
     """
-    OUTPUT
+    OUTPUT PAYMENT
     """
 
     async def update_output_payment_button(self, update: bool = True) -> None:
@@ -297,6 +300,10 @@ class RequisiteOrderView(ClientBaseView):
         )
         if update:
             await self.output_payment_button.update_async()
+
+    """
+    CHAT
+    """
 
     async def update_chat_button(self, update: bool = True) -> None:
         self.chat_button = StandardButton(
@@ -322,6 +329,74 @@ class RequisiteOrderView(ClientBaseView):
         )
         if update:
             await self.chat_button.update_async()
+
+    async def update_order_request_completed_button(self, update: bool = True) -> None:
+        controls = [
+            Text(
+                value=await self.client.session.gtv(key=f'order_request_{self.order_request.type}_completed'),
+                size=20,
+                font_family=Fonts.SEMIBOLD,
+                color=colors.ON_PRIMARY,
+            )
+        ]
+        if self.order_request.type == 'update_value':
+            value_str = value_to_float(value=self.order_request.data['value'], decimal=self.currency.decimal)
+            value_str = value_to_str(value=value_str)
+            controls += [
+                Text(
+                    value=f'({value_str})',
+                    size=20,
+                    font_family=Fonts.SEMIBOLD,
+                    color=colors.ON_PRIMARY,
+                ),
+            ]
+        self.order_request_completed_button = StandardButton(
+            content=Row(
+                controls=controls,
+                alignment=MainAxisAlignment.CENTER,
+            ),
+            bgcolor=colors.PRIMARY,
+            on_click=partial(self.order_request_update, 'completed'),
+            expand=1,
+        )
+        if update:
+            await self.order_request_completed_button.update_async()
+
+    async def update_order_request_canceled_button(self, update: bool = True) -> None:
+        controls = [
+            Text(
+                value=await self.client.session.gtv(key=f'order_request_{self.order_request.type}_canceled'),
+                size=20,
+                font_family=Fonts.SEMIBOLD,
+                color=colors.ON_PRIMARY,
+            ),
+        ]
+        if self.order_request.type == 'update_value':
+            value_str = value_to_float(value=self.order_request.data['value'], decimal=self.currency.decimal)
+            value_str = value_to_str(value=value_str)
+            controls += [
+                Text(
+                    value=f'({value_str})',
+                    size=20,
+                    font_family=Fonts.SEMIBOLD,
+                    color=colors.ON_PRIMARY,
+                ),
+            ]
+        self.order_request_canceled_button = StandardButton(
+            content=Row(
+                controls=controls,
+                alignment=MainAxisAlignment.CENTER,
+            ),
+            bgcolor=colors.PRIMARY,
+            on_click=partial(self.order_request_update, 'canceled'),
+            expand=1,
+        )
+        if update:
+            await self.order_request_canceled_button.update_async()
+
+    """
+    UPDATES
+    """
 
     async def update_value_edit_button(self, update: bool = True) -> None:
         self.value_edit_button = StandardButton(
@@ -388,6 +463,7 @@ class RequisiteOrderView(ClientBaseView):
         asyncio.create_task(self.auto_reloader())
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
+        self.order_request = self.order.order_request
         self.currency = self.order.currency
         self.requisite = self.order.requisite
         self.method = self.order.method
@@ -398,7 +474,27 @@ class RequisiteOrderView(ClientBaseView):
             self.info_card,
             self.help_column,
         ]
-        if self.order.type == 'input':
+        if self.order_request:
+            if self.client.session.current_wallet.id != self.order_request.wallet.id:
+                await self.update_order_request_completed_button(update=False)
+                await self.update_order_request_canceled_button(update=False)
+                buttons += [
+                    Row(
+                        controls=[
+                            self.order_request_completed_button,
+                            self.order_request_canceled_button,
+                        ]
+                    ),
+                ]
+            await self.update_chat_button(update=False)
+            buttons += [
+                Row(
+                    controls=[
+                        self.chat_button,
+                    ]
+                ),
+            ]
+        elif self.order.type == 'input':
             if self.order.state == 'waiting':
                 pass
             elif self.order.state == 'payment':
@@ -505,6 +601,14 @@ class RequisiteOrderView(ClientBaseView):
             title=await self.client.session.gtv(key='in_dev_title'),
             description=await self.client.session.gtv(key='in_dev_description'),
         )
+
+    async def order_request_update(self, state: str, _):
+        try:
+            await self.client.session.api.client.orders.requests.update(id_=self.order_id, state=state)
+            await self.construct()
+            await self.update_async()
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
 
     """INPUT"""
 

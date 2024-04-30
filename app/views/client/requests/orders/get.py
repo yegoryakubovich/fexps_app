@@ -475,7 +475,7 @@ class RequestOrderView(ClientBaseView):
             self.help_column,
         ]
         if self.order_request:
-            if self.client.session.current_wallet.id != self.order_request.wallet.id or True:
+            if self.client.session.current_wallet.id != self.order_request.wallet.id:
                 await self.update_order_request_completed_button(update=False)
                 await self.update_order_request_canceled_button(update=False)
                 buttons += [
