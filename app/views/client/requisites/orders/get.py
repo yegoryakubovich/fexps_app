@@ -46,6 +46,7 @@ class RequisiteOrderView(ClientBaseView):
     chat_button: StandardButton
     value_edit_button: StandardButton
     cancel_button: StandardButton
+    recreate_button: StandardButton
 
     def __init__(self, order_id: int):
         super().__init__()
@@ -337,7 +338,7 @@ class RequisiteOrderView(ClientBaseView):
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
             on_click=self.on_dev,
-            expand=2,
+            expand=1,
         )
         if update:
             await self.value_edit_button.update_async()
@@ -362,6 +363,26 @@ class RequisiteOrderView(ClientBaseView):
         if update:
             await self.cancel_button.update_async()
 
+    async def update_recreate_button(self, update: bool = True) -> None:
+        self.recreate_button = StandardButton(
+            content=Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='requisite_order_recreate_button'),
+                        size=20,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.CENTER,
+            ),
+            bgcolor=colors.PRIMARY_CONTAINER,
+            on_click=self.on_dev,
+            expand=1,
+        )
+        if update:
+            await self.recreate_button.update_async()
+
     async def construct(self):
         controls, buttons = [], []
         asyncio.create_task(self.auto_reloader())
@@ -383,12 +404,14 @@ class RequisiteOrderView(ClientBaseView):
             elif self.order.state == 'payment':
                 await self.update_value_edit_button(update=False)
                 await self.update_cancel_button(update=False)
+                await self.update_recreate_button(update=False)
                 await self.update_chat_button(update=False)
                 buttons += [
                     Row(
                         controls=[
                             self.value_edit_button,
-                            self.chat_button,
+                            self.cancel_button,
+                            self.recreate_button,
                         ],
                     ),
                     Row(
@@ -416,13 +439,15 @@ class RequisiteOrderView(ClientBaseView):
             elif self.order.state == 'payment':
                 await self.update_value_edit_button(update=False)
                 await self.update_cancel_button(update=False)
+                await self.update_recreate_button(update=False)
                 await self.update_output_payment_button(update=False)
                 await self.update_chat_button(update=False)
                 buttons += [
                     Row(
                         controls=[
                             self.value_edit_button,
-                            self.chat_button,
+                            self.cancel_button,
+                            self.recreate_button,
                         ],
                     ),
                     Row(
@@ -490,7 +515,7 @@ class RequisiteOrderView(ClientBaseView):
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 
-    async def request_order_cancel(self, _):
+    async def requisite_order_cancel(self, _):
         try:
             await self.client.session.api.client.orders.requests.create(order_id=self.order_id, type_='cancel')
             await asyncio.sleep(0.05)

@@ -16,7 +16,6 @@
 
 
 import asyncio
-import logging
 from functools import partial
 
 from flet_core import Column, Container, Row, Divider, MainAxisAlignment, \
@@ -30,7 +29,6 @@ from app.utils.updater import UpdateChecker
 from app.utils.updater.schemes import get_order_scheme
 from app.utils.value import value_to_str, requisite_value_to_str
 from app.views.main.tabs.acoount import open_support
-from fexps_api_client import FexpsApiClient
 from fexps_api_client.utils import ApiException
 
 
@@ -49,6 +47,7 @@ class RequestOrderView(ClientBaseView):
     chat_button: StandardButton
     value_edit_button: StandardButton
     cancel_button: StandardButton
+    recreate_button: StandardButton
     order_request_completed_button: StandardButton
     order_request_canceled_button: StandardButton
 
@@ -439,6 +438,26 @@ class RequestOrderView(ClientBaseView):
         if update:
             await self.chat_button.update_async()
 
+    async def update_recreate_button(self, update: bool = True) -> None:
+        self.recreate_button = StandardButton(
+            content=Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='request_order_recreate_button'),
+                        size=20,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.CENTER,
+            ),
+            bgcolor=colors.PRIMARY_CONTAINER,
+            on_click=self.on_dev,
+            expand=1,
+        )
+        if update:
+            await self.recreate_button.update_async()
+
     async def construct(self):
         controls, buttons = [], []
         asyncio.create_task(self.auto_reloader())
@@ -455,8 +474,6 @@ class RequestOrderView(ClientBaseView):
             self.info_card,
             self.help_column,
         ]
-        logging.critical(self.order_request)
-        logging.critical(self.order_id)
         if self.order_request:
             if self.client.session.current_wallet.id != self.order_request.wallet.id or True:
                 await self.update_order_request_completed_button(update=False)
@@ -483,6 +500,7 @@ class RequestOrderView(ClientBaseView):
             elif self.order.state == 'payment':
                 await self.update_value_edit_button(update=False)
                 await self.update_cancel_button(update=False)
+                await self.update_recreate_button(update=False)
                 await self.update_input_payment_button(update=False)
                 await self.update_chat_button(update=False)
                 buttons += [
@@ -490,6 +508,7 @@ class RequestOrderView(ClientBaseView):
                         controls=[
                             self.value_edit_button,
                             self.cancel_button,
+                            self.recreate_button,
                         ]
                     ),
                     Row(
@@ -516,12 +535,14 @@ class RequestOrderView(ClientBaseView):
             elif self.order.state == 'payment':
                 await self.update_value_edit_button(update=False)
                 await self.update_cancel_button(update=False)
+                await self.update_recreate_button(update=False)
                 await self.update_chat_button(update=False)
                 buttons += [
                     Row(
                         controls=[
                             self.value_edit_button,
                             self.cancel_button,
+                            self.recreate_button,
                         ]
                     ),
                     Row(
@@ -580,7 +601,6 @@ class RequestOrderView(ClientBaseView):
         )
 
     async def order_request_update(self, state: str, _):
-        self.client.session.api: FexpsApiClient
         try:
             await self.client.session.api.client.orders.requests.update(id_=self.order_id, state=state)
             await self.construct()
