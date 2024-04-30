@@ -19,12 +19,12 @@ import asyncio
 from functools import partial
 
 from flet_core import Column, Container, Row, Divider, MainAxisAlignment, \
-    padding, Image, colors, ScrollMode
+    padding, Image, colors, ScrollMode, AlertDialog, TextField
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
-from app.utils import Fonts, value_to_float, Icons
+from app.utils import Fonts, value_to_float, Icons, Error, value_to_int
 from app.utils.updater import UpdateChecker
 from app.utils.updater.schemes import get_order_scheme
 from app.utils.value import value_to_str, requisite_value_to_str
@@ -45,17 +45,22 @@ class RequisiteOrderView(ClientBaseView):
     input_confirmation_button: StandardButton
     output_payment_button: StandardButton
     chat_button: StandardButton
-    value_edit_button: StandardButton
+    update_value_button: StandardButton
     cancel_button: StandardButton
     recreate_button: StandardButton
     order_request_completed_button: StandardButton
     order_request_canceled_button: StandardButton
+
+    dialog: AlertDialog
+    # order request update value
+    tf_value: TextField
 
     def __init__(self, order_id: int):
         super().__init__()
         self.reload_bool = False
         self.reload_stop = False
         self.order_id = order_id
+        self.dialog = AlertDialog()
 
     async def update_info_card(self, update: bool = True) -> None:
         currency_value = value_to_float(
@@ -398,12 +403,12 @@ class RequisiteOrderView(ClientBaseView):
     UPDATES
     """
 
-    async def update_value_edit_button(self, update: bool = True) -> None:
-        self.value_edit_button = StandardButton(
+    async def update_update_value_button(self, update: bool = True) -> None:
+        self.update_value_button = StandardButton(
             content=Row(
                 controls=[
                     Text(
-                        value=await self.client.session.gtv(key='requisite_order_value_edit_button'),
+                        value=await self.client.session.gtv(key='requisite_order_update_value_button'),
                         size=20,
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
@@ -412,11 +417,11 @@ class RequisiteOrderView(ClientBaseView):
                 alignment=MainAxisAlignment.CENTER,
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
-            on_click=self.on_dev,
+            on_click=self.order_request_update_value_open,
             expand=1,
         )
         if update:
-            await self.value_edit_button.update_async()
+            await self.update_value_button.update_async()
 
     async def update_cancel_button(self, update: bool = True) -> None:
         self.cancel_button = StandardButton(
@@ -432,7 +437,7 @@ class RequisiteOrderView(ClientBaseView):
                 alignment=MainAxisAlignment.CENTER,
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
-            on_click=self.requisite_order_cancel,
+            on_click=self.order_request_cancel,
             expand=1,
         )
         if update:
@@ -498,14 +503,14 @@ class RequisiteOrderView(ClientBaseView):
             if self.order.state == 'waiting':
                 pass
             elif self.order.state == 'payment':
-                await self.update_value_edit_button(update=False)
+                await self.update_update_value_button(update=False)
                 await self.update_cancel_button(update=False)
                 await self.update_recreate_button(update=False)
                 await self.update_chat_button(update=False)
                 buttons += [
                     Row(
                         controls=[
-                            self.value_edit_button,
+                            self.update_value_button,
                             self.cancel_button,
                             self.recreate_button,
                         ],
@@ -533,7 +538,7 @@ class RequisiteOrderView(ClientBaseView):
             if self.order.state == 'waiting':
                 pass
             elif self.order.state == 'payment':
-                await self.update_value_edit_button(update=False)
+                await self.update_update_value_button(update=False)
                 await self.update_cancel_button(update=False)
                 await self.update_recreate_button(update=False)
                 await self.update_output_payment_button(update=False)
@@ -541,7 +546,7 @@ class RequisiteOrderView(ClientBaseView):
                 buttons += [
                     Row(
                         controls=[
-                            self.value_edit_button,
+                            self.update_value_button,
                             self.cancel_button,
                             self.recreate_button,
                         ],
@@ -564,10 +569,12 @@ class RequisiteOrderView(ClientBaseView):
                 ]
             else:  # completed, canceled
                 pass
+        title_str = await self.client.session.gtv(key='request_order_title')
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='requisite_order_title'),
+            title=f'{title_str} #{self.order.id:08}',
             with_expand=True,
             main_section_controls=[
+                self.dialog,
                 Container(
                     content=Column(
                         controls=controls,
@@ -610,20 +617,60 @@ class RequisiteOrderView(ClientBaseView):
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 
+    async def order_request_cancel(self, _):
+        try:
+            await self.client.session.api.client.orders.requests.create(order_id=self.order_id, type_='cancel')
+            await asyncio.sleep(0.05)
+            await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
+
+    async def order_request_update_value_open(self, _):
+        self.tf_value = TextField(
+            label=await self.client.session.gtv(key='order_request_update_value_value'),
+        )
+        self.dialog.content = Container(
+            content=Column(
+                controls=[
+                    self.tf_value,
+                ],
+            ),
+            height=100,
+        )
+        self.dialog.actions = [
+            Row(
+                controls=[
+                    StandardButton(
+                        text=await self.client.session.gtv(key='confirm'),
+                        on_click=self.order_request_update_value,
+                        expand=True,
+                    ),
+                ],
+            ),
+        ]
+        self.dialog.open = True
+        await self.dialog.update_async()
+
+    async def order_request_update_value(self, _):
+        if not await Error.check_field(self, field=self.tf_value, check_float=True):
+            return
+        self.dialog.open = False
+        await self.dialog.update_async()
+        try:
+            await self.client.session.api.client.orders.requests.create(
+                order_id=self.order_id,
+                type_='update_value',
+                value=value_to_int(value=self.tf_value.value, decimal=self.currency.decimal),
+            )
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
+
     """INPUT"""
 
     async def input_confirmation_confirm(self, _):
         try:
             await self.client.session.api.client.orders.updates.completed(id_=self.order_id)
             await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
-        except ApiException as exception:
-            return await self.client.session.error(exception=exception)
-
-    async def requisite_order_cancel(self, _):
-        try:
-            await self.client.session.api.client.orders.requests.create(order_id=self.order_id, type_='cancel')
-            await asyncio.sleep(0.05)
-            await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 

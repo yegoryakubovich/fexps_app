@@ -105,6 +105,19 @@ class WalletSelectView(ClientBaseView):
                     content=Row(
                         controls=[
                             StandardButton(
+                                text=await self.client.session.gtv(key='wallet_create'),
+                                on_click=self.dialog_create_open,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                                bgcolor=colors.PRIMARY_CONTAINER,
+                                expand=True,
+                            ),
+                        ],
+                    ),
+                ),
+                Container(
+                    content=Row(
+                        controls=[
+                            StandardButton(
                                 text=await self.client.session.gtv(key='wallet_edit_name'),
                                 on_click=self.dialog_edit_name_open,
                                 color=colors.ON_PRIMARY_CONTAINER,
