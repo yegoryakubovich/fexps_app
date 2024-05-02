@@ -123,8 +123,9 @@ class Session:
         else:
             return None
 
-    async def gtv(self, key):
-        return await self.get_text_value(key=key)
+    async def gtv(self, key, **kwargs):
+        text = await self.get_text_value(key=key)
+        return text.format(**kwargs)
 
     async def get_text_pack(self, language: str = None):
         if not language:
