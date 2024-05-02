@@ -16,7 +16,6 @@
 
 
 import asyncio
-import logging
 from functools import partial
 
 from flet_core import Column, Container, Row, Divider, MainAxisAlignment, \
@@ -460,7 +459,7 @@ class RequestOrderView(ClientBaseView):
                 alignment=MainAxisAlignment.CENTER,
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
-            on_click=self.on_dev,
+            on_click=self.order_request_recreate,
             expand=1,
         )
         if update:
@@ -622,6 +621,14 @@ class RequestOrderView(ClientBaseView):
     async def order_request_cancel(self, _):
         try:
             await self.client.session.api.client.orders.requests.create(order_id=self.order_id, type_='cancel')
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
+
+    async def order_request_recreate(self, _):
+        try:
+            await self.client.session.api.client.orders.requests.create(order_id=self.order_id, type_='recreate')
+            await self.construct()
+            await self.update_async()
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 

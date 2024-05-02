@@ -457,7 +457,7 @@ class RequisiteOrderView(ClientBaseView):
                 alignment=MainAxisAlignment.CENTER,
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
-            on_click=self.on_dev,
+            on_click=self.order_request_recreate,
             expand=1,
         )
         if update:
@@ -620,8 +620,16 @@ class RequisiteOrderView(ClientBaseView):
     async def order_request_cancel(self, _):
         try:
             await self.client.session.api.client.orders.requests.create(order_id=self.order_id, type_='cancel')
-            await asyncio.sleep(0.05)
-            await self.client.change_view(go_back=True, with_restart=True, delete_current=True)
+            await self.construct()
+            await self.update_async()
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
+
+    async def order_request_recreate(self, _):
+        try:
+            await self.client.session.api.client.orders.requests.create(order_id=self.order_id, type_='recreate')
+            await self.construct()
+            await self.update_async()
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 
