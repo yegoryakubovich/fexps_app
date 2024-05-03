@@ -22,7 +22,7 @@ from app.utils import Fonts
 
 class Dropdown(FletDropdown):
     def __init__(self, **kwargs):
-        super().__init__(bgcolor=colors.BACKGROUND, **kwargs)
+        super().__init__(**kwargs)
         self.border_color = colors.SECONDARY
         self.text_style = TextStyle(
             font_family=Fonts.REGULAR,
