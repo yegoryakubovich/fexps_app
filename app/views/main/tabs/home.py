@@ -19,7 +19,7 @@ import datetime
 from functools import partial
 
 from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, TextAlign, \
-    Stack, alignment
+    Stack, alignment, padding
 
 from app.controls.button import Chip, StandardButton
 from app.controls.information import Card, Text, InformationContainer, SubTitle
@@ -74,13 +74,13 @@ class HomeTab(BaseTab):
             controls=[
                 Text(
                     value=hello_text_str,
-                    size=48,
+                    size=24,
                     font_family=Fonts.MEDIUM,
                     color=colors.ON_BACKGROUND,
                 ),
                 Text(
                     value=f'{self.client.session.account.firstname.title()}.',
-                    size=48,
+                    size=24,
                     font_family=Fonts.SEMIBOLD,
                     color=colors.ON_BACKGROUND,
                 ),
@@ -103,7 +103,7 @@ class HomeTab(BaseTab):
                                 controls=[
                                     Text(
                                         value=f'{wallet_name}',
-                                        size=32,
+                                        size=24,
                                         font_family=Fonts.REGULAR,
                                         color=colors.ON_PRIMARY,
                                     )
@@ -119,7 +119,7 @@ class HomeTab(BaseTab):
                                     ),
                                     Text(
                                         value=f'{value_str}',
-                                        size=48,
+                                        size=32,
                                         font_family=Fonts.BOLD,
                                         color=colors.ON_PRIMARY,
                                     ),
@@ -159,12 +159,12 @@ class HomeTab(BaseTab):
                         controls=[
                             Image(
                                 src=Icons.MAKE_EXCHANGE,
-                                height=32,
-                                width=32,
+                                height=20,
+                                width=20,
                             ),
                             Text(
                                 value=await self.client.session.gtv(key=f'action_make_exchange'),
-                                size=16,
+                                size=12,
                                 font_family=Fonts.BOLD,
                                 color=colors.ON_PRIMARY,
                             ),
@@ -180,12 +180,12 @@ class HomeTab(BaseTab):
                         controls=[
                             Image(
                                 src=Icons.PAYMENT,
-                                height=32,
-                                width=32,
+                                height=20,
+                                width=20,
                             ),
                             Text(
                                 value=await self.client.session.gtv(key=f'action_send'),
-                                size=16,
+                                size=12,
                                 font_family=Fonts.BOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
                             ),
@@ -196,28 +196,27 @@ class HomeTab(BaseTab):
                     expand=1,
                     on_click=self.go_send,
                 ),
-                StandardButton(
-                    content=Row(
-                        controls=[
-                            Image(
-                                src=Icons.DEV,
-                                height=32,
-                                width=32,
-                            ),
-                            Text(
-                                value=await self.client.session.gtv(key=f'action_dev'),
-                                size=16,
-                                font_family=Fonts.BOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.CENTER,
-                    ),
-                    bgcolor=colors.PRIMARY_CONTAINER,
-                    expand=1,
-                ),
+                # StandardButton(
+                #     content=Row(
+                #         controls=[
+                #             Image(
+                #                 src=Icons.DEV,
+                #                 height=24,
+                #                 width=24,
+                #             ),
+                #             Text(
+                #                 value=await self.client.session.gtv(key=f'action_dev'),
+                #                 size=12,
+                #                 font_family=Fonts.BOLD,
+                #                 color=colors.ON_PRIMARY_CONTAINER,
+                #             ),
+                #         ],
+                #         alignment=MainAxisAlignment.CENTER,
+                #     ),
+                #     bgcolor=colors.PRIMARY_CONTAINER,
+                #     expand=1,
+                # ),
             ],
-            spacing=10,
         )
         if update:
             await self.update_async()
@@ -309,7 +308,7 @@ class HomeTab(BaseTab):
                             ),
                             Image(
                                 src=Icons.OPEN,
-                                height=32,
+                                height=28,
                                 color=colors.ON_PRIMARY,
                             ),
                         ],
