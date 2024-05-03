@@ -44,18 +44,24 @@ class PaginationWidget(Container):
         self.content = Row(
             controls=[
                 StandardButton(
-                    content=Text(value=text_back),
+                    content=Text(
+                        value=text_back,
+                        size=12,
+                    ),
                     on_click=self.on_previous,
                     disabled=self.current_page <= 1,
                 ),
                 Text(
                     value=f'{self.current_page}/{self.total_pages}',
-                    size=18,
+                    size=16,
                     font_family=Fonts.SEMIBOLD,
                     color=colors.ON_BACKGROUND,
                 ),
                 StandardButton(
-                    content=Text(value=text_next),
+                    content=Text(
+                        value=text_next,
+                        size=12,
+                    ),
                     on_click=self.on_next,
                     disabled=self.disable_next_button and self.current_page >= self.total_pages,
                 ),

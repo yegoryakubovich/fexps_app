@@ -352,7 +352,7 @@ class RequestView(ClientBaseView):
                             ),
                             Image(
                                 src=Icons.OPEN,
-                                height=32,
+                                height=28,
                                 color=color,
                             ),
                         ],

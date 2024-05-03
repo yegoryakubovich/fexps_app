@@ -59,21 +59,6 @@ async def open_support(_):
 class AccountTab(BaseTab):
 
     async def construct(self):
-        on_click_coming_soon = partial(
-            self.client.session.bs_info.open_,
-            icon=Icons.CHILL,
-            title=await self.client.session.gtv(key='coming_soon'),
-            description=await self.client.session.gtv(key='coming_soon_description'),
-        )
-        on_click_logout = partial(
-            self.client.session.bs_info.open_,
-            icon=Icons.LOGOUT,
-            title=await self.client.session.gtv(key='logout_title'),
-            description=await self.client.session.gtv(key='logout_description'),
-            button_title=await self.client.session.gtv(key='confirm'),
-            button_on_click=self.logout,
-        )
-
         firstname = self.client.session.account.firstname
         lastname = self.client.session.account.lastname
         username = self.client.session.account.username
@@ -85,7 +70,12 @@ class AccountTab(BaseTab):
                     Setting(
                         name='account_notifications',
                         icon=Icons.NOTIFICATIONS,
-                        on_click=on_click_coming_soon,
+                        on_click=partial(
+                            self.client.session.bs_info.open_,
+                            icon=Icons.CHILL,
+                            title=await self.client.session.gtv(key='coming_soon'),
+                            description=await self.client.session.gtv(key='coming_soon_description'),
+                        ),
                     ),
                     Setting(
                         name='account_security',
@@ -110,7 +100,14 @@ class AccountTab(BaseTab):
                     Setting(
                         name='account_logout',
                         icon=Icons.LOGOUT,
-                        on_click=on_click_logout,
+                        on_click=partial(
+                            self.client.session.bs_info.open_,
+                            icon=Icons.LOGOUT,
+                            title=await self.client.session.gtv(key='logout_title'),
+                            description=await self.client.session.gtv(key='logout_description'),
+                            button_title=await self.client.session.gtv(key='confirm'),
+                            button_on_click=self.logout,
+                        ),
                     ),
                 ],
             ),
@@ -148,7 +145,7 @@ class AccountTab(BaseTab):
                             content=Text(
                                 value=await self.client.session.gtv(section.name),
                                 font_family=Fonts.SEMIBOLD,
-                                size=26,
+                                size=24,
                                 color=colors.ON_BACKGROUND,
                             ),
                         ),
@@ -167,8 +164,8 @@ class AccountTab(BaseTab):
                     ],
                 ),
                 padding=padding.only(top=12),
-                margin=padding.symmetric(horizontal=16),
-            ) for section in sections
+            )
+            for section in sections
         ]
 
         self.scroll = ScrollMode.AUTO
@@ -186,12 +183,12 @@ class AccountTab(BaseTab):
                                             color=colors.SECONDARY,
                                         ),
                                         bgcolor=colors.ON_PRIMARY,
-                                        radius=38,
+                                        radius=32   ,
                                     ),
                                     Text(
                                         value=f'{firstname} {lastname}',
                                         font_family=Fonts.SEMIBOLD,
-                                        size=30,
+                                        size=24,
                                         color=colors.ON_BACKGROUND,
                                     ),
                                     Text(
@@ -204,7 +201,7 @@ class AccountTab(BaseTab):
                                 spacing=0,
                                 horizontal_alignment=CrossAxisAlignment.CENTER,
                             ),
-                            padding=padding.only(top=24),
+                            padding=padding.only(top=12),
                             alignment=alignment.center,
                         ),
                         *sections_controls,

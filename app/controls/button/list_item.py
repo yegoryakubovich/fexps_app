@@ -28,12 +28,12 @@ class ListItemButton(Container):
                 controls=[
                     Image(
                         src=icon,
-                        width=36,
+                        width=28,
                     ),
                     Text(
                         value=name,
                         font_family=Fonts.REGULAR,
-                        size=20,
+                        size=16,
                         color=colors.ON_BACKGROUND,
                     ),
                 ],

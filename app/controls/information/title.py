@@ -10,7 +10,7 @@ class Title(Row):
         self.controls = [
             Text(
                 value=value,
-                size=48,
+                size=32,
                 font_family=Fonts.BOLD,
                 color=colors.ON_BACKGROUND,
             ),
@@ -29,7 +29,7 @@ class Title(Row):
                                 value=create_name_text,
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY,
-                                size=20,
+                                size=14,
                             ),
                         ],
                         spacing=4,

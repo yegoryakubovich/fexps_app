@@ -141,7 +141,7 @@ class RequestTab(BaseTab):
                             ),
                             Image(
                                 src=Icons.OPEN,
-                                height=32,
+                                height=28,
                                 color=colors.ON_PRIMARY,
                             ),
                         ],
@@ -295,7 +295,7 @@ class RequestTab(BaseTab):
                             ),
                             Image(
                                 src=Icons.OPEN,
-                                height=32,
+                                height=28,
                                 color=colors.ON_PRIMARY,
                             ),
                         ],
@@ -303,8 +303,6 @@ class RequestTab(BaseTab):
                     ),
                     on_click=partial(self.request_view, request.id),
                     bgcolor=colors.PRIMARY_CONTAINER,
-                    horizontal=34,
-                    vertical=24,
                 )
             )
         return cards

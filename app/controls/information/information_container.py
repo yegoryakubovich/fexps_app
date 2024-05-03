@@ -15,11 +15,18 @@
 #
 
 
-from flet_core import Container as FletContainer, colors, ContinuousRectangleBorder, BoxShape
+from flet_core import Container as FletContainer, colors
 
 
 class InformationContainer(FletContainer):
-    def __init__(self, content, color=colors.ON_PRIMARY, bgcolor=colors.PRIMARY, on_click=None, **kwargs):
+    def __init__(
+            self,
+            content,
+            color=colors.ON_PRIMARY,
+            bgcolor=colors.PRIMARY,
+            on_click=None,
+            **kwargs
+    ):
         super().__init__(**kwargs)
         self.border_radius = 10
         self.content = content
