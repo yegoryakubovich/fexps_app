@@ -268,11 +268,13 @@ class RequestOrderView(ClientBaseView):
             value=self.order.currency_value,
             decimal=self.currency.decimal,
         )
-        currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
-        input_payment_confirm = await self.client.session.gtv(key='request_order_input_payment_button')
         self.input_payment_button = StandardButton(
             content=Text(
-                value=f'{input_payment_confirm} {currency_value_str}',
+                value=await self.client.session.gtv(
+                    key='request_order_input_payment_button',
+                    value=value_to_str(currency_value),
+                    currency=self.currency.id_str.upper(),
+                ),
                 size=20,
                 font_family=Fonts.SEMIBOLD,
                 color=colors.ON_PRIMARY,

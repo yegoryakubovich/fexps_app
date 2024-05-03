@@ -25,6 +25,7 @@ from flet_core import Control, Row, TextField, ControlEvent, FilePickerUploadFil
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
+from app.controls.input import FilePicker
 from app.controls.layout import ClientBaseView
 from app.utils import Icons, Error
 from app.utils.crypto import create_id_str
@@ -35,6 +36,8 @@ class RequestOrderPaymentView(ClientBaseView):
     route = '/client/request/order/payment'
     order = dict
     photo_row: Row
+    filepicker: FilePicker
+
     text_error: Text
     input_scheme_fields: list
     input_fields: dict
@@ -44,6 +47,7 @@ class RequestOrderPaymentView(ClientBaseView):
         super().__init__()
         self.order_id = order_id
         self.photos = {}
+        self.filepicker = FilePicker()
 
     async def get_field_controls(self) -> list[Control]:
         result = []
@@ -151,8 +155,9 @@ class RequestOrderPaymentView(ClientBaseView):
         await self.text_error.update_async()
 
     async def add_photo(self, _):
+        self.client.page.overlay.append(self.filepicker)
         await self.set_text_error()
-        await self.client.session.filepicker.open_(
+        await self.filepicker.open_(
             on_select=self.upload_files,
             on_upload=self.on_upload_progress,
         )
@@ -214,9 +219,9 @@ class RequestOrderPaymentView(ClientBaseView):
     async def upload_files(self, _):
         uf = []
         await self.set_text_error()
-        if not self.client.session.filepicker.result.files:
+        if not self.filepicker.result.files:
             return
-        for f in self.client.session.filepicker.result.files:
+        for f in self.filepicker.result.files:
             if len(f.name.split('.')) < 2:
                 continue
             if f.size > 2097152:
@@ -231,7 +236,7 @@ class RequestOrderPaymentView(ClientBaseView):
                     upload_url=await self.client.session.page.get_upload_url_async(f.name, 600),
                 )
             )
-            await self.client.session.filepicker.upload_async([uf[-1]])
+            await self.filepicker.upload_async([uf[-1]])
             await self.on_upload_progress(e=FilePickerUploadEvent(file_name=f.name, progress=1.0, error=None))
 
     async def on_upload_progress(self, e: FilePickerUploadEvent):
@@ -251,6 +256,7 @@ class RequestOrderPaymentView(ClientBaseView):
         }
         os.remove(path)
         await self.update_photo_row()
+        self.client.page.overlay.remove(self.filepicker)
 
     async def photo_delete(self, id_str, _):
         await self.set_text_error()

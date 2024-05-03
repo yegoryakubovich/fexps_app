@@ -27,6 +27,13 @@ def get_decimal_places(value: float):
     return Decimal(str(value)).as_tuple().exponent * -1
 
 
+def get_fix_rate(rate: float) -> tuple[float, int]:
+    decimal_places = get_decimal_places(value=rate)
+    if decimal_places < 2:
+        return rate, 1
+    return rate * 10 ** (decimal_places - 1), 1 * 10 ** (decimal_places - 1)
+
+
 def value_to_int(value: Optional[float], decimal: int = settings.default_decimal) -> Optional[int]:
     if isinstance(value, str):
         value = value.replace(',', '.')

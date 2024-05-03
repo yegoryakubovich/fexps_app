@@ -27,7 +27,7 @@ from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, value_to_str
 from app.utils.updater import UpdateChecker
 from app.utils.updater.schemes import get_request_scheme, get_order_list_scheme
-from app.utils.value import requisite_value_to_str
+from app.utils.value import requisite_value_to_str, get_fix_rate
 from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView
 from app.views.main.tabs.acoount import open_support
@@ -93,9 +93,7 @@ class RequestView(ClientBaseView):
         self.dialog = AlertDialog(modal=True)
 
     async def update_info_card(self, update: bool = True) -> None:
-        rate = value_to_float(
-            value=self.request.rate, decimal=self.request.rate_decimal
-        )
+        rate = value_to_float(value=self.request.rate, decimal=self.request.rate_decimal)
         if self.request.type == 'input':
             input_currency = self.request.input_currency
             input_currency_value = value_to_float(
@@ -144,7 +142,8 @@ class RequestView(ClientBaseView):
                 f' -> '
                 f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
             )
-            rate_str = f'{rate} {input_currency.id_str.upper()} / 1 {output_currency.id_str.upper()}'
+            rate_fix, rate_decimal = get_fix_rate(rate=rate)
+            rate_str = f'{rate_fix} {input_currency.id_str.upper()} / {rate_decimal} {output_currency.id_str.upper()}'
         if self.request.name:
             value_str = f'{self.request.name} ({value_str})'
         state_row = await self.client.session.gtv(key=f'request_state_{self.request.state}')
