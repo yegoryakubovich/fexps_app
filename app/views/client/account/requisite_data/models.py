@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+
 from flet_core import Column, Control, Row, ControlEvent, KeyboardType
 from flet_core.dropdown import Option
 
@@ -28,7 +29,7 @@ class RequisiteDataCreateModel:
     controls: list[Control]
     buttons: list[Control]
     requisite_data_id: int = None
-    height: int = 450
+    width: int = 400
 
     methods = list
     method: dict

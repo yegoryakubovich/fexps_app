@@ -261,7 +261,8 @@ class RequestCreateView(ClientBaseView):
             content=Column(
                 controls=self.requisite_data_model.controls,
             ),
-            height=self.requisite_data_model.height,
+            expand=True,
+            width=self.requisite_data_model.width,
         )
         self.dialog.actions = self.requisite_data_model.buttons
         self.dialog.open = True
