@@ -16,7 +16,6 @@
 
 
 import io
-import logging
 import os
 from base64 import b64encode
 from functools import partial
@@ -26,7 +25,7 @@ from flet_core import Container, Row, colors, Image, FilePickerUploadEvent, Stac
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
-from app.controls.input import TextField
+from app.controls.input import TextField, FilePicker
 from app.controls.layout import ClientBaseView
 from app.utils import Icons
 from app.utils.chat import Chat
@@ -40,6 +39,7 @@ class ChatView(ClientBaseView):
     order_id: int
     photos: dict
     photo_dict: dict
+    filepicker: FilePicker
 
     tf_message: TextField
     photo_row: Row
@@ -49,39 +49,30 @@ class ChatView(ClientBaseView):
     def __init__(self, order_id: int):
         super().__init__()
         self.order_id = order_id
-        self.positions = {}
         self.photo_dict = {}
         self.photos = {}
         self.photo_size = 0
         self.photo_row = Row(controls=[])
         self.text_error = Text(value=None)
+        self.filepicker = FilePicker()
 
     async def construct(self):
         account = self.client.session.account
-        self.positions = {
-            'you': await self.client.session.gtv(key='chat_you'),
-            'unknown': await self.client.session.gtv(key='chat_unknown'),
-            'sender': await self.client.session.gtv(key='chat_sender'),
-            'receiver': await self.client.session.gtv(key='chat_receiver'),
-        }
-        # await self.set_type(loading=True)
         old_messages = await self.client.session.api.client.messages.get_list(order_id=self.order_id)
         old_messages_controls = [
             await Chat.create_message_card(
+                gtv=self.client.session.gtv,
                 account_id=account.id,
                 message=message,
-                positions=self.positions,
             )
             for message in old_messages[::-1]
         ]
-        # await self.set_type(loading=False)
         self.chat = Chat(
             account_id=account.id,
-            api=self.client.session.api,
+            gtv=self.client.session.gtv,
             token=self.client.session.token,
             order_id=self.order_id,
             controls=old_messages_controls,
-            positions=self.positions,
             deviation=self.client.session.timezone.deviation,
         )
         self.sb_files = StandardButton(
@@ -138,7 +129,6 @@ class ChatView(ClientBaseView):
             ],
         )
 
-
     async def send(self, _):
         text = None
         if self.tf_message.value:
@@ -147,6 +137,7 @@ class ChatView(ClientBaseView):
             return
         await self.chat.send(
             data={
+                'role': 'user',
                 'text': text,
                 'files': [
                     {
@@ -165,14 +156,14 @@ class ChatView(ClientBaseView):
     """PHOTO"""
 
     async def set_text_error(self, text_value: str = None):
-        logging.critical(id(self.text_error))
         self.text_error.value = text_value
         # await self.text_error.update_async()
         await self.client.session.page.update_async()
 
     async def add_photo(self, _):
+        self.client.page.overlay.append(self.filepicker)
         await self.set_text_error()
-        await self.client.session.filepicker.open_(
+        await self.filepicker.open_(
             on_select=self.upload_files,
             on_upload=self.on_upload_progress,
         )
@@ -233,14 +224,11 @@ class ChatView(ClientBaseView):
 
     async def upload_files(self, _):
         uf = []
-        # logging.critical(self.page)
-        # logging.critical(self.client.session.page.update_async())
-        # logging.critical(id(self.text_error))
         self.text_error.value = None
         await self.text_error.update_async()
-        if not self.client.session.filepicker.result.files:
+        if not self.filepicker.result.files:
             return
-        for f in self.client.session.filepicker.result.files:
+        for f in self.filepicker.result.files:
             if len(f.name.split('.')) < 2:
                 continue
             if f.size > 2097152:
@@ -255,11 +243,10 @@ class ChatView(ClientBaseView):
                     upload_url=await self.client.session.page.get_upload_url_async(f.name, 600),
                 )
             )
-            await self.client.session.filepicker.upload_async([uf[-1]])
+            await self.filepicker.upload_async([uf[-1]])
             await self.on_upload_progress(e=FilePickerUploadEvent(file_name=f.name, progress=1.0, error=None))
 
     async def on_upload_progress(self, e: FilePickerUploadEvent):
-        logging.critical(id(self.text_error))
         self.text_error.value = None
         await self.text_error.update_async()
         # await self.set_text_error()
@@ -278,6 +265,7 @@ class ChatView(ClientBaseView):
         }
         os.remove(path)
         await self.update_photo_row()
+        self.client.page.overlay.remove(self.filepicker)
 
     async def photo_delete(self, id_str, _):
         await self.set_text_error()

@@ -23,15 +23,14 @@ from base64 import b64encode
 from functools import partial
 
 import aiohttp
-from flet_core import Row, Column, UserControl, Control, colors, MainAxisAlignment, padding, \
-    Image, ScrollMode, Container, alignment
+from flet_core import Column, UserControl, Control, colors, ScrollMode, Container, Row, padding, \
+    Image, alignment
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, InformationContainer
 from app.utils import Fonts, Icons
 from app.utils.value import size_value_to_str
 from config import settings
-from fexps_api_client import FexpsApiClient
 
 
 async def open_file(url: str, _):
@@ -46,44 +45,63 @@ class Chat(UserControl):
 
     @staticmethod
     async def create_message_card(
+            gtv: callable,
             account_id: int,
             message: dict,
-            positions: dict = None,
             deviation: int = 0,
     ) -> Control:
-        if not positions:
-            positions = {}
-        position = message['account_position'].title()
-        if int(message['account']) == account_id:
-            position = 'You'
-        position_str = positions.get(position.lower(), position)
+        column_controls = []
+        position = message['position'].lower()
+        custom_alignment = alignment.center_right
+        bgcolor = colors.PRIMARY_CONTAINER
+        color = colors.ON_PRIMARY_CONTAINER
+        text_str = message['text']
+        if message['role'] == 'user':
+            position = message['position'].lower()
+            if int(message['account']) == account_id:
+                position = 'you'
+                custom_alignment = alignment.center_left
+        elif message['role'] == 'moderator':
+            position = 'moderator'
+        elif message['role'] == 'system':
+            custom_alignment = alignment.center
+            bgcolor = colors.BACKGROUND
+            color = colors.ON_BACKGROUND
+        position_str = await gtv(key=f'chat_position_{position.lower()}')
         date = message['date']
         if isinstance(date, str):
             date = datetime.datetime.strptime(date, settings.datetime_format)
             date = date.replace(tzinfo=None) + datetime.timedelta(hours=deviation)
-        column_controls = [
-            Row(
-                controls=[
-                    Text(
-                        value=position_str,
-                        size=14,
-                        font_family=Fonts.SEMIBOLD,
-                        color=colors.ON_PRIMARY_CONTAINER,
-                    ),
-                    Text(
-                        value=date.strftime(settings.datetime_format),
-                        size=14,
-                        font_family=Fonts.SEMIBOLD,
-                        color=colors.ON_PRIMARY_CONTAINER,
-                    ),
-                ],
-                spacing=16,
-                alignment=MainAxisAlignment.SPACE_BETWEEN,
-            ),
-        ]
+        # header
+        if message['role'] == 'system':
+            pass
+        else:
+            column_controls += [
+                Row(
+                    controls=[
+                        Text(
+                            value=position_str,
+                            size=14,
+                            font_family=Fonts.SEMIBOLD,
+                            color=color,
+                        ),
+                        Text(
+                            value=date.strftime(settings.datetime_format),
+                            size=14,
+                            font_family=Fonts.SEMIBOLD,
+                            color=color,
+                        ),
+                    ],
+                    spacing=16,
+                    tight=True,
+                ),
+            ]
+        # files
         if message['files']:
-            image_column = Column(controls=[])
+            file_column = Column(controls=[])
             for file in message['files']:
+                filename_str = file['filename']
+                size_str = size_value_to_str(value=len(file['value']))
                 if file['extension'] in ['jpg', 'jpeg', 'png']:
                     file_byte = file['value'].encode('ISO-8859-1')
                     file_image = Image(
@@ -97,7 +115,7 @@ class Chat(UserControl):
                         width=30,
                         height=30,
                     )
-                image_column.controls += [
+                file_column.controls += [
                     StandardButton(
                         content=Row(
                             controls=[
@@ -108,57 +126,74 @@ class Chat(UserControl):
                                 ),
                                 Column(
                                     controls=[
-                                        Text(
-                                            value=file['filename'],
-                                        ),
-                                        Text(
-                                            value=size_value_to_str(value=len(file['value'])),
-                                        ),
+                                        Text(value=filename_str),
+                                        Text(value=size_str),
                                     ],
-                                    expand=True,
                                 ),
-                            ]
+                            ],
+                            tight=True,
                         ),
                         on_click=partial(open_file, file['url']),
                         bgcolor=colors.PRIMARY_CONTAINER,
-                        color=colors.ON_PRIMARY_CONTAINER,
+                        color=color,
                     ),
                 ]
-            column_controls.append(image_column)
-        if message['text']:
-            column_controls += [
-                Row(
-                    controls=[
-                        Text(
-                            value=message['text'],
-                            size=14,
-                            font_family=Fonts.SEMIBOLD,
-                            color=colors.ON_PRIMARY_CONTAINER,
-                        ),
-                    ],
+            column_controls.append(file_column)
+        # Text
+        if text_str:
+            if message['role'] == 'system':
+                text_str = await gtv(key=text_str.lower())
+                column_controls += [
+                    Row(
+                        controls=[
+                            Text(
+                                value=text_str,
+                                size=16,
+                                font_family=Fonts.SEMIBOLD,
+                                color=color,
+                            ),
+                        ],
+                        tight=True,
+                    ),
+                ]
+            else:
+                column_controls += [
+                    Row(
+                        controls=[
+                            Text(
+                                value=text_str,
+                                size=16,
+                                font_family=Fonts.SEMIBOLD,
+                                color=color,
+                            ),
+                        ],
+                        tight=True,
+                    ),
+                ]
+        return Container(
+            content=InformationContainer(
+                content=Column(
+                    controls=column_controls,
                 ),
-            ]
-        return InformationContainer(
-            content=Column(
-                controls=column_controls,
-                spacing=-50,
+                bgcolor=bgcolor,
+                padding=padding.symmetric(vertical=16, horizontal=16),
+
             ),
-            bgcolor=colors.PRIMARY_CONTAINER,
-            padding=padding.symmetric(vertical=16, horizontal=16),
+            alignment=custom_alignment,
+
         )
 
     def __init__(
             self,
-            api: FexpsApiClient,
+            gtv: callable,
             account_id: int,
             token: str,
             order_id: int,
             controls: list = None,
-            positions: dict = None,
             deviation: int = 0,
     ):
         super().__init__()
-        self.api = api
+        self.gtv = gtv
         self.token = token
         self.account_id = account_id
         self.order_id = order_id
@@ -166,9 +201,6 @@ class Chat(UserControl):
         self.deviation = deviation
         if controls is None:
             self.control_list = []
-        self.positions = positions
-        if not positions:
-            self.positions = {}
         self.session = aiohttp.ClientSession()
         self.websocket: aiohttp.client_ws.ClientWebSocketResponse = None
 
@@ -194,12 +226,11 @@ class Chat(UserControl):
         async for message in self.websocket:
             if not self.running:
                 return
-
             self.control_list.append(
                 await self.create_message_card(
+                    gtv=self.gtv,
                     account_id=self.account_id,
                     message=json.loads(message.data),
-                    positions=self.positions,
                     deviation=self.deviation,
                 )
             )
