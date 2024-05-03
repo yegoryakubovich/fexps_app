@@ -24,7 +24,7 @@ from flet_core import Column, colors, Row, MainAxisAlignment, Container, \
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
-from app.utils import Fonts, value_to_float, Icons
+from app.utils import Fonts, value_to_float, Icons, value_to_str
 from app.utils.updater import UpdateChecker
 from app.utils.updater.schemes import get_request_scheme, get_order_list_scheme
 from app.utils.value import requisite_value_to_str
@@ -99,42 +99,50 @@ class RequestView(ClientBaseView):
         if self.request.type == 'input':
             input_currency = self.request.input_currency
             input_currency_value = value_to_float(
-                value=self.request.input_currency_value_raw,
+                value=self.request.input_currency_value,
                 decimal=input_currency.decimal,
             )
             input_value = value_to_float(
-                value=self.request.input_value_raw,
+                value=self.request.input_value,
                 decimal=input_currency.decimal,
             )
-            value_str = f'{input_currency_value} {input_currency.id_str.upper()} -> {input_value}'
+            value_str = (
+                f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
+                f' -> '
+                f'{value_to_str(value=input_value)}'
+            )
             rate_str = f'{rate} {input_currency.id_str.upper()} / 1'
         elif self.request.type == 'output':
             output_currency = self.request.output_currency
             output_currency_value = value_to_float(
-                value=self.request.output_currency_value_raw,
+                value=self.request.output_currency_value,
                 decimal=output_currency.decimal,
             )
             output_value = value_to_float(
-                value=self.request.output_value_raw,
+                value=self.request.output_value,
                 decimal=output_currency.decimal,
             )
-            value_str = f'{output_value} -> {output_currency_value} {output_currency.id_str.upper()}'
+            value_str = (
+                f'{value_to_str(value=output_value)}'
+                f' -> '
+                f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
+            )
             rate_str = f'{rate} {output_currency.id_str.upper()} / 1'
         else:
             input_currency = self.request.input_currency
             output_currency = self.request.output_currency
             input_currency_value = value_to_float(
-                value=self.request.input_currency_value_raw,
+                value=self.request.input_currency_value,
                 decimal=input_currency.decimal,
             )
             output_currency_value = value_to_float(
-                value=self.request.output_currency_value_raw,
+                value=self.request.output_currency_value,
                 decimal=output_currency.decimal,
             )
             value_str = (
-                f'{input_currency_value} {input_currency.id_str.upper()}'
+                f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
                 f' -> '
-                f'{output_currency_value} {output_currency.id_str.upper()}'
+                f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
             )
             rate_str = f'{rate} {input_currency.id_str.upper()} / 1 {output_currency.id_str.upper()}'
         if self.request.name:
