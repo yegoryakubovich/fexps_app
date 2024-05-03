@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
 
 from flet_core import Column, Row
 
@@ -92,7 +92,6 @@ class AgreementRegistrationView(AuthView):
         for contact_id, value in self.client.session.registration.contacts.items():
             if not contact_id or not value:
                 continue
-            logging.critical(f'{contact_id}: {value}')
             await self.client.session.api.client.accounts.contacts.create(contact_id=contact_id, value=value)
 
         self.client.session.registration = None

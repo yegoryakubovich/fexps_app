@@ -18,10 +18,10 @@
 from functools import partial
 
 from _ctypes import alignment
-from flet_core import Row, Column, ControlEvent, ScrollMode, Container, alignment
+from flet_core import Row, Column, ControlEvent, ScrollMode, Container, alignment, colors
 
 from app.controls.button import StandardButton
-from app.controls.information import Text
+from app.controls.information import Text, SnackBar
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from fexps_api_client.utils import ApiException
@@ -32,6 +32,7 @@ class AccountContactView(ClientBaseView):
     contacts = list[dict]
     accounts_contacts = list[dict]
     result_dict: dict
+    snack_bar: SnackBar
 
     def reform_to_dict(self):
         for account_contact in self.accounts_contacts:
@@ -59,10 +60,18 @@ class AccountContactView(ClientBaseView):
                     on_change=partial(self.change_contact, contact.id),
                 )
             ]
+        self.snack_bar = SnackBar(
+            content=Text(
+                value=await self.client.session.gtv(key='error_contacts_min'),
+                color=colors.WHITE,
+                bgcolor=colors.RED,
+            ),
+        )
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='account_contact_title'),
             with_expand=True,
             main_section_controls=[
+                self.snack_bar,
                 Container(
                     content=Column(
                         controls=contact_controls,
@@ -87,10 +96,16 @@ class AccountContactView(ClientBaseView):
             ],
         )
 
-    async def change_contact(self, contact_id: int, _: ControlEvent):
-        self.result_dict['contacts'][contact_id] = _.data
+    async def change_contact(self, contact_id: int, event: ControlEvent):
+        self.result_dict['contacts'][contact_id] = event.data
+        if not self.result_dict['contacts'][contact_id]:
+            del self.result_dict['contacts'][contact_id]
 
     async def update_account_contact(self, _):
+        if len(self.result_dict['contacts']) < 1:
+            self.snack_bar.open = True
+            await self.snack_bar.update_async()
+            return
         await self.set_type(loading=True)
         try:
             for contact_id in self.result_dict['contacts']:

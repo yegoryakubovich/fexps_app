@@ -17,10 +17,10 @@
 
 from functools import partial
 
-from flet_core import Column, Row, TextField, ControlEvent, Container, ScrollMode
+from flet_core import Column, Row, TextField, ControlEvent, Container, ScrollMode, colors
 
 from app.controls.button import StandardButton
-from app.controls.information import Text
+from app.controls.information import Text, SnackBar
 from app.controls.layout import AuthView
 from app.views.auth.signup import AgreementRegistrationView
 
@@ -28,6 +28,7 @@ from app.views.auth.signup import AgreementRegistrationView
 class ContactRegistrationView(AuthView):
     contacts = list[dict]
     result: dict
+    snack_bar: SnackBar
 
     async def construct(self):
         self.result = {}
@@ -42,10 +43,18 @@ class ContactRegistrationView(AuthView):
                     on_change=partial(self.change_contact, contact.id),
                 ),
             ]
+        self.snack_bar = SnackBar(
+            content=Text(
+                value=await self.client.session.gtv(key='error_contacts_min'),
+                color=colors.WHITE,
+                bgcolor=colors.RED,
+            ),
+        )
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='registration_account_create_view_title'),
             with_expand=True,
             controls=[
+                self.snack_bar,
                 Container(
                     content=Column(
                         controls=contact_controls,
@@ -71,7 +80,13 @@ class ContactRegistrationView(AuthView):
 
     async def change_contact(self, contact_id: int, event: ControlEvent):
         self.result[contact_id] = event.data
+        if not self.result[contact_id]:
+            del self.result[contact_id]
 
     async def change_view(self, _):
+        if len(self.result) < 1:
+            self.snack_bar.open = True
+            await self.snack_bar.update_async()
+            return
         self.client.session.registration.contacts = self.result
         await self.client.change_view(view=AgreementRegistrationView(), delete_current=True)
