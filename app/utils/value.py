@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+import logging
 from decimal import Decimal
 from typing import Optional
 
@@ -28,10 +27,14 @@ def get_decimal_places(value: float):
 
 
 def get_fix_rate(rate: float) -> tuple[float, int]:
+    logging.critical(f'1 {rate}')
     decimal_places = get_decimal_places(value=rate)
     if decimal_places < 2:
         return rate, 1
-    return rate * 10 ** (decimal_places - 1), 1 * 10 ** (decimal_places - 1)
+    result_rate = round(rate * 10 ** (decimal_places - 1), 1)
+    result_div = 1 * 10 ** (decimal_places - 1)
+    logging.critical(f'2 {result_rate}/{result_div}')
+    return result_rate, result_div
 
 
 def value_to_int(value: Optional[float], decimal: int = settings.default_decimal) -> Optional[int]:
@@ -84,3 +87,27 @@ def size_value_to_str(value: Optional[int]) -> str:
         n += 1
     value = round(value, 1)
     return f'{value} {power_labels[n]}B'
+
+
+def get_input_currency_value(request):
+    if request.rate_confirmed:
+        return request.input_currency_value_raw
+    return request.input_currency_value
+
+
+def get_input_value(request):
+    if request.rate_confirmed:
+        return request.input_value_raw
+    return request.input_value
+
+
+def get_output_currency_value(request):
+    if request.rate_confirmed:
+        return request.output_currency_value_raw
+    return request.output_currency_value
+
+
+def get_output_value(request):
+    if request.rate_confirmed:
+        return request.output_value_raw
+    return request.output_value

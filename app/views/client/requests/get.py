@@ -27,7 +27,8 @@ from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, value_to_str
 from app.utils.updater import UpdateChecker
 from app.utils.updater.schemes import get_request_scheme, get_order_list_scheme
-from app.utils.value import requisite_value_to_str, get_fix_rate
+from app.utils.value import requisite_value_to_str, get_fix_rate, get_input_currency_value, get_input_value, \
+    get_output_currency_value, get_output_value
 from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView
 from app.views.main.tabs.acoount import open_support
@@ -94,14 +95,15 @@ class RequestView(ClientBaseView):
 
     async def update_info_card(self, update: bool = True) -> None:
         rate = value_to_float(value=self.request.rate, decimal=self.request.rate_decimal)
+        rate_str = ''
         if self.request.type == 'input':
             input_currency = self.request.input_currency
             input_currency_value = value_to_float(
-                value=self.request.input_currency_value,
+                value=get_input_currency_value(request=self.request),
                 decimal=input_currency.decimal,
             )
             input_value = value_to_float(
-                value=self.request.input_value,
+                value=get_input_value(request=self.request),
                 decimal=input_currency.decimal,
             )
             value_str = (
@@ -109,15 +111,21 @@ class RequestView(ClientBaseView):
                 f' -> '
                 f'{value_to_str(value=input_value)}'
             )
-            rate_str = f'{rate} {input_currency.id_str.upper()} / 1'
+            if rate:
+                rate_fix, rate_decimal = get_fix_rate(rate=rate)
+                rate_str = (
+                    f'{rate_fix} {input_currency.id_str.upper()}'
+                    f' / '
+                    f'{rate_decimal}'
+                )
         elif self.request.type == 'output':
             output_currency = self.request.output_currency
             output_currency_value = value_to_float(
-                value=self.request.output_currency_value,
+                value=get_output_currency_value(request=self.request),
                 decimal=output_currency.decimal,
             )
             output_value = value_to_float(
-                value=self.request.output_value,
+                value=get_output_value(request=self.request),
                 decimal=output_currency.decimal,
             )
             value_str = (
@@ -125,16 +133,22 @@ class RequestView(ClientBaseView):
                 f' -> '
                 f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
             )
-            rate_str = f'{rate} {output_currency.id_str.upper()} / 1'
+            if rate:
+                rate_fix, rate_decimal = get_fix_rate(rate=rate)
+                rate_str = (
+                    f'{rate_fix} {output_currency.id_str.upper()}'
+                    f' / '
+                    f'{rate_decimal}'
+                )
         else:
             input_currency = self.request.input_currency
             output_currency = self.request.output_currency
             input_currency_value = value_to_float(
-                value=self.request.input_currency_value,
+                value=get_input_currency_value(request=self.request),
                 decimal=input_currency.decimal,
             )
             output_currency_value = value_to_float(
-                value=self.request.output_currency_value,
+                value=get_output_currency_value(request=self.request),
                 decimal=output_currency.decimal,
             )
             value_str = (
@@ -142,8 +156,13 @@ class RequestView(ClientBaseView):
                 f' -> '
                 f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
             )
-            rate_fix, rate_decimal = get_fix_rate(rate=rate)
-            rate_str = f'{rate_fix} {input_currency.id_str.upper()} / {rate_decimal} {output_currency.id_str.upper()}'
+            if rate:
+                rate_fix, rate_decimal = get_fix_rate(rate=rate)
+                rate_str = (
+                    f'{rate_fix} {input_currency.id_str.upper()}'
+                    f' / '
+                    f'{rate_decimal} {output_currency.id_str.upper()}'
+                )
         if self.request.name:
             value_str = f'{self.request.name} ({value_str})'
         state_row = await self.client.session.gtv(key=f'request_state_{self.request.state}')

@@ -25,6 +25,7 @@ from app.controls.button import Chip, StandardButton
 from app.controls.information import Card, Text, InformationContainer, SubTitle
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts, Icons, value_to_float, value_to_str
+from app.utils.value import get_output_currency_value, get_input_currency_value, get_output_value, get_input_value
 from app.views.client.requests import RequestView
 from app.views.main.tabs.base import BaseTab
 
@@ -234,11 +235,11 @@ class HomeTab(BaseTab):
             if request.type == 'input':
                 input_currency = request.input_currency
                 input_currency_value = value_to_float(
-                    value=request.input_currency_value,
+                    value=get_input_currency_value(request=request),
                     decimal=input_currency.decimal,
                 )
                 input_value = value_to_float(
-                    value=request.input_value,
+                    value=get_input_value(request=request),
                     decimal=input_currency.decimal,
                 )
                 value_str = (
@@ -249,11 +250,11 @@ class HomeTab(BaseTab):
             elif request.type == 'output':
                 output_currency = request.output_currency
                 output_currency_value = value_to_float(
-                    value=request.output_currency_value,
+                    value=get_output_currency_value(request=request),
                     decimal=output_currency.decimal,
                 )
                 output_value = value_to_float(
-                    value=request.output_value,
+                    value=get_output_value(request=request),
                     decimal=output_currency.decimal,
                 )
                 value_str = (
@@ -261,15 +262,16 @@ class HomeTab(BaseTab):
                     f' -> '
                     f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
                 )
+
             else:
                 input_currency = request.input_currency
                 output_currency = request.output_currency
                 input_currency_value = value_to_float(
-                    value=request.input_currency_value,
+                    value=get_input_currency_value(request=request),
                     decimal=input_currency.decimal,
                 )
                 output_currency_value = value_to_float(
-                    value=request.output_currency_value,
+                    value=get_output_currency_value(request=request),
                     decimal=output_currency.decimal,
                 )
                 value_str = (
