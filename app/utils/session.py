@@ -52,11 +52,8 @@ class Session:
         self.timezone = None
 
     async def error(self, exception: ApiException):
-        title = await self.client.session.gtv(key=f'error_{exception.code}')
-        await self.bs_error.open_(
-            title=title.format(**exception.kwargs),
-            icon=Icons.ERROR,
-        )
+        title = await self.gtv(key=f'error_{exception.code}', **exception.kwargs)
+        await self.bs_error.open_(title=title, icon=Icons.ERROR)
 
     async def init_bs(self):
         from app.controls.information.bottom_sheet import BottomSheet
