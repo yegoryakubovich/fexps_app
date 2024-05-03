@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
+
 from functools import partial
 
 from flet_core import TextField, Row, Image, colors, ScrollMode
@@ -47,7 +48,6 @@ class AccountContactView(AdminBaseView):
         contact_controls = []
         self.scroll = ScrollMode.AUTO
         for contact in self.contacts:
-            logging.critical(contact)
             contact_controls += [
                 Row(
                     controls=[

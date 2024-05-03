@@ -15,7 +15,6 @@
 #
 
 
-import logging
 from functools import partial
 
 from flet_core import ScrollMode, colors, Row, MainAxisAlignment
@@ -45,7 +44,6 @@ class CommissionPackValueListView(AdminBaseView):
         self.commissions_packs_values = await self.client.session.api.admin.commissions_packs.values.get_list(
             commission_pack_id=self.commission_pack_id,
         )
-        logging.critical(self.commissions_packs_values)
         await self.set_type(loading=False)
         self.total_pages = (len(self.commissions_packs_values) - 1) // self.items_per_page + 1
         index_1, index_2 = (self.page_count - 1) * self.items_per_page, self.page_count * self.items_per_page

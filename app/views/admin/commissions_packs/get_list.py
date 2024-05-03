@@ -15,7 +15,6 @@
 #
 
 
-import logging
 from functools import partial
 
 from flet_core import ScrollMode, colors
@@ -44,7 +43,6 @@ class CommissionPackListView(AdminBaseView):
         except ApiException as exception:
             await self.set_type(loading=False)
             return await self.client.session.error(exception=exception)
-        logging.critical(self.commissions_packs)
         await self.set_type(loading=False)
         self.total_pages = (len(self.commissions_packs) - 1) // self.items_per_page + 1
         index_1, index_2 = (self.page_count - 1) * self.items_per_page, self.page_count * self.items_per_page
