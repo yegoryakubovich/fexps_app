@@ -82,7 +82,9 @@ class MainView(View):
             )
             for tab in TABS
         ]
-        self.tab_default = self.tabs[0] if not self.tab_selected else self.tab_selected
+        self.tab_default = self.tabs[0]
+        if self.tab_selected:
+            self.tab_default = next(tab for tab in self.tabs if tab.name == self.tab_selected.name)
 
         self.controls = [
             # Header
