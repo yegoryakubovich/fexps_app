@@ -153,7 +153,7 @@ class RequisiteCreateView(ClientBaseView):
                     key=requisite_data.id,
                 ))
             return Dropdown(
-                label=await self.client.session.gtv(key='output_requisite_data'),
+                label=await self.client.session.gtv(key='requisite_create_output_requisite_data'),
                 options=output_requisite_data_options,
                 expand=True,
             )
@@ -247,13 +247,15 @@ class RequisiteCreateView(ClientBaseView):
             update_async=self.update_async,
             before_close=self.create_output_requisite_data_before_clise,
             after_close=self.create_output_requisite_data_after_close,
+            currency_id_str=self.dd_currency.value,
         )
         await self.requisite_data_model.construct()
         self.dialog.content = Container(
             content=Column(
                 controls=self.requisite_data_model.controls,
             ),
-            height=self.requisite_data_model.height,
+            expand=True,
+            width=self.requisite_data_model.width,
         )
         self.dialog.actions = self.requisite_data_model.buttons
         self.dialog.open = True
