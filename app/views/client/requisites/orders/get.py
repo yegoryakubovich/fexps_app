@@ -181,7 +181,7 @@ class RequisiteOrderView(ClientBaseView):
                                 controls=[
                                     Text(
                                         value=await self.client.session.gtv(key='help_faq'),
-                                        size=28,
+                                        size=18,
                                         font_family=Fonts.SEMIBOLD,
                                         color=colors.ON_BACKGROUND,
                                     ),
@@ -190,7 +190,7 @@ class RequisiteOrderView(ClientBaseView):
                             ),
                             Image(
                                 src=Icons.OPEN,
-                                height=28,
+                                height=18,
                                 color=colors.ON_BACKGROUND,
                             ),
                         ],
@@ -207,7 +207,7 @@ class RequisiteOrderView(ClientBaseView):
                                 controls=[
                                     Text(
                                         value=await self.client.session.gtv(key='help_telegram_contact_title'),
-                                        size=28,
+                                        size=18,
                                         font_family=Fonts.SEMIBOLD,
                                         color=colors.ON_BACKGROUND,
                                     ),
@@ -216,7 +216,7 @@ class RequisiteOrderView(ClientBaseView):
                             ),
                             Image(
                                 src=Icons.OPEN,
-                                height=28,
+                                height=18,
                                 color=colors.ON_BACKGROUND,
                             ),
                         ]
@@ -233,7 +233,7 @@ class RequisiteOrderView(ClientBaseView):
                                 controls=[
                                     Text(
                                         value=await self.client.session.gtv(key='help_chat_title'),
-                                        size=28,
+                                        size=18,
                                         font_family=Fonts.SEMIBOLD,
                                         color=colors.ON_BACKGROUND,
                                     ),
@@ -242,7 +242,7 @@ class RequisiteOrderView(ClientBaseView):
                             ),
                             Image(
                                 src=Icons.OPEN,
-                                height=28,
+                                height=18,
                                 color=colors.ON_BACKGROUND,
                             ),
                         ]
