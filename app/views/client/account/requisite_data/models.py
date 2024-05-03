@@ -44,15 +44,15 @@ class RequisiteDataCreateModel:
             self,
             session: Session,
             update_async: callable,
-            after_close: callable = None,
             before_close: callable = None,
+            after_close: callable = None,
             currency_id_str: str = None,
             method_id: int = None,
     ):
         self.session = session
         self.update_async = update_async
-        self.after_close = after_close
         self.before_close = before_close
+        self.after_close = after_close
         self.currency_id_str = currency_id_str
         self.method_id = method_id
 

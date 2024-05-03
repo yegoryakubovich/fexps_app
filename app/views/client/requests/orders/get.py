@@ -338,28 +338,26 @@ class RequestOrderView(ClientBaseView):
             await self.chat_button.update_async()
 
     async def update_order_request_completed_button(self, update: bool = True) -> None:
-        controls = [
-            Text(
-                value=await self.client.session.gtv(key=f'order_request_{self.order_request.type}_completed'),
-                size=20,
-                font_family=Fonts.SEMIBOLD,
-                color=colors.ON_PRIMARY,
-            )
-        ]
         if self.order_request.type == 'update_value':
-            value_str = value_to_float(value=self.order_request.data['value'], decimal=self.currency.decimal)
-            value_str = value_to_str(value=value_str)
-            controls += [
-                Text(
-                    value=f'({value_str})',
-                    size=20,
-                    font_family=Fonts.SEMIBOLD,
-                    color=colors.ON_PRIMARY,
-                ),
-            ]
+            value = self.order_request.data['currency_value']
+            value_str = value_to_str(value=value_to_float(value=value, decimal=self.currency.decimal))
+            text_str = await self.client.session.gtv(
+                key=f'order_request_{self.order_request.type}_completed',
+                value=value_str,
+                currency=self.currency.id_str.upper(),
+            )
+        else:
+            text_str = await self.client.session.gtv(key=f'order_request_{self.order_request.type}_completed')
         self.order_request_completed_button = StandardButton(
             content=Row(
-                controls=controls,
+                controls=[
+                    Text(
+                        value=text_str,
+                        size=20,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY,
+                    ),
+                ],
                 alignment=MainAxisAlignment.CENTER,
             ),
             bgcolor=colors.PRIMARY,
@@ -370,28 +368,26 @@ class RequestOrderView(ClientBaseView):
             await self.order_request_completed_button.update_async()
 
     async def update_order_request_canceled_button(self, update: bool = True) -> None:
-        controls = [
-            Text(
-                value=await self.client.session.gtv(key=f'order_request_{self.order_request.type}_canceled'),
-                size=20,
-                font_family=Fonts.SEMIBOLD,
-                color=colors.ON_PRIMARY,
-            ),
-        ]
         if self.order_request.type == 'update_value':
-            value_str = value_to_float(value=self.order_request.data['value'], decimal=self.currency.decimal)
-            value_str = value_to_str(value=value_str)
-            controls += [
-                Text(
-                    value=f'({value_str})',
-                    size=20,
-                    font_family=Fonts.SEMIBOLD,
-                    color=colors.ON_PRIMARY,
-                ),
-            ]
+            value = self.order_request.data['currency_value']
+            value_str = value_to_str(value=value_to_float(value=value, decimal=self.currency.decimal))
+            text_str = await self.client.session.gtv(
+                key=f'order_request_{self.order_request.type}_canceled',
+                value=value_str,
+                currency=self.currency.id_str.upper(),
+            )
+        else:
+            text_str = await self.client.session.gtv(key=f'order_request_{self.order_request.type}_canceled')
         self.order_request_canceled_button = StandardButton(
             content=Row(
-                controls=controls,
+                controls=[
+                    Text(
+                        value=text_str,
+                        size=20,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY,
+                    ),
+                ],
                 alignment=MainAxisAlignment.CENTER,
             ),
             bgcolor=colors.PRIMARY,
