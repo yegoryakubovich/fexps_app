@@ -43,6 +43,7 @@ class RequisiteOrderView(ClientBaseView):
     info_card: InformationContainer
     help_column: Column
     input_confirmation_button: StandardButton
+    input_cancel_button: StandardButton
     output_payment_button: StandardButton
     chat_button: StandardButton
     update_value_button: StandardButton
@@ -265,11 +266,13 @@ class RequisiteOrderView(ClientBaseView):
             value=self.order.currency_value,
             decimal=self.currency.decimal,
         )
-        currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
-        output_confirmation = await self.client.session.gtv(key='requisite_order_input_confirmation_button')
         self.input_confirmation_button = StandardButton(
             content=Text(
-                value=f'{output_confirmation} {currency_value_str}',
+                value=await self.client.session.gtv(
+                    key='requisite_order_input_confirmation_button',
+                    value=value_to_str(currency_value),
+                    currency=self.currency.id_str.upper(),
+                ),
                 size=20,
                 font_family=Fonts.SEMIBOLD,
                 color=colors.ON_PRIMARY,
@@ -280,6 +283,21 @@ class RequisiteOrderView(ClientBaseView):
         )
         if update:
             await self.input_confirmation_button.update_async()
+
+    async def update_input_cancel_button(self, update: bool = True) -> None:
+        self.input_cancel_button = StandardButton(
+            content=Text(
+                value=await self.client.session.gtv(key='requisite_order_input_cancel_button'),
+                size=20,
+                font_family=Fonts.SEMIBOLD,
+                color=colors.ON_PRIMARY,
+            ),
+            bgcolor=colors.PRIMARY,
+            on_click=self.input_cancel_confirm,
+            expand=2,
+        )
+        if update:
+            await self.input_cancel_button.update_async()
 
     """
     OUTPUT PAYMENT
@@ -471,6 +489,7 @@ class RequisiteOrderView(ClientBaseView):
         await self.set_type(loading=False)
         await self.update_info_card(update=False)
         await self.update_help_cards(update=False)
+        await self.update_chat_button(update=False)
         controls += [
             self.info_card,
             self.help_column,
@@ -487,14 +506,6 @@ class RequisiteOrderView(ClientBaseView):
                         ]
                     ),
                 ]
-            await self.update_chat_button(update=False)
-            buttons += [
-                Row(
-                    controls=[
-                        self.chat_button,
-                    ]
-                ),
-            ]
         elif self.order.type == 'input':
             if self.order.state == 'waiting':
                 pass
@@ -502,7 +513,6 @@ class RequisiteOrderView(ClientBaseView):
                 await self.update_update_value_button(update=False)
                 await self.update_cancel_button(update=False)
                 await self.update_recreate_button(update=False)
-                await self.update_chat_button(update=False)
                 buttons += [
                     Row(
                         controls=[
@@ -511,20 +521,15 @@ class RequisiteOrderView(ClientBaseView):
                             self.recreate_button,
                         ],
                     ),
-                    Row(
-                        controls=[
-                            self.chat_button,
-                        ],
-                    ),
                 ]
             elif self.order.state == 'confirmation':
                 await self.update_input_confirmation_button(update=False)
-                await self.update_chat_button(update=False)
+                await self.update_input_cancel_button(update=False)
                 buttons += [
                     Row(
                         controls=[
                             self.input_confirmation_button,
-                            self.chat_button,
+                            self.input_cancel_button,
                         ],
                     ),
                 ]
@@ -538,7 +543,6 @@ class RequisiteOrderView(ClientBaseView):
                 await self.update_cancel_button(update=False)
                 await self.update_recreate_button(update=False)
                 await self.update_output_payment_button(update=False)
-                await self.update_chat_button(update=False)
                 buttons += [
                     Row(
                         controls=[
@@ -550,21 +554,20 @@ class RequisiteOrderView(ClientBaseView):
                     Row(
                         controls=[
                             self.output_payment_button,
-                            self.chat_button,
                         ],
                     ),
                 ]
             elif self.order.state == 'confirmation':
-                await self.update_chat_button(update=False)
-                buttons += [
-                    Row(
-                        controls=[
-                            self.chat_button,
-                        ],
-                    ),
-                ]
+                pass
             else:  # completed, canceled
                 pass
+        buttons += [
+            Row(
+                controls=[
+                    self.chat_button,
+                ]
+            ),
+        ]
         title_str = await self.client.session.gtv(key='request_order_title')
         self.controls = await self.get_controls(
             title=f'{title_str} #{self.order.id:08}',
@@ -674,7 +677,12 @@ class RequisiteOrderView(ClientBaseView):
     async def input_confirmation_confirm(self, _):
         try:
             await self.client.session.api.client.orders.updates.completed(id_=self.order_id)
-            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
+
+    async def input_cancel_confirm(self, _):
+        try:
+            await self.client.session.api.client.orders.updates.payment(id_=self.order_id)
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 

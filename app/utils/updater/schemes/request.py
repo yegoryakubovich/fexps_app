@@ -64,5 +64,4 @@ def get_request_scheme(request: dict = None) -> list:
         *get_requisite_data_scheme(request['output_requisite_data']),
         *get_method_scheme(request['output_method']),
         request['date'],
-        request['waiting_delta'],
     ]
