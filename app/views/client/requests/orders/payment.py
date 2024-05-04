@@ -87,6 +87,7 @@ class RequestOrderPaymentView(ClientBaseView):
         return result
 
     async def construct(self):
+        self.client.page.overlay.append(self.filepicker)
         self.input_fields = {}
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
@@ -155,7 +156,6 @@ class RequestOrderPaymentView(ClientBaseView):
         await self.text_error.update_async()
 
     async def add_photo(self, _):
-        self.client.page.overlay.append(self.filepicker)
         await self.set_text_error()
         await self.filepicker.open_(
             on_select=self.upload_files,
@@ -256,7 +256,6 @@ class RequestOrderPaymentView(ClientBaseView):
         }
         os.remove(path)
         await self.update_photo_row()
-        self.client.page.overlay.remove(self.filepicker)
 
     async def photo_delete(self, id_str, _):
         await self.set_text_error()

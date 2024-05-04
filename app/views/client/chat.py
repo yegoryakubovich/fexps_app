@@ -157,8 +157,7 @@ class ChatView(ClientBaseView):
 
     async def set_text_error(self, text_value: str = None):
         self.text_error.value = text_value
-        # await self.text_error.update_async()
-        await self.client.session.page.update_async()
+        await self.text_error.update_async()
 
     async def add_photo(self, _):
         self.client.page.overlay.append(self.filepicker)
@@ -224,8 +223,7 @@ class ChatView(ClientBaseView):
 
     async def upload_files(self, _):
         uf = []
-        self.text_error.value = None
-        await self.text_error.update_async()
+        await self.set_text_error()
         if not self.filepicker.result.files:
             return
         for f in self.filepicker.result.files:
@@ -247,9 +245,7 @@ class ChatView(ClientBaseView):
             await self.on_upload_progress(e=FilePickerUploadEvent(file_name=f.name, progress=1.0, error=None))
 
     async def on_upload_progress(self, e: FilePickerUploadEvent):
-        self.text_error.value = None
-        await self.text_error.update_async()
-        # await self.set_text_error()
+        await self.set_text_error()
         if e.progress is not None and e.progress < 1.0:
             return
         path = f'uploads/{e.file_name}'
