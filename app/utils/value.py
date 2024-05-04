@@ -30,14 +30,13 @@ def get_decimal_places(value: float):
     return Decimal(str(value)).as_tuple().exponent * -1
 
 
-def get_fix_rate(rate: float) -> tuple[float, int]:
-    logging.critical(f'1 {rate}')
-    decimal_places = get_decimal_places(value=rate)
-    if decimal_places < 2:
-        return rate, 1
-    result_rate = round(rate * 10 ** (decimal_places - 1), 1)
-    result_div = 1 * 10 ** (decimal_places - 1)
-    logging.critical(f'2 {result_rate}/{result_div}')
+def get_fix_rate(rate: float) -> tuple[float, float]:
+    if rate > 1:
+        result_rate = rate
+        result_div = 1
+    else:
+        result_rate = 1
+        result_div = round(1 / rate, 2)
     return result_rate, result_div
 
 
