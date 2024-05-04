@@ -19,6 +19,10 @@ from typing import Optional
 
 from config import settings
 
+"""
+CALCULATE
+"""
+
 
 def get_decimal_places(value: float):
     if isinstance(value, str):
@@ -35,6 +39,24 @@ def get_fix_rate(rate: float) -> tuple[float, int]:
     result_div = 1 * 10 ** (decimal_places - 1)
     logging.critical(f'2 {result_rate}/{result_div}')
     return result_rate, result_div
+
+
+def size_value_to_str(value: Optional[int]) -> str:
+    if value is None:
+        return ''
+    value = float(value)
+    n, power = 0, 2 ** 10
+    power_labels = {0: '', 1: 'K', 2: 'M', 3: 'G', 4: 'T'}
+    while value > power:
+        value /= power
+        n += 1
+    value = round(value, 1)
+    return f'{value} {power_labels[n]}B'
+
+
+"""
+VALUE FORMAT
+"""
 
 
 def value_to_int(value: Optional[float], decimal: int = settings.default_decimal) -> Optional[int]:
@@ -57,7 +79,7 @@ def value_to_str(value: Optional[float]) -> Optional[str]:
     if isinstance(value, str):
         value = value.replace(',', '.')
     if not value and value != 0:
-        return
+        return ''
     return f'{float(value):,}'.replace(',', ' ')
 
 
@@ -76,38 +98,46 @@ def requisite_value_to_str(
     return value
 
 
-def size_value_to_str(value: Optional[int]) -> str:
-    if value is None:
-        return ''
-    value = float(value)
-    n, power = 0, 2 ** 10
-    power_labels = {0: '', 1: 'K', 2: 'M', 3: 'G', 4: 'T'}
-    while value > power:
-        value /= power
-        n += 1
-    value = round(value, 1)
-    return f'{value} {power_labels[n]}B'
+"""
+VALUE GET
+"""
 
 
 def get_input_currency_value(request):
     if request.rate_confirmed:
-        return request.input_currency_value_raw
-    return request.input_currency_value
+        result = request.input_currency_value_raw
+    else:
+        result = request.input_currency_value
+    if not result and request.first_line == 'input_currency_value':
+        result = request.first_line_value
+    return result
 
 
 def get_input_value(request):
     if request.rate_confirmed:
-        return request.input_value_raw
-    return request.input_value
+        result = request.input_value_raw
+    else:
+        result = request.input_value
+    if not result and request.first_line == 'input_value':
+        result = request.first_line_value
+    return result
 
 
 def get_output_currency_value(request):
     if request.rate_confirmed:
-        return request.output_currency_value_raw
-    return request.output_currency_value
+        result = request.output_currency_value_raw
+    else:
+        result = request.output_currency_value
+    if not result and request.first_line == 'output_currency_value':
+        result = request.first_line_value
+    return result
 
 
 def get_output_value(request):
     if request.rate_confirmed:
-        return request.output_value_raw
-    return request.output_value
+        result = request.output_value_raw
+    else:
+        result = request.output_value
+    if not result and request.first_line == 'output_value':
+        result = request.first_line_value
+    return result
