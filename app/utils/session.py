@@ -111,7 +111,12 @@ class Session:
     async def set_cs(self, key: str, value: Any) -> None:
         if value is None:
             value = 'null'
-        return await self.page.client_storage.set_async(key=f'fexps.{key}', value=value)
+        while True:
+            try:
+                await self.page.client_storage.set_async(key=f'fexps.{key}', value=value)
+                break
+            except:
+                pass
 
     # Texts
     async def get_text_value(self, key):
