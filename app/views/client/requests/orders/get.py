@@ -610,7 +610,7 @@ class RequestOrderView(ClientBaseView):
 
     async def order_request_update(self, state: str, _):
         try:
-            await self.client.session.api.client.orders.requests.update(id_=self.order_id, state=state)
+            await self.client.session.api.client.orders.requests.update(id_=self.order_request.id, state=state)
             await self.construct()
             await self.update_async()
         except ApiException as exception:
