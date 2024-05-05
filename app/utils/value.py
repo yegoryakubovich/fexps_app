@@ -31,6 +31,7 @@ def get_decimal_places(value: float):
 
 
 def get_fix_rate(rate: float) -> tuple[float, float]:
+    logging.critical(rate)
     if rate > 1:
         result_rate = rate
         result_div = 1
@@ -71,7 +72,7 @@ def value_to_float(value: Optional[int], decimal: int = settings.default_decimal
         value = value.replace(',', '.')
     if not value and value != 0:
         return
-    return round(float(value) / (10 ** decimal), 2)
+    return float(value) / (10 ** decimal)
 
 
 def value_to_str(value: Optional[float]) -> Optional[str]:
