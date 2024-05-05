@@ -166,119 +166,147 @@ class RequestView(ClientBaseView):
         if self.request.name:
             value_str = f'{self.request.name} ({value_str})'
         state_row = await self.client.session.gtv(key=f'request_state_{self.request.state}')
-        self.info_card = InformationContainer(
-            content=Column(
+        info_card_controls = []
+        info_card_controls += [
+            Row(
                 controls=[
-                    Row(
-                        controls=[
-                            Text(
-                                value=value_str,
-                                size=28,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                            StandardButton(
-                                content=Image(
-                                    src=Icons.EDIT,
-                                    color=colors.ON_PRIMARY_CONTAINER,
-                                    height=24,
-                                    width=24,
-                                ),
-                                horizontal=0,
-                                vertical=0,
-                                bgcolor=colors.PRIMARY_CONTAINER,
-                                on_click=self.request_edit_name,
-                            ),
-                        ],
-                        wrap=True,
+                    Text(
+                        value=value_str,
+                        size=28,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
                     ),
-                    Divider(color=colors.ON_PRIMARY_CONTAINER),
-                    Row(
-                        controls=[
-                            Text(
-                                value=await self.client.session.gtv(key='request_id'),
-                                size=14,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                            Text(
-                                value=f'{self.request.id:08}',
-                                size=14,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
-                    ),
-                    Row(
-                        controls=[
-                            Text(
-                                value=await self.client.session.gtv(key='state'),
-                                size=14,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                            Text(
-                                value=state_row,
-                                size=14,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
-                    ),
-                    Row(
-                        controls=[
-                            Text(
-                                value=await self.client.session.gtv(key='rate'),
-                                size=14,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                            Text(
-                                value=rate_str,
-                                size=14,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
-                    ),
-                    Row(
-                        controls=[
-                            Text(
-                                value=await self.client.session.gtv(key='request_output_method'),
-                                size=14,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                            Text(
-                                value='404',
-                                size=14,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
-                    ),
-                    Row(
-                        controls=[
-                            Text(
-                                value=await self.client.session.gtv(key='date'),
-                                size=14,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                            Text(
-                                value=self.request.date.strftime('%Y-%m-%d, %H:%M:%S'),
-                                size=14,
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    StandardButton(
+                        content=Image(
+                            src=Icons.EDIT,
+                            color=colors.ON_PRIMARY_CONTAINER,
+                            height=24,
+                            width=24,
+                        ),
+                        horizontal=0,
+                        vertical=0,
+                        bgcolor=colors.PRIMARY_CONTAINER,
+                        on_click=self.request_edit_name,
                     ),
                 ],
+                wrap=True,
+            ),
+            Divider(color=colors.ON_PRIMARY_CONTAINER),
+            Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='request_id'),
+                        size=14,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                    Text(
+                        value=f'{self.request.id:08}',
+                        size=14,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+            Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='state'),
+                        size=14,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                    Text(
+                        value=state_row,
+                        size=14,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+            Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='rate'),
+                        size=14,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                    Text(
+                        value=rate_str,
+                        size=14,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+        ]
+        if self.request.input_method:
+            info_card_controls += [
+                Row(
+                    controls=[
+                        Text(
+                            value=await self.client.session.gtv(key='request_input_method'),
+                            size=14,
+                            font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
+                        ),
+                        Text(
+                            value=await self.client.session.gtv(key=self.request.input_method.name_text),
+                            size=14,
+                            font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
+                        ),
+                    ],
+                    alignment=MainAxisAlignment.SPACE_BETWEEN,
+                ),
+            ]
+        if self.request.output_method:
+            info_card_controls += [
+                Row(
+                    controls=[
+                        Text(
+                            value=await self.client.session.gtv(key='request_output_method'),
+                            size=14,
+                            font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
+                        ),
+                        Text(
+                            value=await self.client.session.gtv(key=self.request.output_method.name_text),
+                            size=14,
+                            font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
+                        ),
+                    ],
+                    alignment=MainAxisAlignment.SPACE_BETWEEN,
+                ),
+            ]
+        info_card_controls += [
+            Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='date'),
+                        size=14,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                    Text(
+                        value=self.request.date.strftime('%Y-%m-%d, %H:%M:%S'),
+                        size=14,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+        ]
+
+        self.info_card = InformationContainer(
+            content=Column(
+                controls=info_card_controls,
                 spacing=-50,
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
