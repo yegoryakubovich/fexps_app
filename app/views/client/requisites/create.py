@@ -267,6 +267,8 @@ class RequisiteCreateView(ClientBaseView):
 
     async def create_output_requisite_data_after_close(self):
         await self.change_type_or_currency('')
+        if self.dd_currency.value == self.requisite_data_model.currency_id_str:
+            self.dd_output_requisite_data.value = self.requisite_data_model.requisite_data_id
         await self.update_async()
 
     async def requisite_create(self, _: ControlEvent):

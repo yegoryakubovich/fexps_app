@@ -57,6 +57,7 @@ class ChatView(ClientBaseView):
         self.filepicker = FilePicker()
 
     async def construct(self):
+        self.client.page.overlay.append(self.filepicker)
         account = self.client.session.account
         old_messages = await self.client.session.api.client.messages.get_list(order_id=self.order_id)
         old_messages_controls = [
@@ -160,7 +161,6 @@ class ChatView(ClientBaseView):
         await self.text_error.update_async()
 
     async def add_photo(self, _):
-        self.client.page.overlay.append(self.filepicker)
         await self.set_text_error()
         await self.filepicker.open_(
             on_select=self.upload_files,
@@ -261,7 +261,6 @@ class ChatView(ClientBaseView):
         }
         os.remove(path)
         await self.update_photo_row()
-        self.client.page.overlay.remove(self.filepicker)
 
     async def photo_delete(self, id_str, _):
         await self.set_text_error()
