@@ -679,12 +679,16 @@ class RequisiteOrderView(ClientBaseView):
     async def input_confirmation_confirm(self, _):
         try:
             await self.client.session.api.client.orders.updates.completed(id_=self.order_id)
+            await self.construct()
+            await self.update_async()
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 
     async def input_cancel_confirm(self, _):
         try:
             await self.client.session.api.client.orders.updates.payment(id_=self.order_id)
+            await self.construct()
+            await self.update_async()
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 
