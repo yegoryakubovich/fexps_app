@@ -198,12 +198,11 @@ class RequestTab(BaseTab):
         ]
 
     async def get_history_request_cards(self) -> list[StandardButton]:
-        params = dict(is_completed=False, is_canceled=False)
-        if self.selected_chip in [Chips.COMPLETED, Chips.ALL]:
-            params['is_completed'] = True
-        if self.selected_chip in [Chips.CANCELED, Chips.ALL]:
-            params['is_canceled'] = True
-        response = await self.client.session.api.client.requests.search(**params, page=self.page_request)
+        response = await self.client.session.api.client.requests.search(
+            is_completed=self.selected_chip in [Chips.COMPLETED, Chips.ALL],
+            is_canceled=self.selected_chip in [Chips.CANCELED, Chips.ALL],
+            page=self.page_request,
+        )
         self.history_requests = response.requests
         self.total_pages = response.pages
         cards: list[StandardButton] = []
@@ -331,10 +330,6 @@ class RequestTab(BaseTab):
             await self.update_async()
 
     async def construct(self):
-        self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
-        self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
-            id_=self.client.session.current_wallet.id,
-        )
         await self.update_currently_request(update=False)
         await self.update_history_request(update=False)
         self.scroll = ScrollMode.AUTO

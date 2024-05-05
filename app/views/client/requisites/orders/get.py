@@ -15,7 +15,6 @@
 #
 
 
-import asyncio
 from functools import partial
 
 from flet_core import Column, Container, Row, Divider, MainAxisAlignment, \
@@ -25,8 +24,6 @@ from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, Error, value_to_int
-from app.utils.updater import UpdateChecker
-from app.utils.updater.schemes import get_order_scheme
 from app.utils.value import value_to_str, requisite_value_to_str
 from app.views.main.tabs.acoount import open_support
 from fexps_api_client.utils import ApiException
@@ -481,7 +478,6 @@ class RequisiteOrderView(ClientBaseView):
 
     async def construct(self):
         controls, buttons = [], []
-        asyncio.create_task(self.auto_reloader())
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
         self.order_request = self.order.order_request
@@ -691,26 +687,3 @@ class RequisiteOrderView(ClientBaseView):
             await self.update_async()
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
-
-    async def auto_reloader(self):
-        if self.reload_bool:
-            return
-        self.reload_bool = True
-        await asyncio.sleep(10)
-        while self.reload_bool:
-            if self.client.page.route != self.route:
-                self.reload_bool = False
-                return
-            if self.reload_stop:
-                await asyncio.sleep(5)
-                continue
-            order = await self.client.session.api.client.orders.get(id_=self.order_id)
-            order_check = UpdateChecker().check(
-                scheme=get_order_scheme,
-                obj_1=self.order,
-                obj_2=order,
-            )
-            if order_check:
-                await self.construct()
-                await self.update_async()
-            await asyncio.sleep(5)

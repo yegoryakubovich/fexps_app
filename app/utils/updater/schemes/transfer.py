@@ -15,12 +15,27 @@
 #
 
 
-from .currency import get_currency_scheme, get_currency_list_scheme
-from .method import get_method_scheme, get_method_list_scheme
-from .order import get_order_scheme, get_order_list_scheme
-from .order_request import get_order_request_scheme, get_order_request_list_scheme
-from .request import get_request_scheme, get_request_list_scheme
-from .requisite import get_requisite_scheme, get_requisite_list_scheme
-from .requisite_data import get_requisite_data_scheme, get_requisite_data_list_scheme
-from .wallet import get_wallet_scheme, get_wallet_list_scheme
-from .transfer import get_transfer_scheme, get_transfer_list_scheme
+def get_transfer_list_scheme(transfers: list[dict] = None) -> list:
+    if transfers is None:
+        return []
+    return [
+        get_transfer_scheme(transfer)
+        for transfer in transfers
+    ]
+
+
+def get_transfer_scheme(transfer: dict = None) -> list:
+    if transfer is None:
+        return []
+    return [
+        transfer['id'],
+        transfer['type'],
+        transfer['operation'],
+        transfer['wallet_from'],
+        transfer['account_from'],
+        transfer['wallet_to'],
+        transfer['account_to'],
+        transfer['order'],
+        transfer['value'],
+        transfer['date'],
+    ]

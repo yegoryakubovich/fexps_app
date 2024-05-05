@@ -19,8 +19,8 @@ from flet_core import Container, Image, alignment, padding, BoxShadow, Row, colo
 from flet_manager.utils import get_svg
 from flet_manager.views import BaseView
 
-from app.controls.information import Text
 from app.controls.information.loading import Loading
+from app.controls.information.text import Text
 from app.utils import Fonts, Icons
 
 

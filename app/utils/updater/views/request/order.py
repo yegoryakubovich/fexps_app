@@ -15,12 +15,23 @@
 #
 
 
-from .currency import get_currency_scheme, get_currency_list_scheme
-from .method import get_method_scheme, get_method_list_scheme
-from .order import get_order_scheme, get_order_list_scheme
-from .order_request import get_order_request_scheme, get_order_request_list_scheme
-from .request import get_request_scheme, get_request_list_scheme
-from .requisite import get_requisite_scheme, get_requisite_list_scheme
-from .requisite_data import get_requisite_data_scheme, get_requisite_data_list_scheme
-from .wallet import get_wallet_scheme, get_wallet_list_scheme
-from .transfer import get_transfer_scheme, get_transfer_list_scheme
+from app.utils.updater import update_check
+from app.utils.updater.schemes import get_order_scheme
+from app.views.client.requests import RequestOrderView
+
+
+async def check_update_request_order_view(view: RequestOrderView, update: bool = True):
+    check_list = []
+    order = await view.client.session.api.client.orders.get(id_=view.order_id)
+    check_list += [
+        update_check(
+            scheme=get_order_scheme(),
+            obj_1=view.order,
+            obj_2=order,
+        ),
+    ]
+    if True not in check_list:
+        return
+    await view.construct()
+    if update:
+        await view.update_async()

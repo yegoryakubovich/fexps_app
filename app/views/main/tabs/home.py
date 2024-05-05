@@ -367,8 +367,8 @@ class HomeTab(BaseTab):
     async def get_history_transfer_cards(self) -> list[StandardButton]:
         response = await self.client.session.api.client.transfers.search(
             wallet_id=self.client.session.current_wallet.id,
-            is_sender=True if self.selected_chip in [Chips.output, Chips.all] else False,
-            is_receiver=True if self.selected_chip in [Chips.input, Chips.all] else False,
+            is_sender=self.selected_chip in [Chips.output, Chips.all],
+            is_receiver=self.selected_chip in [Chips.input, Chips.all],
             page=self.page_transfer,
         )
         self.transfers = response.transfers

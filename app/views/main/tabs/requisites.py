@@ -45,7 +45,7 @@ class RequisiteTab(BaseTab):
     requisites = list[dict]
     control_dict: dict
 
-    history_requests = dict
+    history_requisites = dict
     currency_orders = dict
     column: Column
 
@@ -234,27 +234,17 @@ class RequisiteTab(BaseTab):
         ]
 
     async def get_requisite_history_cards(self) -> list[StandardButton]:
-        params = dict(
-            is_type_input=False,
-            is_type_output=False,
-            is_state_enable=False,
-            is_state_stop=False,
-            is_state_disable=False,
+        response = await self.client.session.api.client.requisites.search(
+            is_type_input=self.selected_type_chip in [TypeChips.INPUT, TypeChips.ALL],
+            is_type_output=self.selected_type_chip in [TypeChips.OUTPUT, TypeChips.ALL],
+            is_state_enable=self.selected_state_chip in [StateChips.ENABLE, StateChips.ALL],
+            is_state_stop=self.selected_state_chip in [StateChips.STOP, StateChips.ALL],
+            is_state_disable=self.selected_state_chip in [StateChips.DISABLE, StateChips.ALL],
+            page=self.page_requisites,
         )
-        if self.selected_type_chip in [TypeChips.INPUT, TypeChips.ALL]:
-            params['is_type_input'] = True
-        if self.selected_type_chip in [TypeChips.OUTPUT, TypeChips.ALL]:
-            params['is_type_output'] = True
-        if self.selected_state_chip in [StateChips.ENABLE, StateChips.ALL]:
-            params['is_state_enable'] = True
-        if self.selected_state_chip in [StateChips.STOP, StateChips.ALL]:
-            params['is_state_stop'] = True
-        if self.selected_state_chip in [StateChips.DISABLE, StateChips.ALL]:
-            params['is_state_disable'] = True
-        response = await self.client.session.api.client.requisites.search(**params, page=self.page_requisites)
-        self.history_requests = response.requisites
+        self.history_requisites = response.requisites
         cards: list[StandardButton] = []
-        for requisite in self.history_requests:
+        for requisite in self.history_requisites:
             currency = requisite.currency
             if requisite.type == 'input':
                 method = requisite.input_method

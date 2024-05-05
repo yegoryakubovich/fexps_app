@@ -25,8 +25,6 @@ from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, value_to_str
-from app.utils.updater import UpdateChecker
-from app.utils.updater.schemes import get_request_scheme, get_order_list_scheme
 from app.utils.value import requisite_value_to_str, get_fix_rate, get_input_currency_value, get_input_value, \
     get_output_currency_value, get_output_value
 from app.views.client.requests.models import RequestUpdateNameModel
@@ -495,7 +493,6 @@ class RequestView(ClientBaseView):
 
     async def construct(self):
         controls, buttons = [], []
-        asyncio.create_task(self.auto_reloader())
         await self.set_type(loading=True)
         self.request = await self.client.session.api.client.requests.get(id_=self.request_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_request(request_id=self.request_id)
@@ -583,32 +580,3 @@ class RequestView(ClientBaseView):
             await self.update_async()
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
-
-    async def auto_reloader(self):
-        if self.reload_bool:
-            return
-        self.reload_bool = True
-        await asyncio.sleep(10)
-        while self.reload_bool:
-            if self.client.page.route != self.route:
-                self.reload_bool = False
-                return
-            if self.reload_stop:
-                await asyncio.sleep(5)
-                continue
-            request = await self.client.session.api.client.requests.get(id_=self.request_id)
-            request_check = UpdateChecker().check(
-                scheme=get_request_scheme,
-                obj_1=self.request,
-                obj_2=request,
-            )
-            orders = await self.client.session.api.client.orders.list_get.by_request(request_id=self.request_id)
-            orders_check = UpdateChecker().check(
-                scheme=get_order_list_scheme,
-                obj_1=self.orders,
-                obj_2=orders,
-            )
-            if request_check or orders_check:
-                await self.construct()
-                await self.update_async()
-            await asyncio.sleep(5)

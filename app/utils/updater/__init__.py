@@ -15,4 +15,5 @@
 #
 
 
-from .checker import UpdateChecker
+from .checker import update_check
+from . import schemes

@@ -15,6 +15,8 @@
 #
 
 
+import asyncio
+from functools import partial
 from typing import Any
 
 from flet_core import Page
@@ -50,6 +52,7 @@ class Session:
         self.page = client.page
         self.account = None
         self.timezone = None
+        self.updater = True
 
     async def error(self, exception: ApiException):
         title = await self.gtv(key=f'error_{exception.code}', **exception.kwargs)
@@ -75,6 +78,7 @@ class Session:
         self.language = await self.get_cs(key='language')
         self.text_pack = await self.get_cs(key='text_pack')
         self.current_wallet = await self.get_cs(key='current_wallet')
+        asyncio.create_task(self.start_updater())
 
         self.api = FexpsApiClient(url=settings.get_url(), token=self.token)
         try:
@@ -134,3 +138,35 @@ class Session:
             language = self.language
         self.text_pack = await self.api.client.texts.packs.get(language=language)
         await self.set_cs(key='text_pack', value=self.text_pack)
+
+    async def start_updater(self):
+        from app.utils.updater.views.main import check_update_main_view
+        from app.utils.updater.views.request import check_update_request_view
+        from app.utils.updater.views.request.order import check_update_request_order_view
+        from app.utils.updater.views.requisite import check_update_requisite_view
+        from app.utils.updater.views.requisite.order import check_update_requisite_order_view
+
+        from app.views.client.requests import RequestView
+        from app.views.client.requests.orders import RequestOrderView
+        from app.views.client.requisites import RequisiteView
+        from app.views.client.requisites.orders import RequisiteOrderView
+        from app.views.main.main import MainView
+
+        self.page.on_disconnect = self.on_disconnect
+        methods = [
+            (MainView, check_update_main_view),
+            (RequestView, check_update_request_view),
+            (RequestOrderView, check_update_request_order_view),
+            (RequisiteView, check_update_requisite_view),
+            (RequisiteOrderView, check_update_requisite_order_view),
+        ]
+        while self.updater:
+            last_view = self.page.views[-1]
+            for type_, func in methods:
+                if not isinstance(last_view, type_):
+                    continue
+                await func(view=last_view)
+            await asyncio.sleep(5)
+
+    async def on_disconnect(self, _):
+        self.updater = False

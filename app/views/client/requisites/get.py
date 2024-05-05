@@ -15,7 +15,6 @@
 #
 
 
-import asyncio
 from functools import partial
 
 from flet_core import Row, colors, MainAxisAlignment, Image, Column, ScrollMode, Container
@@ -24,8 +23,6 @@ from app.controls.button import StandardButton
 from app.controls.information import SubTitle, Text
 from app.controls.layout import ClientBaseView
 from app.utils import Icons, Fonts, value_to_float
-from app.utils.updater import UpdateChecker
-from app.utils.updater.schemes import get_order_list_scheme, get_requisite_scheme
 from app.utils.value import requisite_value_to_str
 from app.views.client.requisites.orders.get import RequisiteOrderView
 from app.views.main.tabs.acoount import open_support
@@ -247,7 +244,6 @@ class RequisiteView(ClientBaseView):
 
     async def construct(self):
         controls, buttons = [], []
-        asyncio.create_task(self.auto_reloader())
         await self.set_type(loading=True)
         self.requisite = await self.client.session.api.client.requisites.get(id_=self.requisite_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_requisite(requisite_id=self.requisite_id)
@@ -341,32 +337,3 @@ class RequisiteView(ClientBaseView):
         except ApiException as exception:
             await self.set_type(loading=False)
             return await self.client.session.error(exception=exception)
-
-    async def auto_reloader(self):
-        if self.reload_bool:
-            return
-        self.reload_bool = True
-        await asyncio.sleep(10)
-        while self.reload_bool:
-            if self.client.page.route != self.route:
-                self.reload_bool = False
-                return
-            if self.reload_stop:
-                await asyncio.sleep(5)
-                continue
-            requisite = await self.client.session.api.client.requisites.get(id_=self.requisite_id)
-            requisite_check = UpdateChecker().check(
-                scheme=get_requisite_scheme,
-                obj_1=self.requisite,
-                obj_2=requisite,
-            )
-            orders = await self.client.session.api.client.orders.list_get.by_requisite(requisite_id=self.requisite_id)
-            orders_check = UpdateChecker().check(
-                scheme=get_order_list_scheme,
-                obj_1=self.orders,
-                obj_2=orders,
-            )
-            if requisite_check or orders_check:
-                await self.construct()
-                await self.update_async()
-            await asyncio.sleep(5)
