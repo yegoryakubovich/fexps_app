@@ -112,6 +112,7 @@ class RequisiteDataCreateModel:
         ]
 
     async def change_currency(self, _):
+        self.currency_id_str = self.dd_currency.value
         method_options = []
         for method in self.methods:
             if method.currency.id_str.lower() != self.dd_currency.value.lower():
@@ -132,6 +133,7 @@ class RequisiteDataCreateModel:
 
     async def change_method(self, _):
         self.method = await self.session.api.client.methods.get(id_=self.dd_method.value)
+        self.method_id = self.method['id']
         controls = []
         for field in self.method['schema_fields']:
             type_ = field["type"]
@@ -162,7 +164,7 @@ class RequisiteDataCreateModel:
         try:
             self.requisite_data_id = await self.session.api.client.requisites_datas.create(
                 name=self.tf_name.value,
-                method_id=self.dd_method.value,
+                method_id=int(self.dd_method.value),
                 fields=self.fields,
             )
         except ApiException as exception:

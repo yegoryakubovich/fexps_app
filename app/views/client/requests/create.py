@@ -41,8 +41,6 @@ class RequestTypes:
 class RequestCreateView(ClientBaseView):
     route = '/client/request/create'
 
-    controls_container: Container
-    optional: Column
     methods = dict
     currencies = list[dict]
     dialog: AlertDialog
