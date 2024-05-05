@@ -18,7 +18,6 @@
 from app.controls.input import Dropdown
 from app.controls.layout import AuthView
 from app.utils import Session
-from app.views.auth.signin import AuthenticationView
 from app.views.auth.language import LanguageView
 from app.views.main import MainView
 
@@ -42,7 +41,8 @@ class InitView(AuthView):
 
         # If not token
         if not self.client.session.token:
-            await self.client.change_view(view=AuthenticationView(), delete_current=True)
+            from app.views.auth.signup.first import RegistrationFirstView
+            await self.client.change_view(view=RegistrationFirstView(), delete_current=True)
             return
 
         await self.client.change_view(view=MainView())
