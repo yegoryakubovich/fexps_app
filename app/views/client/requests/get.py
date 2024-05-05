@@ -523,7 +523,6 @@ class RequestView(ClientBaseView):
         self.controls = await self.get_controls(
             title=f'{title_str} #{self.request.id:08}',
             with_expand=True,
-            back_with_restart=True,
             main_section_controls=[
                 self.dialog,
                 Container(
