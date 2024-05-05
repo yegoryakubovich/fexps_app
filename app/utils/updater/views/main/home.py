@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
 
 from app.utils.updater import update_check
 from app.utils.updater.schemes import get_wallet_list_scheme, get_request_list_scheme, get_transfer_list_scheme, \
@@ -28,7 +28,6 @@ class Chips:
 
 
 async def check_update_main_home_view(view: HomeTab, update: bool = True):
-    logging.critical(f'home {update}')
     check_list = []
     # wallets
     wallets = await view.client.session.api.client.wallets.get_list()
