@@ -63,15 +63,41 @@ class RequestOrderView(ClientBaseView):
         self.tf_value = TextField()
 
     async def update_info_card(self, update: bool = True) -> None:
-        currency_value = value_to_float(
-            value=self.order.currency_value,
-            decimal=self.currency.decimal,
-        )
-        currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
-        field_controls = []
+        currency_value = value_to_float(value=self.order.currency_value, decimal=self.currency.decimal)
+        state_str = await self.client.session.gtv(key=f'request_order_{self.order.type}_{self.order.state}')
+        info_controls = [
+            Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key=self.method.name_text),
+                        size=28,
+                        font_family=Fonts.SEMIBOLD,
+                        color=self.method.color,
+                    ),
+                ],
+            ),
+            Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='state'),
+                        size=14,
+                        font_family=Fonts.SEMIBOLD,
+                        color=self.method.color,
+                    ),
+                    Text(
+                        value=state_str,
+                        size=14,
+                        font_family=Fonts.SEMIBOLD,
+                        color=self.method.color,
+                    ),
+                ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+            Divider(color=self.method.color),
+        ]
         for scheme_field in self.order.requisite_scheme_fields:
             field_info_str = requisite_value_to_str(value=self.order.requisite_fields.get(scheme_field.get('key')))
-            field_controls.append(
+            info_controls += [
                 Row(
                     controls=[
                         Text(
@@ -107,60 +133,50 @@ class RequestOrderView(ClientBaseView):
                         ),
                     ],
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
-                )
-            )
-        self.info_card = InformationContainer(
-            content=Column(
+                ),
+            ]
+        currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
+        info_controls += [
+            Row(
                 controls=[
-                    Row(
-                        controls=[
-                            Text(
-                                value=await self.client.session.gtv(key=self.method.name_text),
-                                size=28,
-                                font_family=Fonts.SEMIBOLD,
-                                color=self.method.color,
-                            ),
-                        ],
+                    Text(
+                        value=await self.client.session.gtv(key='sum'),
+                        size=14,
+                        font_family=Fonts.SEMIBOLD,
+                        color=self.method.color,
                     ),
-                    Divider(color=self.method.color),
-                    *field_controls,
                     Row(
                         controls=[
                             Text(
-                                value=await self.client.session.gtv(key='sum'),
+                                value=currency_value_str,
                                 size=14,
                                 font_family=Fonts.SEMIBOLD,
                                 color=self.method.color,
                             ),
-                            Row(
-                                controls=[
-                                    Text(
-                                        value=currency_value_str,
-                                        size=14,
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=self.method.color,
-                                    ),
-                                    StandardButton(
-                                        content=Image(
-                                            src=Icons.COPY,
-                                            width=18,
-                                            color=self.method.color,
-                                        ),
-                                        on_click=partial(
-                                            self.copy_to_clipboard,
-                                            currency_value,
-                                        ),
-                                        bgcolor=self.method.bgcolor,
-                                        horizontal=0,
-                                        vertical=0,
-                                    ),
-                                ],
-                                spacing=0,
+                            StandardButton(
+                                content=Image(
+                                    src=Icons.COPY,
+                                    width=18,
+                                    color=self.method.color,
+                                ),
+                                on_click=partial(
+                                    self.copy_to_clipboard,
+                                    currency_value,
+                                ),
+                                bgcolor=self.method.bgcolor,
+                                horizontal=0,
+                                vertical=0,
                             ),
                         ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                        spacing=0,
                     ),
                 ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+        ]
+        self.info_card = InformationContainer(
+            content=Column(
+                controls=info_controls,
                 spacing=-50,
             ),
             bgcolor=self.method.bgcolor,

@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
+
 from decimal import Decimal
 from typing import Optional
 
@@ -31,7 +32,6 @@ def get_decimal_places(value: float):
 
 
 def get_fix_rate(rate: float) -> tuple[float, float]:
-    logging.critical(rate)
     if rate > 1:
         result_rate = rate
         result_div = 1

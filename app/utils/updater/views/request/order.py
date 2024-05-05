@@ -25,7 +25,7 @@ async def check_update_request_order_view(view: RequestOrderView, update: bool =
     order = await view.client.session.api.client.orders.get(id_=view.order_id)
     check_list += [
         update_check(
-            scheme=get_order_scheme(),
+            scheme=get_order_scheme,
             obj_1=view.order,
             obj_2=order,
         ),
