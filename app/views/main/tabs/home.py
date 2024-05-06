@@ -19,7 +19,7 @@ import datetime
 from functools import partial
 
 from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, TextAlign, \
-    Stack, alignment, padding
+    Stack, alignment
 
 from app.controls.button import Chip, StandardButton
 from app.controls.information import Card, Text, InformationContainer, SubTitle
