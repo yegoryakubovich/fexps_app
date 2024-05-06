@@ -332,7 +332,7 @@ class RequisiteView(ClientBaseView):
     async def requisite_update_value_open(self, _):
         self.tf_currency_value = TextField(
             label=await self.client.session.gtv(key='currency_value'),
-            value=value_to_float(value=self.requisite.currency_value, decimal=self.requisite.currency.decimal),
+            value=value_to_float(value=self.requisite.total_currency_value, decimal=self.requisite.currency.decimal),
         )
         self.dialog.content = Container(
             content=Column(
