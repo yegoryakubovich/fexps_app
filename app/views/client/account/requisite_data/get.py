@@ -53,7 +53,7 @@ class RequisiteDataView(ClientBaseView):
                     value=value if value else '',
                 )
             )
-        method_str = await self.session.gtv(key=self.method.name_text)
+        method_str = await self.client.session.gtv(key=self.method.name_text)
         if settings.debug:
             method_str = f'{method_str} ({self.method.id})'
         self.controls = await self.get_controls(
