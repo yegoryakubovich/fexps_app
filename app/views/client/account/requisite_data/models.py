@@ -22,6 +22,7 @@ from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField, Dropdown
 from app.utils import Session, Fonts
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -69,11 +70,12 @@ class RequisiteDataCreateModel:
             for method in self.methods:
                 if method.currency.id_str.lower() != self.currency_id_str.lower():
                     continue
-                name = await self.session.gtv(key=method.name_text)
-                method_options.append(Option(
-                    text=f'{name} ({method.id})',
-                    key=method.id,
-                ))
+                method_str = await self.session.gtv(key=method.name_text)
+                if settings.debug:
+                    method_str = f'{method_str} ({method.id})'
+                method_options += [
+                    Option(text=method_str, key=method.id),
+                ]
         self.tf_name = TextField(label=await self.session.gtv(key='name'))
         self.dd_currency = Dropdown(
             label=await self.session.gtv(key='currency'),
@@ -117,11 +119,12 @@ class RequisiteDataCreateModel:
         for method in self.methods:
             if method.currency.id_str.lower() != self.dd_currency.value.lower():
                 continue
-            name = await self.session.gtv(key=method.name_text)
-            method_options.append(Option(
-                text=f'{name} ({method.id})',
-                key=method.id,
-            ))
+            method_str = await self.session.gtv(key=method.name_text)
+            if settings.debug:
+                method_str = f'{method_str} ({method.id})'
+            method_options += [
+                Option(text=method_str, key=method.id),
+            ]
         self.dd_method.options = method_options
         self.dd_method.value = None
         self.optional.controls = []

@@ -22,6 +22,7 @@ from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -52,6 +53,9 @@ class RequisiteDataView(ClientBaseView):
                     value=value if value else '',
                 )
             )
+        method_str = await self.session.gtv(key=self.method.name_text)
+        if settings.debug:
+            method_str = f'{method_str} ({self.method.id})'
         self.controls = await self.get_controls(
             title=self.requisite_data['name'],
             with_expand=True,
@@ -63,8 +67,7 @@ class RequisiteDataView(ClientBaseView):
                                 value='\n'.join([
                                     f'{await self.client.session.gtv(key="name")}: {self.requisite_data.name}',
                                     f'{await self.client.session.gtv(key="currency")}: {self.method.currency.id_str.upper()}',
-                                    f'{await self.client.session.gtv(key="method")}: '
-                                    f'{await self.client.session.gtv(key=self.method.name_text)} ({self.method.id})',
+                                    f'{await self.client.session.gtv(key="method")}: {method_str}',
                                 ]),
                                 size=24,
                                 font_family=Fonts.MEDIUM,

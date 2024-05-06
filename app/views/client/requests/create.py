@@ -74,10 +74,12 @@ class RequestCreateView(ClientBaseView):
         for method in self.methods:
             if method.currency.id_str.lower() != currency_id_str.lower():
                 continue
-            options.append(Option(
-                text=f'{await self.client.session.gtv(key=method.name_text)} ({method.id})',
-                key=method.id,
-            ))
+            method_str = await self.client.session.gtv(key=method.name_text)
+            if settings.debug:
+                method_str = f'{method_str} ({method.id})'
+            options += [
+                Option(text=method_str, key=method.id),
+            ]
         return options
 
     async def get_input(self) -> list[Control]:

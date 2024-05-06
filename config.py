@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     url: str
     chat_url: str
 
+    debug: bool = False
     test: bool
     test_url: str
     test_chat_url: str
