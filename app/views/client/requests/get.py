@@ -29,7 +29,7 @@ from app.utils.value import requisite_value_to_str, get_fix_rate, get_input_curr
     get_output_currency_value, get_output_value
 from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView
-from app.views.main.tabs.acoount import open_support
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -484,7 +484,7 @@ class RequestView(ClientBaseView):
                     bgcolor=colors.BACKGROUND,
                     horizontal=0,
                     vertical=0,
-                    on_click=open_support,
+                    url=settings.url_telegram,
                 ),
             ],
         )

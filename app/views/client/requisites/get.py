@@ -25,7 +25,7 @@ from app.controls.layout import ClientBaseView
 from app.utils import Icons, Fonts, value_to_float
 from app.utils.value import requisite_value_to_str
 from app.views.client.requisites.orders.get import RequisiteOrderView
-from app.views.main.tabs.acoount import open_support
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -186,7 +186,7 @@ class RequisiteView(ClientBaseView):
                     bgcolor=colors.BACKGROUND,
                     horizontal=0,
                     vertical=0,
-                    on_click=open_support,
+                    url=settings.url_telegram,
                 ),
             ],
         )

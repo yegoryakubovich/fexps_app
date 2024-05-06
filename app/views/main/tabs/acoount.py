@@ -15,7 +15,6 @@
 #
 
 
-import webbrowser
 from functools import partial
 from typing import Any
 
@@ -50,10 +49,6 @@ class Section:
     def __init__(self, name: str, settings_: list[Setting]):
         self.name = name
         self.settings = settings_
-
-
-async def open_support(_):
-    webbrowser.open(settings.url_telegram)
 
 
 class AccountTab(BaseTab):
@@ -183,7 +178,7 @@ class AccountTab(BaseTab):
                                             color=colors.SECONDARY,
                                         ),
                                         bgcolor=colors.ON_PRIMARY,
-                                        radius=32   ,
+                                        radius=32,
                                     ),
                                     Text(
                                         value=f'{firstname} {lastname}',

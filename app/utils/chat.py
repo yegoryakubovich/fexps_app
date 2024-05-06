@@ -18,10 +18,7 @@
 import asyncio
 import datetime
 import json
-import logging
-import webbrowser
 from base64 import b64encode
-from functools import partial
 
 import aiohttp
 from flet_core import Column, UserControl, Control, colors, ScrollMode, Container, Row, padding, \
@@ -32,12 +29,6 @@ from app.controls.information import Text, InformationContainer
 from app.utils import Fonts, Icons
 from app.utils.value import size_value_to_str
 from config import settings
-
-
-async def open_file(url: str, _):
-    logging.critical(url)
-    webbrowser.open(settings.url_telegram)
-    webbrowser.open(url)
 
 
 class Chat(UserControl):
@@ -137,7 +128,7 @@ class Chat(UserControl):
                             ],
                             tight=True,
                         ),
-                        on_click=partial(open_file, file['url']),
+                        url=file['url'],
                         bgcolor=colors.PRIMARY_CONTAINER,
                         color=color,
                     ),
