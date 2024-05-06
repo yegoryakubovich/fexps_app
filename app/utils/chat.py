@@ -35,6 +35,7 @@ from config import settings
 
 
 async def open_file(url: str, _):
+    logging.critical(url)
     webbrowser.open(url)
 
 
