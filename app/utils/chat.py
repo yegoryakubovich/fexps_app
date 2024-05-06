@@ -18,6 +18,7 @@
 import asyncio
 import datetime
 import json
+import logging
 import webbrowser
 from base64 import b64encode
 from functools import partial
@@ -128,6 +129,7 @@ class Chat(UserControl):
                                     controls=[
                                         Text(value=filename_str),
                                         Text(value=size_str),
+                                        Text(value=file['url']),
                                     ],
                                 ),
                             ],
