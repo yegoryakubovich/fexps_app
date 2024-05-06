@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import logging
 
 from flet_core import ScrollMode, Row, Column, Container, AlertDialog, alignment, KeyboardType, Image, colors
 from flet_core.dropdown import Option
@@ -22,8 +22,9 @@ from app.controls.button import StandardButton
 from app.controls.information import SubTitle, Text
 from app.controls.input import Dropdown, TextField
 from app.controls.layout import ClientBaseView
-from app.utils import Icons, Fonts, Error
+from app.utils import Icons, Fonts, Error, value_to_int
 from app.views.client.account.requisite_data.models import RequisiteDataCreateModel
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -101,8 +102,11 @@ class RequisiteCreateView(ClientBaseView):
         for method in self.methods:
             if method.currency.id_str.lower() != currency_id_str.lower():
                 continue
+            method_str = await self.client.session.gtv(key=method.name_text)
+            if settings.debug:
+                method_str = f'{method_str} ({method.id})'
             options += [
-                Option(text=f'{await self.client.session.gtv(key=method.name_text)} ({method.id})', key=method.id),
+                Option(text=method_str, key=method.id),
             ]
         return options
 
@@ -336,6 +340,7 @@ class RequisiteCreateView(ClientBaseView):
             ]
         self.dd_output_requisite_data.disabled = False
         self.dd_output_requisite_data.options = options
+        await self.dd_output_requisite_data.update_async()
 
     async def create_output_requisite_data(self, _):
         self.requisite_data_model = RequisiteDataCreateModel(
@@ -370,71 +375,130 @@ class RequisiteCreateView(ClientBaseView):
         await self.update_async()
 
     async def requisite_create(self, _):
-        for field in [self.dd_type, self.dd_currency]:
-            if field.value is not None:
+        await self.set_type(loading=True)
+        # check exist
+        for _field in [self.dd_type, self.dd_currency]:
+            if _field.value is not None:
                 continue
-            field.error_text = await self.client.session.gtv(key='error_empty')
+            await self.set_type(loading=False)
+            _field.error_text = await self.client.session.gtv(key='error_empty')
             await self.update_async()
             return
-        for field in [self.tf_input_value, self.tf_output_value]:
-            if not await Error.check_field(self, field, check_float=True):
+        # check float
+        for _field in [self.tf_input_value, self.tf_output_value]:
+            if not await Error.check_field(self, _field, check_float=True):
+                await self.set_type(loading=False)
                 return
-        for field in [
+        # check float or None
+        for _field in [
             self.tf_input_value_min,
             self.tf_input_value_max,
             self.tf_output_value_min,
             self.tf_output_value_max,
         ]:
-            if not field.value:
+            if not _field.value:
                 continue
-            if not await Error.check_field(self, field, check_float=True):
+            if not await Error.check_field(self, _field, check_float=True):
+                await self.set_type(loading=False)
                 return
-
         type_ = self.dd_type.value
         wallet_id = self.dd_wallet.value
+        currency = await self.client.session.api.client.currencies.get(id_str=self.dd_currency.value)
         input_method_id = None
         output_requisite_data_id = None
         currency_value, value = None, None
         currency_value_min, currency_value_max = None, None
         value_min, value_max = None, None
         rate = None
+        final_check_list = []
         if type_ == RequisiteTypes.INPUT:
-            for field in [self.dd_input_method]:
-                if field.value is not None:
+            for _field in [self.dd_input_method]:
+                if _field.value is not None:
                     continue
-                field.error_text = await self.client.session.gtv(key='error_empty')
+                await self.set_type(loading=False)
+                _field.error_text = await self.client.session.gtv(key='error_empty')
                 await self.update_async()
                 return
-            currency_value = self.tf_input_value.value
-            value = self.tf_output_value.value
+            currency_value = value_to_int(value=self.tf_input_value.value, decimal=currency.decimal)
+            value = value_to_int(value=self.tf_output_value.value)
             input_method_id = self.dd_input_method.value
             if self.tf_input_value_min.value:
-                currency_value_min = self.tf_input_value_min.value
+                currency_value_min = value_to_int(value=self.tf_input_value_min.value, decimal=currency.decimal)
             if self.tf_input_value_max.value:
-                currency_value_max = self.tf_input_value_max.value
+                currency_value_max = value_to_int(value=self.tf_input_value_max.value, decimal=currency.decimal)
             if self.tf_output_value_min.value:
-                value_min = self.tf_output_value_min.value
+                value_min = value_to_int(value=self.tf_output_value_min.value)
             if self.tf_output_value_max.value:
-                value_max = self.tf_output_value_max.value
+                value_max = value_to_int(value=self.tf_output_value_max.value)
+            final_check_list = [
+                (currency_value, self.tf_input_value, currency),
+                (currency_value_min, self.tf_input_value_min, currency),
+                (currency_value_max, self.tf_input_value_max, currency),
+                (value, self.tf_output_value, None),
+                (value_min, self.tf_output_value_min, None),
+                (value_max, self.tf_output_value_max, None),
+            ]
         elif type_ == RequisiteTypes.OUTPUT:
-            for field in [self.dd_output_method, self.dd_output_requisite_data]:
-                if field.value is not None:
+            for _field in [self.dd_output_method, self.dd_output_requisite_data]:
+                if _field.value is not None:
                     continue
-                field.error_text = await self.client.session.gtv(key='error_empty')
+                await self.set_type(loading=False)
+                _field.error_text = await self.client.session.gtv(key='error_empty')
                 await self.update_async()
                 return
-            currency_value = self.tf_output_value.value
-            value = self.tf_input_value.value
+            currency_value = value_to_int(value=self.tf_output_value.value, decimal=currency.decimal)
+            value = value_to_int(value=self.tf_input_value.value)
             output_requisite_data_id = self.dd_output_requisite_data.value
             if self.tf_input_value_min.value:
-                value_min = self.tf_input_value_min.value
+                value_min = value_to_int(value=self.tf_input_value_min.value)
             if self.tf_input_value_max.value:
-                value_max = self.tf_input_value_max.value
+                value_min = value_to_int(value=self.tf_input_value_max.value)
             if self.tf_output_value_min.value:
-                currency_value_min = self.tf_output_value_min.value
+                currency_value_min = value_to_int(value=self.tf_output_value_min.value, decimal=currency.decimal)
             if self.tf_output_value_max.value:
-                currency_value_max = self.tf_output_value_max.value
+                currency_value_max = value_to_int(value=self.tf_output_value_max.value, decimal=currency.decimal)
+            final_check_list = [
+                (currency_value, self.tf_output_value, currency),
+                (currency_value_min, self.tf_output_value_min, currency),
+                (currency_value_max, self.tf_output_value_max, currency),
+                (value, self.tf_input_value, None),
+                (value_min, self.tf_input_value_min, None),
+                (value_max, self.tf_input_value_max, None),
+            ]
+        error_less_div_str = await self.client.session.gtv(key='error_less_div')
+        error_div_str = await self.client.session.gtv(key='error_div')
+        for _value, _field, _currency in final_check_list:
+            if _value is None:
+                continue
+            div, decimal = settings.default_div, settings.default_decimal
+            if _currency:
+                div, decimal = _currency['div'], _currency['decimal']
+                if int(_value) % div != 0:
+                    _field.error_text = f'{error_div_str} {div / (10 ** decimal)}'
+                    await self.set_type(loading=False)
+                    await self.update_async()
+                    return
+            if int(_value) < div:
+                _field.error_text = f'{error_less_div_str} {div / (10 ** decimal)}'
+                await self.set_type(loading=False)
+                await self.update_async()
+                return
         try:
+            logging.critical(
+                dict(
+                    type_=type_,
+                    wallet_id=wallet_id,
+                    input_method_id=input_method_id,
+                    output_requisite_data_id=output_requisite_data_id,
+                    currency_value=currency_value,
+                    currency_value_min=currency_value_min,
+                    currency_value_max=currency_value_max,
+                    value=value,
+                    value_min=value_min,
+                    value_max=value_max,
+                    rate=rate,
+                )
+            )
             await self.client.session.api.client.requisites.create(
                 type_=type_,
                 wallet_id=wallet_id,
