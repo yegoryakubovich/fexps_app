@@ -21,7 +21,8 @@ from base64 import b64encode
 from functools import partial
 
 from flet_core import Control, Row, TextField, ControlEvent, FilePickerUploadFile, \
-    FilePickerUploadEvent, Image, Container, Column, ScrollMode, ImageFit, colors, alignment, Stack, IconButton, icons
+    FilePickerUploadEvent, Image, Container, Column, ScrollMode, ImageFit, colors, alignment, Stack, IconButton, icons, \
+    ProgressRing
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -160,11 +161,13 @@ class RequestOrderPaymentView(ClientBaseView):
         await self.filepicker.open_(
             on_select=self.upload_files,
             on_upload=self.on_upload_progress,
+            allow_multiple=True,
         )
 
     async def update_photo_row(self):
         self.photo_row.controls = []
         for id_str, value in self.photos.items():
+            stack_controls = []
             file_image = Container(
                 content=Image(
                     src=Icons.FILE,
@@ -185,29 +188,46 @@ class RequestOrderPaymentView(ClientBaseView):
                     ),
                     alignment=alignment.center,
                 )
+            stack_controls += [
+                file_image,
+            ]
+            if id_str == 'temp':
+                stack_controls += [
+                    Container(
+                        content=ProgressRing(
+                            value=value['progress'],
+                            color=colors.PRIMARY_CONTAINER,
+                            bgcolor=colors.SECONDARY_CONTAINER,
+                            width=64,
+                            height=64,
+                        ),
+                        alignment=alignment.center,
+                    ),
+                ]
+            else:
+                stack_controls += [
+                    Container(
+                        content=Text(
+                            value=value['filename'],
+                            color=colors.ON_SECONDARY
+                        ),
+                        alignment=alignment.bottom_center,
+                    ),
+                    IconButton(
+                        icon=icons.CLOSE,
+                        on_click=partial(
+                            self.photo_delete,
+                            id_str,
+                        ),
+                        top=1,
+                        right=0,
+                        icon_color=colors.ON_SECONDARY,
+                    ),
+                ]
             self.photo_row.controls += [
                 Container(
                     content=Stack(
-                        controls=[
-                            file_image,
-                            Container(
-                                content=Text(
-                                    value=value['filename'],
-                                    color=colors.ON_SECONDARY
-                                ),
-                                alignment=alignment.bottom_center,
-                            ),
-                            IconButton(
-                                icon=icons.CLOSE,
-                                on_click=partial(
-                                    self.photo_delete,
-                                    id_str,
-                                ),
-                                top=1,
-                                right=0,
-                                icon_color=colors.ON_SECONDARY,
-                            ),
-                        ],
+                        controls=stack_controls,
                     ),
                     bgcolor=colors.SECONDARY,
                     height=170,
@@ -242,7 +262,17 @@ class RequestOrderPaymentView(ClientBaseView):
     async def on_upload_progress(self, e: FilePickerUploadEvent):
         await self.set_text_error()
         if e.progress is not None and e.progress < 1.0:
+            self.photos['temp'] = {
+                'filename': '',
+                'extension': '',
+                'data': None,
+                'size': 0,
+                'progress': e.progress,
+            }
+            await self.update_photo_row()
             return
+        if self.photos.get('temp'):
+            del self.photos['temp']
         path = f'uploads/{e.file_name}'
         if not os.path.exists(path):
             return
@@ -253,6 +283,7 @@ class RequestOrderPaymentView(ClientBaseView):
             'extension': e.file_name.split('.')[-1],
             'data': file_data,
             'size': len(file_data),
+            'progress': e.progress,
         }
         os.remove(path)
         await self.update_photo_row()
