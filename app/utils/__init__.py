@@ -18,7 +18,6 @@
 from .error import Error
 from .fonts import Fonts, fonts
 from .icons import Icons
-from .image import get_image_src
 from .registration import Registration
 from .session import Session
 from .themes import themes

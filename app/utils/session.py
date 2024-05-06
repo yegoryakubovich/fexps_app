@@ -16,7 +16,7 @@
 
 
 import asyncio
-from functools import partial
+import logging
 from typing import Any
 
 from flet_core import Page
@@ -165,7 +165,10 @@ class Session:
             for type_, func in methods:
                 if not isinstance(last_view, type_):
                     continue
-                await func(view=last_view)
+                try:
+                    await func(view=last_view)
+                except:
+                    logging.critical(f'Updater pass {type_}')
             await asyncio.sleep(5)
 
     async def on_disconnect(self, _):
