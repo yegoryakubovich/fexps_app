@@ -149,10 +149,11 @@ class ChatView(ClientBaseView):
                 ],
             },
         )
-        self.photos = {}
-        self.tf_message.value = None
         await self.set_text_error()
+        self.photos = {}
         await self.update_photo_row()
+        self.tf_message.value = None
+        await self.tf_message.update_async()
 
     """PHOTO"""
 
