@@ -17,12 +17,13 @@
 
 from functools import partial
 
-from flet_core import Row, colors, MainAxisAlignment, Image, Column, ScrollMode, Container
+from flet_core import Row, colors, MainAxisAlignment, Image, Column, ScrollMode, Container, AlertDialog
 
 from app.controls.button import StandardButton
 from app.controls.information import SubTitle, Text
+from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
-from app.utils import Icons, Fonts, value_to_float
+from app.utils import Icons, Fonts, value_to_float, Error, value_to_int
 from app.utils.value import requisite_value_to_str
 from app.views.client.requisites.orders.get import RequisiteOrderView
 from config import settings
@@ -31,11 +32,16 @@ from fexps_api_client.utils import ApiException
 
 class RequisiteView(ClientBaseView):
     route = '/client/requisite/get'
+
     requisite = dict
     orders = list[dict]
 
+    dialog: AlertDialog
+    tf_currency_value: TextField
+
     orders_row: Row
     help_column: Column
+    update_value_button: StandardButton
     enable_button: StandardButton
     stop_button: StandardButton
     disable_button: StandardButton
@@ -212,6 +218,21 @@ class RequisiteView(ClientBaseView):
         if update:
             await self.enable_button.update_async()
 
+    async def update_update_value_button(self, update: bool = True) -> None:
+        self.update_value_button = StandardButton(
+            content=Text(
+                value=await self.client.session.gtv(key='requisite_update_value_button'),
+                size=20,
+                font_family=Fonts.SEMIBOLD,
+                color=colors.ON_PRIMARY,
+            ),
+            bgcolor=colors.PRIMARY,
+            on_click=self.requisite_update_value_open,
+            expand=1,
+        )
+        if update:
+            await self.update_value_button.update_async()
+
     async def update_stop_button(self, update: bool = True) -> None:
         self.stop_button = StandardButton(
             content=Text(
@@ -243,6 +264,7 @@ class RequisiteView(ClientBaseView):
             await self.disable_button.update_async()
 
     async def construct(self):
+        self.dialog = AlertDialog(modal=False)
         controls, buttons = [], []
         await self.set_type(loading=True)
         self.requisite = await self.client.session.api.client.requisites.get(id_=self.requisite_id)
@@ -263,10 +285,12 @@ class RequisiteView(ClientBaseView):
                 self.help_column,
             ]
         if self.requisite.state == 'enable':
+            await self.update_update_value_button(update=False)
             await self.update_stop_button(update=False)
             buttons += [
                 Row(
                     controls=[
+                        self.update_value_button,
                         self.stop_button,
                     ],
                 ),
@@ -287,6 +311,7 @@ class RequisiteView(ClientBaseView):
             title=f'{title_str} #{self.requisite.id:08}',
             with_expand=True,
             main_section_controls=[
+                self.dialog,
                 Container(
                     content=Column(
                         controls=controls,
@@ -303,6 +328,58 @@ class RequisiteView(ClientBaseView):
 
     async def order_view(self, order_id: int, _):
         await self.client.change_view(view=RequisiteOrderView(order_id=order_id))
+
+    async def requisite_update_value_open(self, _):
+        self.tf_currency_value = TextField(
+            label=await self.client.session.gtv(key='currency_value'),
+            value=value_to_float(value=self.requisite.currency_value, decimal=self.requisite.currency.decimal),
+        )
+        self.dialog.content = Container(
+            content=Column(
+                controls=[
+                    self.tf_currency_value,
+                ],
+            ),
+            expand=True,
+            width=400,
+        )
+        self.dialog.actions = [
+            Row(
+                controls=[
+                    StandardButton(
+                        content=Text(
+                            value=await self.client.session.gtv(key='confirm'),
+                            size=15,
+                            font_family=Fonts.REGULAR,
+                        ),
+                        on_click=self.requisite_update_value,
+                        expand=True,
+                    ),
+                ],
+            )
+        ]
+        self.dialog.open = True
+        await self.dialog.update_async()
+
+    async def requisite_update_value_close(self, _):
+        self.dialog.open = False
+        await self.dialog.update_async()
+
+    async def requisite_update_value(self, _):
+        if not await Error.check_field(self, self.tf_currency_value, check_float=True):
+            await self.tf_currency_value.update_async()
+            return
+        currency_value = value_to_int(value=self.tf_currency_value.value, decimal=self.requisite.currency.decimal)
+        await self.requisite_update_value_close(_)
+        try:
+            await self.client.session.api.client.requisites.updates.value(
+                id_=self.requisite_id,
+                currency_value=currency_value,
+            )
+            await self.construct()
+            await self.update_async()
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
 
     async def requisite_state_stop(self, _):
         await self.set_type(loading=True)

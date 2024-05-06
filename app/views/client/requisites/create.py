@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
 
 from flet_core import ScrollMode, Row, Column, Container, AlertDialog, alignment, KeyboardType, Image, colors
 from flet_core.dropdown import Option
@@ -484,21 +484,6 @@ class RequisiteCreateView(ClientBaseView):
                 await self.update_async()
                 return
         try:
-            logging.critical(
-                dict(
-                    type_=type_,
-                    wallet_id=wallet_id,
-                    input_method_id=input_method_id,
-                    output_requisite_data_id=output_requisite_data_id,
-                    currency_value=currency_value,
-                    currency_value_min=currency_value_min,
-                    currency_value_max=currency_value_max,
-                    value=value,
-                    value_min=value_min,
-                    value_max=value_max,
-                    rate=rate,
-                )
-            )
             await self.client.session.api.client.requisites.create(
                 type_=type_,
                 wallet_id=wallet_id,
