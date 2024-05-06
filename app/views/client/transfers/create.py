@@ -74,10 +74,8 @@ class TransferCreateView(ClientBaseView):
 
     async def send(self, _):
         if not await Error.check_field(self, self.wallet_to_id_tf, check_int=True):
-            await self.set_type(loading=False)
             return
         if not await Error.check_field(self, self.value_tf, check_float=True):
-            await self.set_type(loading=False)
             return
         if get_decimal_places(float(self.value_tf.value)) > 2:
             self.value_tf.error_text = await self.client.session.gtv(key='payment_too_many_decimal_places')

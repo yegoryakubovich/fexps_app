@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
 
 from flet_core import ScrollMode, Row, Column, Container, AlertDialog, alignment, KeyboardType, Image, colors
 from flet_core.dropdown import Option
@@ -22,7 +22,7 @@ from app.controls.button import StandardButton
 from app.controls.information import SubTitle, Text
 from app.controls.input import Dropdown, TextField
 from app.controls.layout import ClientBaseView
-from app.utils import Icons, Fonts
+from app.utils import Icons, Fonts, Error
 from app.views.client.account.requisite_data.models import RequisiteDataCreateModel
 from fexps_api_client.utils import ApiException
 
@@ -58,6 +58,43 @@ class RequisiteCreateView(ClientBaseView):
     tf_output_value_max = TextField
     dd_output_method: Dropdown
     dd_output_requisite_data: Dropdown
+
+    async def update_subtitle(self, update: bool = True) -> None:
+        if not self.dd_type.value or not self.dd_currency.value:
+            self.input_subtitle_text.value = await self.client.session.gtv(
+                key='requisite_create_input',
+                currency='',
+            )
+            self.output_subtitle_text.value = await self.client.session.gtv(
+                key='requisite_create_output',
+                currency='',
+            )
+            if update:
+                await self.input_column.update_async()
+                await self.output_column.update_async()
+            return
+        currency = self.dd_currency.value
+        if self.dd_type.value == RequisiteTypes.INPUT:
+            self.input_subtitle_text.value = await self.client.session.gtv(
+                key='requisite_create_input',
+                currency=currency.upper(),
+            )
+            self.output_subtitle_text.value = await self.client.session.gtv(
+                key='requisite_create_output',
+                currency='YA COIN',
+            )
+        elif self.dd_type.value == RequisiteTypes.OUTPUT:
+            self.input_subtitle_text.value = await self.client.session.gtv(
+                key='requisite_create_input',
+                currency='YA COIN',
+            )
+            self.output_subtitle_text.value = await self.client.session.gtv(
+                key='requisite_create_output',
+                currency=currency.upper(),
+            )
+        if update:
+            await self.input_column.update_async()
+            await self.output_column.update_async()
 
     async def get_method_options(self, currency_id_str: str) -> list[Option]:
         options = []
@@ -110,7 +147,7 @@ class RequisiteCreateView(ClientBaseView):
 
     async def update_input(self, update: bool = True) -> None:
         self.input_subtitle_text = Text(
-            value=await self.client.session.gtv(key='requisite_create_input', currency=''),
+            value=None,
             size=24,
             font_family=Fonts.BOLD,
             color=colors.ON_BACKGROUND,
@@ -138,7 +175,7 @@ class RequisiteCreateView(ClientBaseView):
                 Row(
                     controls=[
                         self.input_subtitle_text,
-                    ],
+                    ]
                 ),
                 self.tf_input_value,
                 Row(
@@ -156,7 +193,7 @@ class RequisiteCreateView(ClientBaseView):
 
     async def update_output(self, update: bool = True) -> None:
         self.output_subtitle_text = Text(
-            value=await self.client.session.gtv(key='requisite_create_output', currency=''),
+            value=None,
             size=24,
             font_family=Fonts.BOLD,
             color=colors.ON_BACKGROUND,
@@ -190,7 +227,7 @@ class RequisiteCreateView(ClientBaseView):
                 Row(
                     controls=[
                         self.output_subtitle_text,
-                    ],
+                    ]
                 ),
                 self.tf_output_value,
                 Row(
@@ -231,6 +268,7 @@ class RequisiteCreateView(ClientBaseView):
         await self.update_general(update=False)
         await self.update_input(update=False)
         await self.update_output(update=False)
+        await self.update_subtitle(update=False)
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='requisite_create_title'),
             with_expand=True,
@@ -263,44 +301,24 @@ class RequisiteCreateView(ClientBaseView):
         )
 
     async def change_type_currency(self, _):
+        await self.update_subtitle()
+        self.dd_input_method.disabled = True
+        self.dd_output_method.disabled = True
+        self.dd_output_requisite_data.disabled = True
         if not self.dd_type.value or not self.dd_currency.value:
-            self.dd_input_method.value, self.dd_input_method.disabled = None, True
-            self.dd_output_method.value, self.dd_output_method.disabled = None, True
-            self.dd_output_requisite_data.value, self.dd_output_requisite_data.disabled = None, True
-            self.input_subtitle_text = Text(
-                value=await self.client.session.gtv(key='requisite_create_input', currency=''),
-                size=24,
-                font_family=Fonts.BOLD,
-                color=colors.ON_BACKGROUND,
-            )
-            self.output_subtitle_text = Text(
-                value=await self.client.session.gtv(key='requisite_create_output', currency=''),
-                size=24,
-                font_family=Fonts.BOLD,
-                color=colors.ON_BACKGROUND,
-            )
+            self.dd_input_method.value = None
+            self.dd_output_method.value = None
+            self.dd_output_requisite_data.value = None
             await self.update_async()
             return
         currency = self.dd_currency.value
         if self.dd_type.value == RequisiteTypes.INPUT:
-            self.input_subtitle_text = Text(
-                value=await self.client.session.gtv(key='requisite_create_input', currency=currency.upper()),
-                size=24,
-                font_family=Fonts.BOLD,
-                color=colors.ON_BACKGROUND,
-            )
             self.dd_input_method.options = await self.get_method_options(currency_id_str=currency)
             self.dd_input_method.disabled = False
         elif self.dd_type.value == RequisiteTypes.OUTPUT:
-            self.output_subtitle_text = Text(
-                value=await self.client.session.gtv(key='requisite_create_output', currency=currency.upper()),
-                size=24,
-                font_family=Fonts.BOLD,
-                color=colors.ON_BACKGROUND,
-            )
             self.dd_output_method.options = await self.get_method_options(currency_id_str=currency)
             self.dd_output_method.disabled = False
-            self.dd_output_requisite_data.value, self.dd_output_requisite_data.disabled = None, True
+            self.dd_output_requisite_data.value = None
         await self.update_async()
 
     async def change_output_method(self, _):
@@ -308,6 +326,7 @@ class RequisiteCreateView(ClientBaseView):
             return
         await self.set_type(loading=True)
         requisites_datas = await self.client.session.api.client.requisites_datas.get_list()
+        await self.set_type(loading=False)
         options = []
         for requisite_data in requisites_datas:
             if int(requisite_data.method.id) != int(self.dd_output_method.value):
@@ -317,11 +336,8 @@ class RequisiteCreateView(ClientBaseView):
             ]
         self.dd_output_requisite_data.disabled = False
         self.dd_output_requisite_data.options = options
-        await self.set_type(loading=False)
 
     async def create_output_requisite_data(self, _):
-        if self.dd_type.value != RequisiteTypes.OUTPUT:
-            return
         self.requisite_data_model = RequisiteDataCreateModel(
             session=self.client.session,
             update_async=self.update_async,
@@ -354,22 +370,33 @@ class RequisiteCreateView(ClientBaseView):
         await self.update_async()
 
     async def requisite_create(self, _):
-        type_ = self.dd_type.value
-        for field in [self.dd_type, self.dd_currency, self.tf_input_value, self.tf_output_value]:
+        for field in [self.dd_type, self.dd_currency]:
             if field.value is not None:
                 continue
             field.error_text = await self.client.session.gtv(key='error_empty')
             await self.update_async()
             return
+        for field in [self.tf_input_value, self.tf_output_value]:
+            if not await Error.check_field(self, field, check_float=True):
+                return
+        for field in [
+            self.tf_input_value_min,
+            self.tf_input_value_max,
+            self.tf_output_value_min,
+            self.tf_output_value_max,
+        ]:
+            if not field.value:
+                continue
+            if not await Error.check_field(self, field, check_float=True):
+                return
+
+        type_ = self.dd_type.value
         wallet_id = self.dd_wallet.value
         input_method_id = None
         output_requisite_data_id = None
-        currency_value = self.tf_input_value.value
-        currency_value_min = None
-        currency_value_max = None
-        value = self.tf_output_value.value
-        value_min = None
-        value_max = None
+        currency_value, value = None, None
+        currency_value_min, currency_value_max = None, None
+        value_min, value_max = None, None
         rate = None
         if type_ == RequisiteTypes.INPUT:
             for field in [self.dd_input_method]:
@@ -378,6 +405,8 @@ class RequisiteCreateView(ClientBaseView):
                 field.error_text = await self.client.session.gtv(key='error_empty')
                 await self.update_async()
                 return
+            currency_value = self.tf_input_value.value
+            value = self.tf_output_value.value
             input_method_id = self.dd_input_method.value
             if self.tf_input_value_min.value:
                 currency_value_min = self.tf_input_value_min.value
@@ -394,6 +423,8 @@ class RequisiteCreateView(ClientBaseView):
                 field.error_text = await self.client.session.gtv(key='error_empty')
                 await self.update_async()
                 return
+            currency_value = self.tf_output_value.value
+            value = self.tf_input_value.value
             output_requisite_data_id = self.dd_output_requisite_data.value
             if self.tf_input_value_min.value:
                 value_min = self.tf_input_value_min.value
