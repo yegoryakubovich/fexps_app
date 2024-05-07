@@ -546,7 +546,6 @@ class RequestView(ClientBaseView):
             update_async=self.update_async,
             request_id=self.request.id,
             request_name=self.request.get('name'),
-            before_close=self.edit_name_before,
             after_close=self.edit_name_after,
         )
         await self.request_edit_name_model.construct()
@@ -560,11 +559,9 @@ class RequestView(ClientBaseView):
         self.dialog.open = True
         await self.update_async()
 
-    async def edit_name_before(self):
-        self.dialog.open = False
-        await self.update_async()
-
     async def edit_name_after(self):
+        self.dialog.open = False
+        await self.dialog.update_async()
         self.reload_stop = False
         await self.construct()
         await self.update_async()
