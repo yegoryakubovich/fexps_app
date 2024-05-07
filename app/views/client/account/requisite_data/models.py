@@ -140,10 +140,12 @@ class RequisiteDataCreateModel:
         controls = []
         for field in self.method['schema_fields']:
             type_ = field["type"]
-            type_str = await self.session.gtv(key=type_)
-            name_list = [await self.session.gtv(key=field[f'name_text_key']), f'({type_str})']
+            name_list = [await self.session.gtv(key=field[f'name_text_key'])]
+            if settings.debug:
+                type_str = await self.session.gtv(key=type_)
+                name_list += [f'({type_str})']
             if not field['optional']:
-                name_list.append('*')
+                name_list += ['*']
             controls.append(TextField(
                 label=' '.join(name_list),
                 on_change=self.change_fields,

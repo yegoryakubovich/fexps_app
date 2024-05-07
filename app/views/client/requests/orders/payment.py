@@ -30,6 +30,7 @@ from app.controls.input import FilePicker
 from app.controls.layout import ClientBaseView
 from app.utils import Icons, Error
 from app.utils.crypto import create_id_str
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -56,9 +57,11 @@ class RequestOrderPaymentView(ClientBaseView):
         for input_scheme_field in self.order.input_scheme_fields:
             type_ = input_scheme_field["type"]
             type_str = await self.client.session.gtv(key=type_)
-            name_list = [await self.client.session.gtv(key=input_scheme_field['name_text_key']), f'({type_str})']
+            name_list = [await self.client.session.gtv(key=input_scheme_field['name_text_key'])]
+            if settings.debug:
+                name_list += [f'({type_str})']
             if not input_scheme_field['optional']:
-                name_list.append('*')
+                name_list += ['*']
             if type_ == 'image':
                 self.photo_row = Row()
                 self.text_error = Text()
