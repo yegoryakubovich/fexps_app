@@ -15,7 +15,7 @@
 #
 
 
-from flet_core import Row, Column, Container, padding, colors, border_radius
+from flet_core import Row, Column, Container, padding, colors, border_radius, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -41,6 +41,7 @@ class RegistrationFirstView(AuthView):
             password=True,
             can_reveal_password=True,
         )
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='registration_account_create_view_title'),
             controls=[

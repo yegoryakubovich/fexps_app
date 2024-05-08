@@ -15,7 +15,7 @@
 #
 
 
-from flet_core import Row
+from flet_core import Row, ScrollMode
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -48,6 +48,7 @@ class LanguageView(AuthView):
             options=options,
         )
 
+        self.scroll=ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='set_language_view_title'),
             go_back=self.is_go_back,

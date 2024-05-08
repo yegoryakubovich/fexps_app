@@ -74,7 +74,7 @@ class View(BaseView):
                         Container(
                             content=Image(
                                 src=Icons.BACK,
-                                height=16,
+                                height=24,
                                 color=colors.ON_BACKGROUND,
                             ),
                             border_radius=6,

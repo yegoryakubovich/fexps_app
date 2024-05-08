@@ -15,7 +15,7 @@
 #
 
 
-from flet_core import Column, Row
+from flet_core import Column, Row, ScrollMode
 
 from app import InitView
 from app.controls.button import ListItemButton, StandardButton
@@ -28,6 +28,7 @@ from fexps_api_client import FexpsApiClient
 
 class AgreementRegistrationView(AuthView):
     async def construct(self):
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='registration_account_create_view_title'),
             controls=[
@@ -88,13 +89,10 @@ class AgreementRegistrationView(AuthView):
         token = session.token
         await self.client.session.set_cs(key='token', value=token)
         self.client.session.api = FexpsApiClient(url=settings.get_url(), token=token)
-
         for contact_id, value in self.client.session.registration.contacts.items():
             if not contact_id or not value:
                 continue
             await self.client.session.api.client.accounts.contacts.create(contact_id=contact_id, value=value)
-
         self.client.session.registration = None
-
         await self.set_type(loading=False)
         await self.client.change_view(view=InitView(), delete_current=True)

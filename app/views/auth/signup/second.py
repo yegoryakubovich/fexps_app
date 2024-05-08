@@ -33,9 +33,6 @@ class RegistrationSecondView(AuthView):
     tf_surname: TextField
     countries = list[dict]
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs, scroll=ScrollMode.AUTO)
-
     async def construct(self):
         await self.set_type(loading=True)
         self.countries = await self.client.session.api.client.countries.get_list()
@@ -57,6 +54,7 @@ class RegistrationSecondView(AuthView):
             options=country_options,
             value=country_options[0].key,
         )
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='registration_account_create_view_title'),
             controls=[
