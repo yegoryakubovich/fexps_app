@@ -125,8 +125,7 @@ class RequisiteDataCreateModel:
             method_options += [
                 Option(text=method_str, key=method.id),
             ]
-        self.dd_method.options = method_options
-        self.dd_method.value = None
+        self.dd_method.change_options(options=method_options)
         self.optional.controls = []
         await self.update_async()
         if self.method_id:

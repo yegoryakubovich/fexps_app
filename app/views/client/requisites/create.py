@@ -317,10 +317,14 @@ class RequisiteCreateView(ClientBaseView):
             return
         currency = self.dd_currency.value
         if self.dd_type.value == RequisiteTypes.INPUT:
-            self.dd_input_method.options = await self.get_method_options(currency_id_str=currency)
+            self.dd_input_method.change_options(
+                options=await self.get_method_options(currency_id_str=currency),
+            )
             self.dd_input_method.disabled = False
         elif self.dd_type.value == RequisiteTypes.OUTPUT:
-            self.dd_output_method.options = await self.get_method_options(currency_id_str=currency)
+            self.dd_output_method.change_options(
+                options=await self.get_method_options(currency_id_str=currency),
+            )
             self.dd_output_method.disabled = False
             self.dd_output_requisite_data.value = None
         await self.update_async()
@@ -336,10 +340,10 @@ class RequisiteCreateView(ClientBaseView):
             if int(requisite_data.method.id) != int(self.dd_output_method.value):
                 continue
             options += [
-                Option(text=f'{requisite_data.name}', key=requisite_data.id)
+                Option(text=f'{requisite_data.name}', key=requisite_data.id),
             ]
         self.dd_output_requisite_data.disabled = False
-        self.dd_output_requisite_data.options = options
+        self.dd_output_requisite_data.change_options(options=options)
         await self.dd_output_requisite_data.update_async()
 
     async def create_output_requisite_data(self, _):

@@ -214,17 +214,25 @@ class RequestCreateView(ClientBaseView):
         await self.set_type(loading=True)
         if type_ == 'input' and self.dd_input_currency.value:
             currency = self.dd_input_currency.value
+            self.dd_output_currency.change_options(
+                options=await self.get_currency_options(exclude_currency_id_str=currency),
+            )
             self.dd_input_method.disabled = False
-            self.dd_input_method.options = await self.get_method_options(currency_id_str=currency)
-            self.dd_input_method.value = None
-            self.dd_output_currency.options = await self.get_currency_options(exclude_currency_id_str=currency)
+            self.dd_input_method.change_options(
+                options=await self.get_method_options(currency_id_str=currency),
+            )
         if type_ == 'output' and self.dd_output_currency.value:
             currency = self.dd_output_currency.value
+            self.dd_input_currency.change_options(
+                options=await self.get_currency_options(exclude_currency_id_str=currency),
+            )
             self.dd_output_method.disabled = False
-            self.dd_output_method.options = await self.get_method_options(currency_id_str=currency)
-            self.dd_output_method.value = None
-            self.dd_input_currency.options = await self.get_currency_options(exclude_currency_id_str=currency)
+            self.dd_output_method.change_options(
+                options=await self.get_method_options(currency_id_str=currency),
+            )
+            self.dd_output_requisite_data.value = None
         await self.set_type(loading=False)
+        await self.update_async()
 
     """
     OUTPUT
@@ -244,7 +252,7 @@ class RequestCreateView(ClientBaseView):
                 key=requisite_data.id,
             ))
         self.dd_output_requisite_data.disabled = False
-        self.dd_output_requisite_data.options = options
+        self.dd_output_requisite_data.change_options(options=options)
         await self.set_type(loading=False)
 
     async def create_output_requisite_data(self, _):

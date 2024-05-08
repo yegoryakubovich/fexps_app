@@ -15,7 +15,10 @@
 #
 
 
+from typing import Optional
+
 from flet_core import Dropdown as FletDropdown, colors, TextStyle
+from flet_core.dropdown import Option
 
 from app.utils import Fonts
 
@@ -32,3 +35,9 @@ class Dropdown(FletDropdown):
             font_family=Fonts.REGULAR,
             color=colors.ON_BACKGROUND,
         )
+
+    def change_options(self, options: Optional[list[Option]] = None, value: Optional[str] = None):
+        if not value and len(options) == 1:
+            value = options[0].key
+        self.options = options
+        self.value = value
