@@ -90,28 +90,18 @@ class RequisiteTab(BaseTab):
                                     Row(
                                         controls=[
                                             Text(
-                                                value=state_str,
-                                                size=11,
+                                                value=value_str,
+                                                size=14,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
                                             ),
                                         ],
                                     ),
-                                    # Row(
-                                    #     controls=[
-                                    #         Text(
-                                    #             value=f'404 CARD NUMBER',
-                                    #             size=28,
-                                    #             font_family=Fonts.SEMIBOLD,
-                                    #             color=colors.ON_PRIMARY,
-                                    #         ),
-                                    #     ],
-                                    # ),
                                     Row(
                                         controls=[
                                             Text(
-                                                value=value_str,
-                                                size=14,
+                                                value=state_str,
+                                                size=12,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
                                             ),
@@ -122,7 +112,7 @@ class RequisiteTab(BaseTab):
                             ),
                             Image(
                                 src=Icons.OPEN,
-                                height=28,
+                                height=24,
                                 color=colors.ON_PRIMARY,
                             ),
                         ],
@@ -131,6 +121,8 @@ class RequisiteTab(BaseTab):
                     ),
                     on_click=partial(self.order_view, order.id),
                     bgcolor=colors.PRIMARY,
+                    horizontal=16,
+                    vertical=12,
                 ),
             )
         return cards
@@ -267,7 +259,7 @@ class RequisiteTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=type_str,
-                                                size=11,
+                                                size=12,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY_CONTAINER,
                                             ),
@@ -279,27 +271,17 @@ class RequisiteTab(BaseTab):
                                             ),
                                             Text(
                                                 value=state_str,
-                                                size=11,
+                                                size=12,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY_CONTAINER,
                                             ),
                                         ],
                                     ),
-                                    # Row(
-                                    #     controls=[
-                                    #         Text(
-                                    #             value=name_str,
-                                    #             size=28,
-                                    #             font_family=Fonts.SEMIBOLD,
-                                    #             color=colors.ON_PRIMARY_CONTAINER,
-                                    #         ),
-                                    #     ],
-                                    # ),
                                     Row(
                                         controls=[
                                             Text(
                                                 value=currency_value_str,
-                                                size=16,
+                                                size=14,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY_CONTAINER,
                                             ),
@@ -318,6 +300,8 @@ class RequisiteTab(BaseTab):
                     ),
                     on_click=partial(self.requisite_view, requisite.id),
                     bgcolor=colors.PRIMARY_CONTAINER,
+                    horizontal=16,
+                    vertical=12,
                 )
             )
         return cards

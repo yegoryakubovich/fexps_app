@@ -269,7 +269,7 @@ class HomeTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=value_str,
-                                                size=22,
+                                                size=14,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
                                             ),
@@ -279,7 +279,7 @@ class HomeTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=state_str,
-                                                size=16,
+                                                size=12,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
                                             ),
@@ -290,7 +290,7 @@ class HomeTab(BaseTab):
                             ),
                             Image(
                                 src=Icons.OPEN,
-                                height=28,
+                                height=24,
                                 color=colors.ON_PRIMARY,
                             ),
                         ],
@@ -298,8 +298,8 @@ class HomeTab(BaseTab):
                     ),
                     on_click=partial(self.request_view, request.id),
                     bgcolor=colors.PRIMARY,
-                    horizontal=24,
-                    vertical=16,
+                    horizontal=16,
+                    vertical=12,
                 )
             )
         return cards
@@ -371,7 +371,7 @@ class HomeTab(BaseTab):
                         controls=[
                             Text(
                                 value=short_name.title(),
-                                size=24,
+                                size=18,
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
                                 expand=True,
@@ -382,13 +382,13 @@ class HomeTab(BaseTab):
                                     controls=[
                                         Text(
                                             value=value_str,
-                                            size=24,
+                                            size=18,
                                             font_family=Fonts.BOLD,
                                             color=colors.ON_PRIMARY_CONTAINER,
                                         ),
                                         Text(
                                             value=date,
-                                            size=14,
+                                            size=12,
                                             font_family=Fonts.REGULAR,
                                             color=colors.ON_PRIMARY_CONTAINER,
                                             text_align=TextAlign.RIGHT,

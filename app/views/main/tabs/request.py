@@ -122,7 +122,7 @@ class RequestTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=value_str,
-                                                size=28,
+                                                size=14,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
                                             ),
@@ -132,7 +132,7 @@ class RequestTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=state_str,
-                                                size=18,
+                                                size=12,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
                                             ),
@@ -143,7 +143,7 @@ class RequestTab(BaseTab):
                             ),
                             Image(
                                 src=Icons.OPEN,
-                                height=28,
+                                height=24,
                                 color=colors.ON_PRIMARY,
                             ),
                         ],
@@ -151,8 +151,8 @@ class RequestTab(BaseTab):
                     ),
                     on_click=partial(self.request_view, request.id),
                     bgcolor=colors.PRIMARY,
-                    horizontal=34,
-                    vertical=24,
+                    horizontal=16,
+                    vertical=12,
                 )
             )
         return cards
@@ -266,7 +266,7 @@ class RequestTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=date_str,
-                                                size=12,
+                                                size=10,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY_CONTAINER,
                                             ),
@@ -276,7 +276,7 @@ class RequestTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=value_str,
-                                                size=28,
+                                                size=14,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY_CONTAINER,
                                             ),
@@ -286,7 +286,7 @@ class RequestTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=state_str,
-                                                size=18,
+                                                size=12,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY_CONTAINER,
                                             ),
@@ -305,6 +305,8 @@ class RequestTab(BaseTab):
                     ),
                     on_click=partial(self.request_view, request.id),
                     bgcolor=colors.PRIMARY_CONTAINER,
+                    horizontal=16,
+                    vertical=12,
                 )
             )
         return cards
