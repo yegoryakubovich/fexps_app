@@ -75,7 +75,7 @@ class HomeTab(BaseTab):
             controls=[
                 Text(
                     value=hello_text_str,
-                    size=24,
+                    size=20,
                     font_family=Fonts.MEDIUM,
                     color=colors.ON_BACKGROUND,
                 ),
@@ -173,7 +173,7 @@ class HomeTab(BaseTab):
                         alignment=MainAxisAlignment.CENTER,
                     ),
                     on_click=self.request_create,
-                    expand=2,
+                    expand=3,
                     bgcolor=colors.PRIMARY,
                 ),
                 StandardButton(
@@ -194,29 +194,9 @@ class HomeTab(BaseTab):
                         alignment=MainAxisAlignment.CENTER,
                     ),
                     bgcolor=colors.PRIMARY_CONTAINER,
-                    expand=1,
+                    expand=2,
                     on_click=self.go_send,
                 ),
-                # StandardButton(
-                #     content=Row(
-                #         controls=[
-                #             Image(
-                #                 src=Icons.DEV,
-                #                 height=24,
-                #                 width=24,
-                #             ),
-                #             Text(
-                #                 value=await self.client.session.gtv(key=f'action_dev'),
-                #                 size=12,
-                #                 font_family=Fonts.BOLD,
-                #                 color=colors.ON_PRIMARY_CONTAINER,
-                #             ),
-                #         ],
-                #         alignment=MainAxisAlignment.CENTER,
-                #     ),
-                #     bgcolor=colors.PRIMARY_CONTAINER,
-                #     expand=1,
-                # ),
             ],
         )
         if update:
@@ -289,7 +269,7 @@ class HomeTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=value_str,
-                                                size=28,
+                                                size=22,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
                                             ),
@@ -299,7 +279,7 @@ class HomeTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=state_str,
-                                                size=18,
+                                                size=16,
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
                                             ),
@@ -318,8 +298,8 @@ class HomeTab(BaseTab):
                     ),
                     on_click=partial(self.request_view, request.id),
                     bgcolor=colors.PRIMARY,
-                    horizontal=34,
-                    vertical=24,
+                    horizontal=24,
+                    vertical=16,
                 )
             )
         return cards
@@ -391,7 +371,7 @@ class HomeTab(BaseTab):
                         controls=[
                             Text(
                                 value=short_name.title(),
-                                size=32,
+                                size=24,
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
                                 expand=True,
@@ -402,15 +382,16 @@ class HomeTab(BaseTab):
                                     controls=[
                                         Text(
                                             value=value_str,
-                                            size=32,
+                                            size=24,
                                             font_family=Fonts.BOLD,
                                             color=colors.ON_PRIMARY_CONTAINER,
                                         ),
                                         Text(
                                             value=date,
-                                            size=16,
+                                            size=14,
                                             font_family=Fonts.REGULAR,
                                             color=colors.ON_PRIMARY_CONTAINER,
+                                            text_align=TextAlign.RIGHT,
                                         ),
                                     ],
                                 ),
