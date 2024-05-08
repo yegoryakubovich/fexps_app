@@ -38,6 +38,5 @@ class Dropdown(FletDropdown):
 
     def change_options(self, options: Optional[list[Option]] = None, value: Optional[str] = None):
         if not value and len(options) == 1:
-            value = options[0].key
+            self.value = options[0].key
         self.options = options
-        self.value = value

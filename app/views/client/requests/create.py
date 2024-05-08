@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+import logging
 from functools import partial
 
 from flet_core import Column, Container, KeyboardType, Row, alignment, Control, AlertDialog, Image, colors, ScrollMode
@@ -300,12 +299,18 @@ class RequestCreateView(ClientBaseView):
         input_method_id, input_currency_value, input_value = None, None, None
         output_requisite_data_id, output_currency_value, output_value = None, None, None
         for field in [self.dd_input_currency, self.dd_output_currency]:
+            logging.critical(field.value)
             if field.value is not None:
                 continue
             field.error_text = await self.client.session.gtv(key='error_empty')
             await self.update_async()
             return
-
+        value_list = [value_to_int(value=self.tf_input_value.value), value_to_int(value=self.tf_output_value.value)]
+        if value_list.count(None) == 2:
+            self.tf_input_value.error_text = await self.client.session.gtv(key='error_empty')
+            self.tf_output_value.error_text = await self.client.session.gtv(key='error_empty')
+            await self.update_async()
+            return
         await self.set_type(loading=True)
         if self.dd_output_currency.value == 'ya_coin':
             input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
@@ -355,6 +360,16 @@ class RequestCreateView(ClientBaseView):
                 await self.update_async()
                 return
         try:
+            logging.critical(dict(
+                wallet_id=wallet_id,
+                type_=type_,
+                input_method_id=input_method_id,
+                input_currency_value=input_currency_value,
+                input_value=input_value,
+                output_requisite_data_id=output_requisite_data_id,
+                output_currency_value=output_currency_value,
+                output_value=output_value,
+            ))
             request_id = await self.client.session.api.client.requests.create(
                 wallet_id=wallet_id,
                 type_=type_,

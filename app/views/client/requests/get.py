@@ -80,7 +80,8 @@ class RequestView(ClientBaseView):
     orders = list[dict]
 
     info_card: InformationContainer
-    waiting_button: StandardButton
+    confirmation_true_button: StandardButton
+    confirmation_false_button: StandardButton
     orders_row: Row
     help_column: Column
 
@@ -313,12 +314,12 @@ class RequestView(ClientBaseView):
         if update:
             await self.info_card.update_async()
 
-    async def update_waiting_button(self, update: bool = True) -> None:
-        self.waiting_button = StandardButton(
+    async def update_confirmation_true_button(self, update: bool = True) -> None:
+        self.confirmation_true_button = StandardButton(
             content=Row(
                 controls=[
                     Text(
-                        value=await self.client.session.gtv(key='request_confirm'),
+                        value=await self.client.session.gtv(key='request_confirm_true'),
                         size=16,
                         font_family=Fonts.BOLD,
                     ),
@@ -326,11 +327,30 @@ class RequestView(ClientBaseView):
                 ],
                 alignment=MainAxisAlignment.CENTER,
             ),
-            on_click=self.waiting_confirm,
+            on_click=partial(self.confirmation_answer, False),
             expand=1,
         )
         if update:
-            await self.waiting_button.update_async()
+            await self.confirmation_true_button.update_async()
+
+    async def update_confirmation_false_button(self, update: bool = True) -> None:
+        self.confirmation_false_button = StandardButton(
+            content=Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='request_confirm_false'),
+                        size=16,
+                        font_family=Fonts.BOLD,
+                    ),
+                    DynamicTimer(seconds=self.request.waiting_delta),
+                ],
+                alignment=MainAxisAlignment.CENTER,
+            ),
+            on_click=partial(self.confirmation_answer, False),
+            expand=1,
+        )
+        if update:
+            await self.confirmation_false_button.update_async()
 
     """
     ORDERS SEND
@@ -504,11 +524,13 @@ class RequestView(ClientBaseView):
         if self.request.state == 'loading':
             pass
         elif self.request.state == 'waiting':
-            await self.update_waiting_button(update=False)
+            await self.update_confirmation_true_button(update=False)
+            await self.update_confirmation_false_button(update=False)
             buttons += [
                 Row(
                     controls=[
-                        self.waiting_button,
+                        self.confirmation_true_button,
+                        self.confirmation_false_button,
                     ]
                 ),
             ]
@@ -569,9 +591,9 @@ class RequestView(ClientBaseView):
     async def order_view(self, order_id: int, _):
         await self.client.change_view(view=RequestOrderView(order_id=order_id))
 
-    async def waiting_confirm(self, _):
+    async def confirmation_answer(self, answer: bool, _):
         try:
-            await self.client.session.api.client.requests.updates.confirmation(id_=self.request_id)
+            await self.client.session.api.client.requests.updates.confirmation(id_=self.request_id, answer=answer)
             await self.construct()
             await self.update_async()
         except ApiException as exception:
