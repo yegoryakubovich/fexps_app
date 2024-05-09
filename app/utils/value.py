@@ -114,7 +114,10 @@ def get_input_currency_value(request):
 
 
 def get_input_value(request):
-    result = request.input_value
+    if request.rate_confirmed:
+        result = request.input_value_raw
+    else:
+        result = request.input_value
     if not result and request.first_line == 'input_value':
         result = request.first_line_value
     return result

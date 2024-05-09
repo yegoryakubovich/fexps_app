@@ -327,7 +327,7 @@ class RequestView(ClientBaseView):
                 ],
                 alignment=MainAxisAlignment.CENTER,
             ),
-            on_click=partial(self.confirmation_answer, False),
+            on_click=partial(self.confirmation_answer, True),
             expand=1,
         )
         if update:
