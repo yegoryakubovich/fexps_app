@@ -17,7 +17,7 @@
 
 from copy import deepcopy
 
-from flet_core import Row, Column, colors, Checkbox, ScrollMode, Divider
+from flet_core import Row, Column, colors, Checkbox, ScrollMode, Divider, KeyboardType
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -25,13 +25,14 @@ from app.controls.information import Text
 from app.controls.information.snack_bar import SnackBar
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import AdminBaseView
-from app.utils import Fonts
+from app.utils import Fonts, Error, value_to_int, value_to_float
 from fexps_api_client.utils import ApiException
 
 
 class MethodView(AdminBaseView):
     route = '/admin/method/get'
     method = dict
+    currency = dict
 
     dd_currency: Dropdown
     currency_options: list[Option]
@@ -41,8 +42,13 @@ class MethodView(AdminBaseView):
     schema: Column
     schema_fields: list[Column]
     schema_input_fields: list[Column]
+    tf_rate_input_default = TextField
+    tf_rate_output_default = TextField
+    tf_rate_input_percent = TextField
+    tf_rate_output_percent = TextField
     tf_color: TextField
     tf_bgcolor: TextField
+    cb_is_rate_default: Checkbox
 
     snack_bar: SnackBar
 
@@ -53,6 +59,7 @@ class MethodView(AdminBaseView):
     async def construct(self):
         await self.set_type(loading=True)
         self.method = await self.client.session.api.client.methods.get(id_=self.method_id)
+        self.currency = self.method.currency
         self.currency_options = [
             Option(text=currency.id_str.upper(), key=currency.id_str)
             for currency in await self.client.session.api.client.currencies.get_list()
@@ -82,6 +89,26 @@ class MethodView(AdminBaseView):
             options=self.currency_options,
             value=self.method.currency.id_str,
         )
+        self.tf_rate_input_default = TextField(
+            label=await self.client.session.gtv(key='admin_method_rate_input_default'),
+            keyboard_type=KeyboardType.NUMBER,
+            value=value_to_float(value=self.method.rate_input_default, decimal=self.currency.decimal),
+        )
+        self.tf_rate_output_default = TextField(
+            label=await self.client.session.gtv(key='admin_method_rate_output_default'),
+            keyboard_type=KeyboardType.NUMBER,
+            value=value_to_float(value=self.method.rate_output_default, decimal=self.currency.decimal),
+        )
+        self.tf_rate_input_percent = TextField(
+            label=await self.client.session.gtv(key='admin_method_rate_input_percent'),
+            keyboard_type=KeyboardType.NUMBER,
+            value=value_to_float(value=self.method.rate_input_percent, decimal=self.currency.decimal),
+        )
+        self.tf_rate_output_percent = TextField(
+            label=await self.client.session.gtv(key='admin_method_rate_output_percent'),
+            keyboard_type=KeyboardType.NUMBER,
+            value=value_to_float(value=self.method.rate_output_percent, decimal=self.currency.decimal),
+        )
         self.tf_color = TextField(
             label=await self.client.session.gtv(key='admin_method_color'),
             value=self.method.color,
@@ -89,6 +116,10 @@ class MethodView(AdminBaseView):
         self.tf_bgcolor = TextField(
             label=await self.client.session.gtv(key='admin_method_bgcolor'),
             value=self.method.bgcolor,
+        )
+        self.cb_is_rate_default = Checkbox(
+            label=await self.client.session.gtv(key='admin_method_is_rate_default'),
+            value=self.method.is_rate_default,
         )
         self.schema_fields = []
         for i, field in enumerate(self.method.schema_fields):
@@ -124,8 +155,13 @@ class MethodView(AdminBaseView):
                             color=colors.ON_BACKGROUND,
                         ),
                         self.dd_currency,
+                        self.tf_rate_input_default,
+                        self.tf_rate_output_default,
+                        self.tf_rate_input_percent,
+                        self.tf_rate_output_percent,
                         self.tf_color,
                         self.tf_bgcolor,
+                        self.cb_is_rate_default,
                         Row(controls=[
                             Text(
                                 value=await self.client.session.gtv(key="admin_method_schema_fields"),
@@ -221,13 +257,29 @@ class MethodView(AdminBaseView):
             })
 
         try:
+            custom_field_list = [
+                ('rate_input_default', self.tf_rate_input_default, self.method.rate_input_default),
+                ('rate_output_default', self.tf_rate_output_default, self.method.rate_output_default),
+                ('rate_input_percent', self.tf_rate_input_percent, self.method.rate_input_percent),
+                ('rate_output_percent', self.tf_rate_output_percent, self.method.rate_output_percent),
+            ]
+            updates = {}
+            for field_key, field, model_value in custom_field_list:
+                if not await Error.check_field(self, field=field, check_float=True):
+                    return
+                field_value = value_to_int(value=field.value, decimal=self.currency.decimal)
+                if model_value == field_value:
+                    continue
+                updates[field_key] = field_value
             await self.client.session.api.admin.methods.update(
                 id_=self.method_id,
                 currency_id_str=self.dd_currency.value,
                 fields=fields,
                 input_fields=input_fields,
+                **updates,
                 color=self.tf_color.value,
                 bgcolor=self.tf_bgcolor.value,
+                is_rate_default=self.cb_is_rate_default.value,
             )
             await self.client.session.get_text_pack()
             await self.set_type(loading=False)
