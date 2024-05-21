@@ -17,14 +17,14 @@
 
 from copy import deepcopy
 
-from flet_core import Checkbox, colors, Column, Row, ScrollMode, Divider
+from flet_core import Checkbox, colors, Column, Row, ScrollMode, Divider, KeyboardType
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import AdminBaseView
-from app.utils import Fonts
+from app.utils import Fonts, value_to_int, Error
 from fexps_api_client.utils import ApiException
 from .get import MethodView
 
@@ -40,8 +40,13 @@ class MethodCreateView(AdminBaseView):
     tf_name: TextField
     schema_fields: list[Column]
     schema_input_fields: list[Column]
+    tf_rate_input_default = TextField
+    tf_rate_output_default = TextField
+    tf_rate_input_percent = TextField
+    tf_rate_output_percent = TextField
     tf_color: TextField
     tf_bgcolor: TextField
+    cb_is_rate_default: Checkbox
 
     async def construct(self):
         await self.set_type(loading=True)
@@ -78,6 +83,26 @@ class MethodCreateView(AdminBaseView):
         self.tf_name = TextField(
             label=await self.client.session.gtv(key='name'),
         )
+        self.tf_rate_input_default = TextField(
+            label=await self.client.session.gtv(key='admin_method_rate_input_default'),
+            keyboard_type=KeyboardType.NUMBER,
+            value=0,
+        )
+        self.tf_rate_output_default = TextField(
+            label=await self.client.session.gtv(key='admin_method_rate_output_default'),
+            keyboard_type=KeyboardType.NUMBER,
+            value=0,
+        )
+        self.tf_rate_input_percent = TextField(
+            label=await self.client.session.gtv(key='admin_method_rate_input_percent'),
+            keyboard_type=KeyboardType.NUMBER,
+            value=0,
+        )
+        self.tf_rate_output_percent = TextField(
+            label=await self.client.session.gtv(key='admin_method_rate_output_percent'),
+            keyboard_type=KeyboardType.NUMBER,
+            value=0,
+        )
         self.tf_color = TextField(
             label=await self.client.session.gtv(key='admin_method_color'),
             value='#1D1D1D',
@@ -85,6 +110,10 @@ class MethodCreateView(AdminBaseView):
         self.tf_bgcolor = TextField(
             label=await self.client.session.gtv(key='admin_method_bgcolor'),
             value='#FFFCEF',
+        )
+        self.cb_is_rate_default = Checkbox(
+            label=await self.client.session.gtv(key='admin_method_is_rate_default'),
+            value=False,
         )
         schema_field_column = deepcopy(self.schema)
         schema_field_column.controls[3].options = deepcopy(self.schema_type_options)
@@ -98,8 +127,13 @@ class MethodCreateView(AdminBaseView):
             main_section_controls=[
                 self.dd_currency,
                 self.tf_name,
+                self.tf_rate_input_default,
+                self.tf_rate_output_default,
+                self.tf_rate_input_percent,
+                self.tf_rate_output_percent,
                 self.tf_color,
                 self.tf_bgcolor,
+                self.cb_is_rate_default,
                 Row(controls=[
                     Text(
                         value=await self.client.session.gtv(key="admin_method_schema_fields"),
@@ -183,15 +217,28 @@ class MethodCreateView(AdminBaseView):
                 'type': column.controls[3].value,
                 'optional': column.controls[4].controls[0].value,
             })
+        custom_field_list = [
+            ('rate_input_default', self.tf_rate_input_default),
+            ('rate_output_default', self.tf_rate_output_default),
+            ('rate_input_percent', self.tf_rate_input_percent),
+            ('rate_output_percent', self.tf_rate_output_percent),
+        ]
         try:
-            method_id = await self.client.session.api.admin.methods.create(
-                currency=self.dd_currency.value,
-                name=self.tf_name.value,
-                fields=fields,
-                input_fields=input_fields,
-                color=self.tf_color.value,
-                bgcolor=self.tf_bgcolor.value,
-            )
+            currency = await self.client.session.api.client.currencies.get(id_str=self.dd_currency.value)
+            updates = {
+                'currency': currency.id_str,
+                'name': self.tf_name.value,
+                'fields': fields,
+                'input_fields': input_fields,
+                'color': self.tf_color.value,
+                'bgcolor': self.tf_bgcolor.value,
+                'is_rate_default': self.cb_is_rate_default.value,
+            }
+            for field_key, field in custom_field_list:
+                if not await Error.check_field(self, field=field, check_float=True):
+                    return
+                updates[field_key] = value_to_int(value=field.value, decimal=currency.rate_decimal)
+            method_id = await self.client.session.api.admin.methods.create(**updates )
             await self.client.session.get_text_pack()
             await self.set_type(loading=False)
             await self.client.change_view(view=MethodView(id_=method_id), delete_current=True, with_restart=True)

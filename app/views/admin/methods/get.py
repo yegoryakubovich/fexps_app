@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
 from copy import deepcopy
 
 from flet_core import Row, Column, colors, Checkbox, ScrollMode, Divider, KeyboardType
@@ -34,11 +32,12 @@ class MethodView(AdminBaseView):
     method = dict
     currency = dict
 
-    dd_currency: Dropdown
     currency_options: list[Option]
     schema_type_options: list[Option]
     schema_input_type_options: list[Option]
 
+    dd_currency: Dropdown
+    tf_name = TextField
     schema: Column
     schema_fields: list[Column]
     schema_input_fields: list[Column]
@@ -89,25 +88,29 @@ class MethodView(AdminBaseView):
             options=self.currency_options,
             value=self.method.currency.id_str,
         )
+        self.tf_name = TextField(
+            label=await self.client.session.gtv(key='name'),
+            value=await self.client.session.gtv(key=self.method.name_text),
+        )
         self.tf_rate_input_default = TextField(
             label=await self.client.session.gtv(key='admin_method_rate_input_default'),
             keyboard_type=KeyboardType.NUMBER,
-            value=value_to_float(value=self.method.rate_input_default, decimal=self.currency.decimal),
+            value=value_to_float(value=self.method.rate_input_default, decimal=self.currency.rate_decimal),
         )
         self.tf_rate_output_default = TextField(
             label=await self.client.session.gtv(key='admin_method_rate_output_default'),
             keyboard_type=KeyboardType.NUMBER,
-            value=value_to_float(value=self.method.rate_output_default, decimal=self.currency.decimal),
+            value=value_to_float(value=self.method.rate_output_default, decimal=self.currency.rate_decimal),
         )
         self.tf_rate_input_percent = TextField(
             label=await self.client.session.gtv(key='admin_method_rate_input_percent'),
             keyboard_type=KeyboardType.NUMBER,
-            value=value_to_float(value=self.method.rate_input_percent, decimal=self.currency.decimal),
+            value=value_to_float(value=self.method.rate_input_percent, decimal=self.currency.rate_decimal),
         )
         self.tf_rate_output_percent = TextField(
             label=await self.client.session.gtv(key='admin_method_rate_output_percent'),
             keyboard_type=KeyboardType.NUMBER,
-            value=value_to_float(value=self.method.rate_output_percent, decimal=self.currency.decimal),
+            value=value_to_float(value=self.method.rate_output_percent, decimal=self.currency.rate_decimal),
         )
         self.tf_color = TextField(
             label=await self.client.session.gtv(key='admin_method_color'),
@@ -155,6 +158,7 @@ class MethodView(AdminBaseView):
                             color=colors.ON_BACKGROUND,
                         ),
                         self.dd_currency,
+                        self.tf_name,
                         self.tf_rate_input_default,
                         self.tf_rate_output_default,
                         self.tf_rate_input_percent,
@@ -263,23 +267,30 @@ class MethodView(AdminBaseView):
                 ('rate_input_percent', self.tf_rate_input_percent, self.method.rate_input_percent),
                 ('rate_output_percent', self.tf_rate_output_percent, self.method.rate_output_percent),
             ]
-            updates = {}
+            updates = {
+                'fields': fields,
+                'input_fields': input_fields,
+            }
+            if self.method.currency.id_str.lower() != self.dd_currency.value.lower():
+                updates['currency'] = self.dd_currency.value
+            if await self.client.session.gtv(key=self.method.name_text) != self.tf_name.value:
+                updates['name'] = self.tf_name.value
+            if self.method.color != self.tf_color.value:
+                updates['color'] = self.tf_color.value
+            if self.method.bgcolor != self.tf_bgcolor.value:
+                updates['bgcolor'] = self.tf_bgcolor.value
+            if self.method.is_rate_default != self.cb_is_rate_default.value:
+                updates['is_rate_default'] = self.cb_is_rate_default.value
             for field_key, field, model_value in custom_field_list:
                 if not await Error.check_field(self, field=field, check_float=True):
                     return
-                field_value = value_to_int(value=field.value, decimal=self.currency.decimal)
+                field_value = value_to_int(value=field.value, decimal=self.currency.rate_decimal)
                 if model_value == field_value:
                     continue
                 updates[field_key] = field_value
             await self.client.session.api.admin.methods.update(
                 id_=self.method_id,
-                currency_id_str=self.dd_currency.value,
-                fields=fields,
-                input_fields=input_fields,
                 **updates,
-                color=self.tf_color.value,
-                bgcolor=self.tf_bgcolor.value,
-                is_rate_default=self.cb_is_rate_default.value,
             )
             await self.client.session.get_text_pack()
             await self.set_type(loading=False)
