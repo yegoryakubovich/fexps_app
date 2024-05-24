@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import asyncio
 import logging
 from functools import partial
 
@@ -277,6 +278,7 @@ class RequestCreateView(ClientBaseView):
     async def create_output_requisite_data_after_close(self):
         self.dialog.open = False
         await self.dialog.update_async()
+        await asyncio.sleep(0.1)
         await self.change_output_method('')
         if self.dd_output_currency.value == self.requisite_data_model.currency_id_str:
             if str(self.dd_output_method.value) == str(self.requisite_data_model.method_id):

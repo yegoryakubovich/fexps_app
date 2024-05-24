@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import asyncio
 
 from flet_core import ScrollMode, Row, Column, Container, AlertDialog, alignment, KeyboardType, Image, colors
 from flet_core.dropdown import Option
@@ -369,6 +369,7 @@ class RequisiteCreateView(ClientBaseView):
     async def create_output_requisite_data_after_close(self):
         self.dialog.open = False
         await self.dialog.update_async()
+        await asyncio.sleep(0.1)
         await self.change_output_method('')
         if self.dd_currency.value == self.requisite_data_model.currency_id_str:
             if str(self.dd_output_method.value) == str(self.requisite_data_model.method_id):
