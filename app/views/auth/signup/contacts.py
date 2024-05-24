@@ -35,6 +35,8 @@ class ContactRegistrationView(AuthView):
         await self.set_type(loading=True)
         self.contacts = await self.client.session.api.client.contacts.get_list()
         await self.set_type(loading=False)
+        if not self.contacts:
+            await self.client.change_view(view=AgreementRegistrationView(), delete_current=True)
         contact_controls = []
         for contact in self.contacts:
             contact_controls += [
