@@ -88,11 +88,6 @@ class Session:
             if self.language != self.account.language:
                 await self.set_cs(key='language', value=self.language)
             self.wallets = await self.api.client.wallets.get_list()
-            if not self.wallets:
-                await self.api.client.wallets.create(name='Default')
-                self.wallets = await self.api.client.wallets.get_list()
-                self.current_wallet = self.wallets[0]
-                await self.set_cs(key='current_wallet', value=self.current_wallet)
             if not self.current_wallet:
                 self.current_wallet = self.wallets[0]
                 await self.set_cs(key='current_wallet', value=self.current_wallet)
