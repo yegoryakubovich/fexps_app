@@ -65,12 +65,7 @@ class AccountTab(BaseTab):
                     Setting(
                         name='account_notifications',
                         icon=Icons.NOTIFICATIONS,
-                        on_click=partial(
-                            self.client.session.bs_info.open_,
-                            icon=Icons.CHILL,
-                            title=await self.client.session.gtv(key='coming_soon'),
-                            description=await self.client.session.gtv(key='coming_soon_description'),
-                        ),
+                        on_click=self.notification,
                     ),
                     Setting(
                         name='account_security',
@@ -217,6 +212,10 @@ class AccountTab(BaseTab):
                 padding=10,
             )
         ]
+
+    async def notification(self, _):
+        from app.views.client.account.notification.get import AccountNotificationView
+        await self.client.change_view(view=AccountNotificationView())
 
     async def change_password(self, _):
         from app.views.client.account.change_password import ChangePasswordView
