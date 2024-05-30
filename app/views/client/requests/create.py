@@ -24,7 +24,7 @@ from app.controls.button import StandardButton
 from app.controls.information import SubTitle
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import ClientBaseView
-from app.utils import Icons
+from app.utils import Icons, value_to_float
 from app.utils.value import value_to_int
 from app.views.client.account.requisite_data.models import RequisiteDataCreateModel
 from app.views.client.requests.get import RequestView
@@ -502,11 +502,19 @@ class RequestCreateView(ClientBaseView):
             )
             await self.set_type(loading=False)
             if type_ == 'input':
-                self.calc_text.value = f'{request_calc.input_currency_value_raw}->{request_calc.input_value_raw}'
+                input_ = value_to_float(value=request_calc.input_currency_value_raw, decimal=input_currency.decimal)
+                input_ = f'{input_} {input_currency.id_str.upper()}'
+                output_ = value_to_float(value=request_calc.input_value_raw)
             elif type_ == 'output':
-                self.calc_text.value = f'{request_calc.output_value_raw}->{request_calc.output_currency_value_raw}'
+                input_ = value_to_float(value=request_calc.output_value_raw)
+                output_ = value_to_float(value=request_calc.output_currency_value_raw, decimal=output_currency.decimal)
+                output_ = f'{output_} {output_currency.id_str.upper()}'
             else:
-                self.calc_text.value = f'{request_calc.input_currency_value_raw}->{request_calc.output_currency_value_raw}'
+                input_ = value_to_float(value=request_calc.input_currency_value_raw, decimal=input_currency.decimal)
+                input_ = f'{input_} {input_currency.id_str.upper()}'
+                output_ = value_to_float(value=request_calc.output_currency_value_raw, decimal=output_currency.decimal)
+                output_ = f'{output_} {output_currency.id_str.upper()}'
+            self.calc_text.value = f'{input_} -> {output_}'
             await self.calc_text.update_async()
         except ApiException as exception:
             await self.set_type(loading=False)
