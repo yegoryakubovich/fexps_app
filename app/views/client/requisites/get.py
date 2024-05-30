@@ -26,7 +26,6 @@ from app.controls.layout import ClientBaseView
 from app.utils import Icons, Fonts, value_to_float, Error, value_to_int
 from app.utils.value import requisite_value_to_str
 from app.views.client.requisites.orders.get import RequisiteOrderView
-from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -40,7 +39,6 @@ class RequisiteView(ClientBaseView):
     tf_currency_value: TextField
 
     orders_row: Row
-    help_column: Column
     update_value_button: StandardButton
     enable_button: StandardButton
     stop_button: StandardButton
@@ -138,67 +136,6 @@ class RequisiteView(ClientBaseView):
         if update:
             await self.orders_row.update_async()
 
-    async def update_help_column(self, update: bool = True) -> None:
-        self.help_column = Column(
-            controls=[
-                SubTitle(value=await self.client.session.gtv(key='requisite_help_title')),
-                StandardButton(
-                    content=Row(
-                        controls=[
-                            Row(
-                                controls=[
-                                    Text(
-                                        value=await self.client.session.gtv(key='help_faq'),
-                                        size=18,
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=colors.ON_BACKGROUND,
-                                    ),
-                                ],
-                                expand=True,
-                            ),
-                            Image(
-                                src=Icons.OPEN,
-                                height=18,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                        ],
-                    ),
-                    bgcolor=colors.BACKGROUND,
-                    horizontal=0,
-                    vertical=0,
-                    on_click=None,
-                ),
-                StandardButton(
-                    content=Row(
-                        controls=[
-                            Row(
-                                controls=[
-                                    Text(
-                                        value=await self.client.session.gtv(key='help_telegram_contact_title'),
-                                        size=18,
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=colors.ON_BACKGROUND,
-                                    ),
-                                ],
-                                expand=True,
-                            ),
-                            Image(
-                                src=Icons.OPEN,
-                                height=18,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                        ]
-                    ),
-                    bgcolor=colors.BACKGROUND,
-                    horizontal=0,
-                    vertical=0,
-                    url=settings.url_telegram,
-                ),
-            ],
-        )
-        if update:
-            await self.help_column.update_async()
-
     """
     BUTTON
     """
@@ -274,16 +211,6 @@ class RequisiteView(ClientBaseView):
         controls += [
             self.orders_row,
         ]
-        if self.requisite.type == 'input':
-            await self.update_help_column(update=False)
-            controls += [
-                self.help_column,
-            ]
-        elif self.requisite.type == 'output':
-            await self.update_help_column(update=False)
-            controls += [
-                self.help_column,
-            ]
         if self.requisite.state == 'enable':
             await self.update_update_value_button(update=False)
             await self.update_stop_button(update=False)

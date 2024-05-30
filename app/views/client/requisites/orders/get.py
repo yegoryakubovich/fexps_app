@@ -21,11 +21,10 @@ from flet_core import Column, Container, Row, Divider, MainAxisAlignment, \
     padding, Image, colors, ScrollMode, AlertDialog, TextField
 
 from app.controls.button import StandardButton
-from app.controls.information import Text, SubTitle, InformationContainer
+from app.controls.information import Text, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, Error, value_to_int
 from app.utils.value import value_to_str, requisite_value_to_str
-from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -38,7 +37,6 @@ class RequisiteOrderView(ClientBaseView):
     currency = dict
 
     info_card: InformationContainer
-    help_column: Column
     input_confirmation_button: StandardButton
     input_cancel_button: StandardButton
     output_payment_button: StandardButton
@@ -182,93 +180,6 @@ class RequisiteOrderView(ClientBaseView):
         )
         if update:
             await self.info_card.update_async()
-
-    async def update_help_cards(self, update: bool = True) -> None:
-        self.help_column = Column(
-            controls=[
-                SubTitle(value=await self.client.session.gtv(key='requisite_order_help_title')),
-                StandardButton(
-                    content=Row(
-                        controls=[
-                            Row(
-                                controls=[
-                                    Text(
-                                        value=await self.client.session.gtv(key='help_faq'),
-                                        size=18,
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=colors.ON_BACKGROUND,
-                                    ),
-                                ],
-                                expand=True,
-                            ),
-                            Image(
-                                src=Icons.OPEN,
-                                height=18,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                        ],
-                    ),
-                    bgcolor=colors.BACKGROUND,
-                    horizontal=0,
-                    vertical=0,
-                    on_click=None,
-                ),
-                StandardButton(
-                    content=Row(
-                        controls=[
-                            Row(
-                                controls=[
-                                    Text(
-                                        value=await self.client.session.gtv(key='help_telegram_contact_title'),
-                                        size=18,
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=colors.ON_BACKGROUND,
-                                    ),
-                                ],
-                                expand=True,
-                            ),
-                            Image(
-                                src=Icons.OPEN,
-                                height=18,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                        ]
-                    ),
-                    bgcolor=colors.BACKGROUND,
-                    horizontal=0,
-                    vertical=0,
-                    url=settings.url_telegram,
-                ),
-                StandardButton(
-                    content=Row(
-                        controls=[
-                            Row(
-                                controls=[
-                                    Text(
-                                        value=await self.client.session.gtv(key='help_chat_title'),
-                                        size=18,
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=colors.ON_BACKGROUND,
-                                    ),
-                                ],
-                                expand=True,
-                            ),
-                            Image(
-                                src=Icons.OPEN,
-                                height=18,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                        ]
-                    ),
-                    bgcolor=colors.BACKGROUND,
-                    horizontal=0,
-                    vertical=0,
-                    on_click=self.chat_open,
-                ),
-            ],
-        )
-        if update:
-            await self.help_column.update_async()
 
     """
     INPUT CONFIRMATION
@@ -502,11 +413,9 @@ class RequisiteOrderView(ClientBaseView):
         self.method = self.order.method
         await self.set_type(loading=False)
         await self.update_info_card(update=False)
-        await self.update_help_cards(update=False)
         await self.update_chat_button(update=False)
         controls += [
             self.info_card,
-            self.help_column,
         ]
         if self.order_request:
             if self.client.session.current_wallet.id != self.order_request.wallet.id:

@@ -29,7 +29,6 @@ from app.utils.value import requisite_value_to_str, get_fix_rate, get_input_curr
     get_output_currency_value, get_output_value
 from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView
-from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -83,7 +82,6 @@ class RequestView(ClientBaseView):
     confirmation_true_button: StandardButton
     confirmation_false_button: StandardButton
     orders_row: Row
-    help_column: Column
 
     def __init__(self, request_id: int):
         super().__init__()
@@ -450,67 +448,6 @@ class RequestView(ClientBaseView):
         if update:
             await self.orders_row.update_async()
 
-    async def update_help_column(self, update: bool = True) -> None:
-        self.help_column = Column(
-            controls=[
-                SubTitle(value=await self.client.session.gtv(key='request_help_title')),
-                StandardButton(
-                    content=Row(
-                        controls=[
-                            Row(
-                                controls=[
-                                    Text(
-                                        value=await self.client.session.gtv(key='faq'),
-                                        size=18,
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=colors.ON_BACKGROUND,
-                                    ),
-                                ],
-                                expand=True,
-                            ),
-                            Image(
-                                src=Icons.OPEN,
-                                height=18,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                        ],
-                    ),
-                    bgcolor=colors.BACKGROUND,
-                    horizontal=0,
-                    vertical=0,
-                    on_click=None,
-                ),
-                StandardButton(
-                    content=Row(
-                        controls=[
-                            Row(
-                                controls=[
-                                    Text(
-                                        value=await self.client.session.gtv(key='help_telegram_contact_title'),
-                                        size=18,
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=colors.ON_BACKGROUND,
-                                    ),
-                                ],
-                                expand=True,
-                            ),
-                            Image(
-                                src=Icons.OPEN,
-                                height=18,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                        ]
-                    ),
-                    bgcolor=colors.BACKGROUND,
-                    horizontal=0,
-                    vertical=0,
-                    url=settings.url_telegram,
-                ),
-            ],
-        )
-        if update:
-            await self.help_column.update_async()
-
     async def construct(self):
         controls, buttons = [], []
         await self.set_type(loading=True)
@@ -536,7 +473,6 @@ class RequestView(ClientBaseView):
             ]
         else:
             await self.update_orders_row(update=False)
-            await self.update_help_column(update=False)
             controls += [
                 self.orders_row,
                 self.help_column,
@@ -584,6 +520,7 @@ class RequestView(ClientBaseView):
     async def edit_name_after(self):
         self.dialog.open = False
         await self.dialog.update_async()
+        await asyncio.sleep(0.5)
         self.reload_stop = False
         await self.construct()
         await self.update_async()
