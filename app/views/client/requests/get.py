@@ -475,7 +475,6 @@ class RequestView(ClientBaseView):
             await self.update_orders_row(update=False)
             controls += [
                 self.orders_row,
-                self.help_column,
             ]
         title_str = await self.client.session.gtv(key='request_get_title')
         self.controls = await self.get_controls(

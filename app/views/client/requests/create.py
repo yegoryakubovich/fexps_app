@@ -57,6 +57,8 @@ class RequestCreateView(ClientBaseView):
     dd_output_requisite_data = Dropdown(value=None)
     requisite_data_model: RequisiteDataCreateModel
 
+    calc_text = TextField(value=None)
+
     """
     SEND
     """
@@ -180,6 +182,11 @@ class RequestCreateView(ClientBaseView):
             }
         )
         await self.set_type(loading=False)
+        self.calc_text = TextField(
+            label=await self.client.session.gtv(key='request_create_calculation'),
+            value=None,
+            disabled=True,
+        )
         self.controls = await self.get_controls(
             with_expand=True,
             title=await self.client.session.gtv(key='request_create_title'),
@@ -188,6 +195,7 @@ class RequestCreateView(ClientBaseView):
                     content=Column(
                         controls=[
                             self.dialog,
+                            self.calc_text,
                             *await self.get_input(),
                             *await self.get_output(),
                         ],
@@ -202,7 +210,13 @@ class RequestCreateView(ClientBaseView):
                                 text=await self.client.session.gtv(key='request_create_button'),
                                 on_click=self.request_create,
                                 expand=True,
-                            )
+                            ),
+                            StandardButton(
+                                text=await self.client.session.gtv(key='request_calculate_button'),
+                                on_click=self.request_calc,
+                                expand=True,
+                            ),
+
                         ],
                     ),
                     alignment=alignment.bottom_center,
@@ -388,6 +402,112 @@ class RequestCreateView(ClientBaseView):
                 delete_current=True,
                 with_restart=True,
             )
+        except ApiException as exception:
+            await self.set_type(loading=False)
+            return await self.client.session.error(exception=exception)
+
+    async def request_calc(self, _):
+        if self.tf_input_value.value and self.tf_output_value.value:
+            self.tf_output_value.error_text = await self.client.session.gtv(key='request_create_error_only_one_fields')
+            await self.update_async()
+            return
+        if len(self.client.session.wallets) == 1:
+            return await self.go_request_calc(wallet_id=self.client.session.wallets[0]['id'])
+
+    async def go_request_calc(self, wallet_id: int):
+        input_currency, output_currency = None, None
+        input_method_id, input_currency_value, input_value = None, None, None
+        output_requisite_data_id, output_currency_value, output_value = None, None, None
+        for field in [self.dd_input_currency, self.dd_output_currency]:
+            logging.critical(field.value)
+            if field.value is not None:
+                continue
+            field.error_text = await self.client.session.gtv(key='error_empty')
+            await self.update_async()
+            return
+        value_list = [value_to_int(value=self.tf_input_value.value), value_to_int(value=self.tf_output_value.value)]
+        if value_list.count(None) == 2:
+            self.tf_input_value.error_text = await self.client.session.gtv(key='error_empty')
+            self.tf_output_value.error_text = await self.client.session.gtv(key='error_empty')
+            await self.update_async()
+            return
+        await self.set_type(loading=True)
+        if self.dd_output_currency.value == 'ya_coin':
+            input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
+            type_ = RequestTypes.INPUT
+            if self.dd_input_method.value:
+                input_method_id = self.dd_input_method.value
+            input_currency_value = value_to_int(value=self.tf_input_value.value, decimal=input_currency.decimal)
+            input_value = value_to_int(value=self.tf_output_value.value)
+        elif self.dd_input_currency.value == 'ya_coin':
+            output_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_output_currency.value)
+            type_ = RequestTypes.OUTPUT
+            if self.dd_output_requisite_data.value:
+                output_requisite_data_id = self.dd_output_requisite_data.value
+            output_currency_value = value_to_int(value=self.tf_output_value.value, decimal=output_currency.decimal)
+            output_value = value_to_int(value=self.tf_input_value.value)
+        else:
+            input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
+            output_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_output_currency.value)
+            type_ = RequestTypes.ALL
+            if self.dd_input_method.value:
+                input_method_id = self.dd_input_method.value
+            input_currency_value = value_to_int(value=self.tf_input_value.value, decimal=input_currency.decimal)
+            if self.dd_output_requisite_data.value:
+                output_requisite_data_id = self.dd_output_requisite_data.value
+            output_currency_value = value_to_int(value=self.tf_output_value.value, decimal=output_currency.decimal)
+        error_less_div_str = await self.client.session.gtv(key='error_less_div')
+        error_div_str = await self.client.session.gtv(key='error_div')
+        for value, field, currency in [
+            (input_currency_value, self.tf_input_value, input_currency),
+            (input_value, self.tf_output_value, None),
+            (output_currency_value, self.tf_output_value, output_currency),
+            (output_value, self.tf_input_value, None),
+        ]:
+            if value is None:
+                continue
+            div, decimal = settings.default_div, settings.default_decimal
+            if currency:
+                div, decimal = currency['div'], currency['decimal']
+                if int(value) % div != 0:
+                    field.error_text = f'{error_div_str} {div / (10 ** decimal)}'
+                    await self.set_type(loading=False)
+                    await self.update_async()
+                    return
+            if int(value) < div:
+                field.error_text = f'{error_less_div_str} {div / (10 ** decimal)}'
+                await self.set_type(loading=False)
+                await self.update_async()
+                return
+        try:
+            logging.critical(dict(
+                wallet_id=wallet_id,
+                type_=type_,
+                input_method_id=input_method_id,
+                input_currency_value=input_currency_value,
+                input_value=input_value,
+                output_requisite_data_id=output_requisite_data_id,
+                output_currency_value=output_currency_value,
+                output_value=output_value,
+            ))
+            request_calc = await self.client.session.api.client.requests.calc(
+                wallet_id=wallet_id,
+                type_=type_,
+                input_method_id=input_method_id,
+                input_currency_value=input_currency_value,
+                input_value=input_value,
+                output_requisite_data_id=output_requisite_data_id,
+                output_currency_value=output_currency_value,
+                output_value=output_value,
+            )
+            await self.set_type(loading=False)
+            if type_ == 'input':
+                self.calc_text.value = f'{request_calc.input_currency_value_raw}->{request_calc.input_value_raw}'
+            elif type_ == 'output':
+                self.calc_text.value = f'{request_calc.output_value_raw}->{request_calc.output_currency_value_raw}'
+            else:
+                self.calc_text.value = f'{request_calc.input_currency_value_raw}->{request_calc.output_currency_value_raw}'
+            await self.calc_text.update_async()
         except ApiException as exception:
             await self.set_type(loading=False)
             return await self.client.session.error(exception=exception)
