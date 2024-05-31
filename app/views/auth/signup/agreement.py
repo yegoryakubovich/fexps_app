@@ -74,7 +74,6 @@ class AgreementRegistrationView(AuthView):
             password=self.client.session.registration.password,
             firstname=self.client.session.registration.firstname,
             lastname=self.client.session.registration.lastname,
-            surname=self.client.session.registration.surname or None,
             country=self.client.session.registration.country,
             language=self.client.session.language,
             currency=self.client.session.registration.currency,

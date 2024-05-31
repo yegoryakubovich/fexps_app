@@ -30,7 +30,6 @@ class RegistrationSecondView(AuthView):
     dd_country: Dropdown
     tf_firstname: TextField
     tf_lastname: TextField
-    tf_surname: TextField
     countries = list[dict]
 
     async def construct(self):
@@ -43,11 +42,11 @@ class RegistrationSecondView(AuthView):
                 key=country.id_str,
             ) for country in self.countries
         ]
-        self.tf_firstname, self.tf_lastname, self.tf_surname = [
+        self.tf_firstname, self.tf_lastname = [
             TextField(
                 label=await self.client.session.gtv(key=key),
             )
-            for key in ['firstname', 'lastname', 'surname']
+            for key in ['firstname', 'lastname']
         ]
         self.dd_country = Dropdown(
             label=await self.client.session.gtv(key='country'),
@@ -60,7 +59,6 @@ class RegistrationSecondView(AuthView):
             controls=[
                 self.tf_firstname,
                 self.tf_lastname,
-                self.tf_surname,
                 self.dd_country,
                 Row(
                     controls=[
@@ -84,10 +82,6 @@ class RegistrationSecondView(AuthView):
             if not await Error.check_field(self, field, min_len=min_len, max_len=max_len):
                 await self.set_type(loading=False)
                 return
-        if self.tf_surname.value and (len(self.tf_surname.value) < 2 or len(self.tf_surname.value) > 32):
-            self.tf_surname.error_text = await self.client.session.gtv(key='error_count_letter')
-            await self.set_type(loading=False)
-            await self.update_async()
 
         country = await self.client.session.api.client.countries.get(
             id_str=self.dd_country.value
@@ -95,7 +89,6 @@ class RegistrationSecondView(AuthView):
 
         self.client.session.registration.firstname = self.tf_firstname.value
         self.client.session.registration.lastname = self.tf_lastname.value
-        self.client.session.registration.surname = self.tf_surname.value
         self.client.session.registration.country = self.dd_country.value
         self.client.session.registration.currency = country['currency']
         self.client.session.registration.timezone = country['timezone']

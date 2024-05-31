@@ -43,8 +43,6 @@ class AccountView(AdminBaseView):
         self.account = await self.client.session.api.admin.accounts.get(id_=self.account_id)
         await self.set_type(loading=False)
         self.scroll = ScrollMode.AUTO
-        # FIXME
-        surname = self.account['surname'] if self.account['surname'] else await self.client.session.gtv(key='absent')
 
         self.clipboard_text_field = TextField(
             value='new_password',
@@ -97,9 +95,7 @@ class AccountView(AdminBaseView):
                 ),
                 Text(
                     value=f"{await self.client.session.gtv(key='firstname')}: {self.account['firstname']}\n"
-                          f"{await self.client.session.gtv(key='lastname')}: {self.account['lastname']}\n"
-                          f"{await self.client.session.gtv(key='surname')}: "
-                          f"{surname}",
+                          f"{await self.client.session.gtv(key='lastname')}: {self.account['lastname']}\n",
                     size=15,
                     font_family=Fonts.MEDIUM,
                     color=colors.ON_BACKGROUND,

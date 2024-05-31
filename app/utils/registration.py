@@ -15,15 +15,11 @@
 #
 
 
-from typing import Optional
-
-
 class Registration:
     username: str
     password: str
     firstname: str
     lastname: str
-    surname: Optional[str]
     country: str
     timezone: str
     currency: str
