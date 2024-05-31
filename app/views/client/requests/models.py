@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 
-from flet_core import Control, Row
+
+from flet_core import Control, Row, IconButton, icons, colors, MainAxisAlignment
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -39,6 +39,7 @@ class RequestUpdateNameModel:
             request_name: str = None,
             after_close: callable = None,
             before_close: callable = None,
+            close_func: callable = None,
     ):
         self.session = session
         self.update_async = update_async
@@ -46,6 +47,7 @@ class RequestUpdateNameModel:
         self.request_name = request_name
         self.after_close = after_close
         self.before_close = before_close
+        self.close_func = close_func
 
     async def construct(self):
         self.tf_name = TextField(
@@ -53,6 +55,22 @@ class RequestUpdateNameModel:
             value=self.request_name,
         )
         self.controls = [
+            Row(
+                controls=[
+                    Text(
+                        value=await self.session.gtv(key='request_change_name_title'),
+                        size=12,
+                        font_family=Fonts.BOLD,
+                        color=colors.ON_BACKGROUND,
+                    ),
+                    IconButton(
+                        icon=icons.CLOSE,
+                        on_click=self.close_func,
+                        icon_color=colors.ON_BACKGROUND,
+                    ),
+                ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
             self.tf_name,
         ]
         self.buttons = [
@@ -75,7 +93,6 @@ class RequestUpdateNameModel:
         request_name = None
         if self.tf_name.value:
             request_name = self.tf_name.value
-        logging.critical(1)
         if self.before_close:
             await self.before_close()
         try:
@@ -84,7 +101,6 @@ class RequestUpdateNameModel:
                 name=request_name,
             )
         except ApiException as exception:
-            logging.critical(exception.message)
             return await self.session.error(exception=exception)
         if self.after_close:
             await self.after_close()

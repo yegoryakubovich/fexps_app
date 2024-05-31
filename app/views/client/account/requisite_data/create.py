@@ -36,7 +36,7 @@ class RequisiteDataCreateView(ClientBaseView):
         await self.requisite_data_model.construct()
         await self.set_type(loading=False)
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='requisite_data_create_view_title'),
+            title=self.requisite_data_model.title,
             with_expand=True,
             main_section_controls=[
                 Container(

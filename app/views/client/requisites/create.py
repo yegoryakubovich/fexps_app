@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 import asyncio
 
-from flet_core import ScrollMode, Row, Column, Container, AlertDialog, alignment, KeyboardType, Image, colors
+from flet_core import ScrollMode, Row, Column, Container, AlertDialog, alignment, KeyboardType, Image, colors, \
+    IconButton, icons, MainAxisAlignment
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -264,7 +267,7 @@ class RequisiteCreateView(ClientBaseView):
             await self.output_column.update_async()
 
     async def construct(self):
-        self.dialog = AlertDialog(modal=False)
+        self.dialog = AlertDialog(modal=True)
         await self.set_type(loading=True)
         self.methods = await self.client.session.api.client.methods.get_list()
         self.currencies = await self.client.session.api.client.currencies.get_list()
@@ -274,7 +277,7 @@ class RequisiteCreateView(ClientBaseView):
         await self.update_output(update=False)
         await self.update_subtitle(update=False)
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='requisite_create_title'),
+            title=self.requisite_data_model.title,
             with_expand=True,
             main_section_controls=[
                 self.dialog,
@@ -357,10 +360,27 @@ class RequisiteCreateView(ClientBaseView):
         await self.requisite_data_model.construct()
         self.dialog.content = Container(
             content=Column(
-                controls=self.requisite_data_model.controls,
+                controls=[
+                             Row(
+                                 controls=[
+                                     Text(
+                                         value=await self.client.session.gtv(key='request_change_name_title'),
+                                         size=12,
+                                         font_family=Fonts.BOLD,
+                                         color=colors.ON_BACKGROUND,
+                                     ),
+                                     IconButton(
+                                         icon=icons.CLOSE,
+                                         on_click=self.create_output_requisite_data_close,
+                                         icon_color=colors.ON_BACKGROUND,
+                                     ),
+                                 ],
+                                 alignment=MainAxisAlignment.SPACE_BETWEEN,
+                             ),
+                         ] + self.requisite_data_model.controls,
                 scroll=ScrollMode.AUTO,
             ),
-            width=self.requisite_data_model.width,
+            width=400,
         )
         self.dialog.actions = self.requisite_data_model.buttons
         self.dialog.open = True
@@ -375,6 +395,10 @@ class RequisiteCreateView(ClientBaseView):
             if str(self.dd_output_method.value) == str(self.requisite_data_model.method_id):
                 self.dd_output_requisite_data.value = self.requisite_data_model.requisite_data_id
         await self.update_async()
+
+    async def create_output_requisite_data_close(self, _):
+        self.dialog.open = False
+        await self.dialog.update_async()
 
     async def requisite_create(self, _):
         await self.set_type(loading=True)

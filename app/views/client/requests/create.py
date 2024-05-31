@@ -13,18 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 import asyncio
 import logging
 from functools import partial
 
-from flet_core import Column, Container, KeyboardType, Row, alignment, Control, AlertDialog, Image, colors, ScrollMode
+from flet_core import Column, Container, KeyboardType, Row, alignment, Control, AlertDialog, Image, colors, ScrollMode, \
+    IconButton, icons, MainAxisAlignment
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
-from app.controls.information import SubTitle
+from app.controls.information import SubTitle, Text
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import ClientBaseView
-from app.utils import Icons, value_to_float
+from app.utils import Icons, value_to_float, Fonts
 from app.utils.value import value_to_int
 from app.views.client.account.requisite_data.models import RequisiteDataCreateModel
 from app.views.client.requests.get import RequestView
@@ -167,7 +170,7 @@ class RequestCreateView(ClientBaseView):
         ]
 
     async def construct(self):
-        self.dialog = AlertDialog(modal=False)
+        self.dialog = AlertDialog(modal=True)
         await self.set_type(loading=True)
         self.methods = await self.client.session.api.client.methods.get_list()
         self.currencies = await self.client.session.api.client.currencies.get_list()
@@ -280,10 +283,27 @@ class RequestCreateView(ClientBaseView):
         await self.requisite_data_model.construct()
         self.dialog.content = Container(
             content=Column(
-                controls=self.requisite_data_model.controls,
+                controls=[
+                             Row(
+                                 controls=[
+                                     Text(
+                                         value=self.requisite_data_model.title,
+                                         size=12,
+                                         font_family=Fonts.BOLD,
+                                         color=colors.ON_BACKGROUND,
+                                     ),
+                                     IconButton(
+                                         icon=icons.CLOSE,
+                                         on_click=self.create_output_requisite_data_close,
+                                         icon_color=colors.ON_BACKGROUND,
+                                     ),
+                                 ],
+                                 alignment=MainAxisAlignment.SPACE_BETWEEN,
+                             ),
+                         ] + self.requisite_data_model.controls,
                 scroll=ScrollMode.AUTO,
             ),
-            width=self.requisite_data_model.width,
+            width=400,
         )
         self.dialog.actions = self.requisite_data_model.buttons
         self.dialog.open = True
@@ -298,6 +318,10 @@ class RequestCreateView(ClientBaseView):
             if str(self.dd_output_method.value) == str(self.requisite_data_model.method_id):
                 self.dd_output_requisite_data.value = self.requisite_data_model.requisite_data_id
         await self.update_async()
+
+    async def create_output_requisite_data_close(self, _):
+        self.dialog.open = False
+        await self.dialog.update_async()
 
     async def go_back(self, _):
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)

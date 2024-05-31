@@ -183,7 +183,7 @@ class RequestView(ClientBaseView):
                         horizontal=0,
                         vertical=0,
                         bgcolor=colors.PRIMARY_CONTAINER,
-                        on_click=self.request_edit_name,
+                        on_click=self.request_edit_name_open,
                     ),
                 ],
                 wrap=True,
@@ -496,7 +496,11 @@ class RequestView(ClientBaseView):
             ],
         )
 
-    async def request_edit_name(self, _):
+    async def request_edit_name_close(self, _):
+        self.dialog.open = False
+        await self.update_async()
+
+    async def request_edit_name_open(self, _):
         self.reload_stop = True
         self.request_edit_name_model = RequestUpdateNameModel(
             session=self.client.session,
@@ -504,13 +508,14 @@ class RequestView(ClientBaseView):
             request_id=self.request.id,
             request_name=self.request.get('name'),
             after_close=self.edit_name_after,
+            close_func=self.request_edit_name_close,
         )
         await self.request_edit_name_model.construct()
         self.dialog.content = Container(
             content=Column(
                 controls=self.request_edit_name_model.controls,
+                scroll=ScrollMode.AUTO,
             ),
-            height=self.request_edit_name_model.height,
         )
         self.dialog.actions = self.request_edit_name_model.buttons
         self.dialog.open = True
@@ -519,7 +524,7 @@ class RequestView(ClientBaseView):
     async def edit_name_after(self):
         self.dialog.open = False
         await self.dialog.update_async()
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.01)
         self.reload_stop = False
         await self.construct()
         await self.update_async()

@@ -30,11 +30,11 @@ class RequisiteDataCreateModel:
     controls: list[Control]
     buttons: list[Control]
     requisite_data_id: int = None
-    width: int = 400
 
     methods = list
     method: dict
 
+    title: str
     optional: Column
     tf_name: TextField
     dd_currency: Dropdown
@@ -46,19 +46,19 @@ class RequisiteDataCreateModel:
             self,
             session: Session,
             update_async: callable,
-            before_close: callable = None,
             after_close: callable = None,
             currency_id_str: str = None,
             method_id: int = None,
     ):
+        self.title = ''
         self.session = session
         self.update_async = update_async
-        self.before_close = before_close
         self.after_close = after_close
         self.currency_id_str = currency_id_str
         self.method_id = method_id
 
     async def construct(self):
+        self.title = await self.session.gtv(key='requisite_data_create_view_title')
         self.fields, self.fields_keys = {}, {}
         self.methods = await self.session.api.client.methods.get_list()
         currency_options = [
@@ -160,8 +160,6 @@ class RequisiteDataCreateModel:
         self.fields[self.fields_keys[event.control.label]] = event.data
 
     async def create_requisite_data(self, _):
-        if self.before_close:
-            await self.before_close()
         for field in self.method['schema_fields']:
             if not self.fields.get(field['key']):
                 continue
