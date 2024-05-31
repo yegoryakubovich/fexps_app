@@ -84,14 +84,12 @@ class ChangePasswordView(ClientBaseView):
             self.current_password_tf.error_text = await self.client.session.gtv(key='change_password_do_not_match')
             await self.update_async()
             return
-
         if self.current_password_tf.value == self.new_password_tf.value:
             self.new_password_tf.error_text = await self.client.session.gtv(
                 key='change_password_new_password_match_with_current',
             )
             await self.update_async()
             return
-
         try:
             await self.client.session.api.client.accounts.change_password(
                 current_password=self.current_password_tf.value,
