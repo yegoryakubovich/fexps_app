@@ -49,7 +49,6 @@ class BottomNavigationTab(Container):
     ):
         super().__init__()
         self.expand = True
-        self.ink = True
 
         self.on_click = self.click
         self.name = name
