@@ -281,8 +281,8 @@ class RequestCreateView(ClientBaseView):
         self.dialog.content = Container(
             content=Column(
                 controls=self.requisite_data_model.controls,
+                scroll=ScrollMode.AUTO,
             ),
-            expand=True,
             width=self.requisite_data_model.width,
         )
         self.dialog.actions = self.requisite_data_model.buttons
