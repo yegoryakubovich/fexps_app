@@ -145,11 +145,13 @@ class RequisiteDataCreateModel:
                 name_list += [f'({type_str})']
             if not field['optional']:
                 name_list += ['*']
-            controls.append(TextField(
-                label=' '.join(name_list),
-                on_change=self.change_fields,
-                keyboard_type=KeyboardType.NUMBER if type_ == 'int' else None,
-            ))
+            controls += [
+                TextField(
+                    label=' '.join(name_list),
+                    on_change=self.change_fields,
+                    keyboard_type=KeyboardType.NUMBER if type_ == 'int' else None,
+                ),
+            ]
             self.fields_keys[' '.join(name_list)] = field['key']
         self.optional.controls = controls
         await self.update_async()
