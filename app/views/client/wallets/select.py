@@ -17,7 +17,8 @@
 
 from functools import partial
 
-from flet_core import Column, Container, colors, Row, MainAxisAlignment, AlertDialog, TextField, alignment, ScrollMode
+from flet_core import Column, Container, colors, Row, MainAxisAlignment, AlertDialog, TextField, alignment, ScrollMode, \
+    IconButton, icons
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -83,7 +84,7 @@ class WalletSelectView(ClientBaseView):
         return wallets_list
 
     async def construct(self):
-        self.dialog = AlertDialog()
+        self.dialog = AlertDialog(modal=True)
         await self.set_type(loading=True)
         self.wallets = await self.client.session.api.client.wallets.get_list()
         self.wallet = await self.client.session.api.client.wallets.get(id_=self.client.session.current_wallet.id)
@@ -106,7 +107,7 @@ class WalletSelectView(ClientBaseView):
                         controls=[
                             StandardButton(
                                 text=await self.client.session.gtv(key='wallet_create'),
-                                on_click=self.dialog_create_open,
+                                on_click=self.wallet_create_open,
                                 color=colors.ON_PRIMARY_CONTAINER,
                                 bgcolor=colors.PRIMARY_CONTAINER,
                                 expand=True,
@@ -119,7 +120,7 @@ class WalletSelectView(ClientBaseView):
                         controls=[
                             StandardButton(
                                 text=await self.client.session.gtv(key='wallet_edit_name'),
-                                on_click=self.dialog_edit_name_open,
+                                on_click=self.wallet_edit_name_open,
                                 color=colors.ON_PRIMARY_CONTAINER,
                                 bgcolor=colors.PRIMARY_CONTAINER,
                                 expand=True,
@@ -149,15 +150,16 @@ class WalletSelectView(ClientBaseView):
             ],
         )
 
-    async def go_back(self, _):
-        await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
+    async def dialog_close(self, _):
+        self.dialog.open = False
+        await self.dialog.update_async()
 
     async def select_wallet(self, wallet_id: int, _):
         self.selected_wallet_id = wallet_id
         await self.construct()
         await self.update_async()
 
-    async def dialog_create_open(self, _):
+    async def wallet_create_open(self, _):
         self.tf_name = TextField(
             label=await self.client.session.gtv(key='wallet_name'),
             value='Default',
@@ -165,10 +167,27 @@ class WalletSelectView(ClientBaseView):
         self.dialog.content = Container(
             content=Column(
                 controls=[
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key='wallet_create'),
+                                size=12,
+                                font_family=Fonts.BOLD,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                            IconButton(
+                                icon=icons.CLOSE,
+                                on_click=self.dialog_close,
+                                icon_color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
                     self.tf_name,
                 ],
+                scroll=ScrollMode.AUTO,
             ),
-            height=100,
+            width=400,
         )
         self.dialog.actions = [
             Row(
@@ -181,9 +200,8 @@ class WalletSelectView(ClientBaseView):
                 ],
             ),
         ]
-        self.dialog.modal = False
         self.dialog.open = True
-        await self.update_async()
+        await self.dialog.update_async()
 
     async def wallet_create(self, _):
         try:
@@ -192,7 +210,7 @@ class WalletSelectView(ClientBaseView):
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 
-    async def dialog_edit_name_open(self, _):
+    async def wallet_edit_name_open(self, _):
         self.tf_name = TextField(
             label=await self.client.session.gtv(key='wallet_name'),
             value=self.wallet.name,
@@ -200,10 +218,27 @@ class WalletSelectView(ClientBaseView):
         self.dialog.content = Container(
             content=Column(
                 controls=[
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key='wallet_edit_name'),
+                                size=12,
+                                font_family=Fonts.BOLD,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                            IconButton(
+                                icon=icons.CLOSE,
+                                on_click=self.dialog_close,
+                                icon_color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
                     self.tf_name,
                 ],
+                scroll=ScrollMode.AUTO,
             ),
-            height=100,
+            width=400,
         )
         self.dialog.actions = [
             Row(
@@ -216,9 +251,8 @@ class WalletSelectView(ClientBaseView):
                 ],
             ),
         ]
-        self.dialog.modal = False
         self.dialog.open = True
-        await self.update_async()
+        await self.dialog.update_async()
 
     async def wallet_edit_name(self, wallet_id: int, _):
         try:

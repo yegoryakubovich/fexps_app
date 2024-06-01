@@ -18,7 +18,7 @@
 from functools import partial
 
 from flet_core import Column, Container, Row, Divider, MainAxisAlignment, \
-    padding, Image, colors, ScrollMode, AlertDialog, TextField
+    padding, Image, colors, ScrollMode, AlertDialog, TextField, IconButton, icons
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, InformationContainer
@@ -555,6 +555,10 @@ class RequisiteOrderView(ClientBaseView):
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 
+    async def dialog_close(self, _):
+        self.dialog.open = False
+        await self.dialog.update_async()
+
     async def order_request_update_value_open(self, _):
         self.tf_value = TextField(
             label=await self.client.session.gtv(key='order_request_update_value_value'),
@@ -562,10 +566,27 @@ class RequisiteOrderView(ClientBaseView):
         self.dialog.content = Container(
             content=Column(
                 controls=[
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key='requisite_order_update_value_button'),
+                                size=12,
+                                font_family=Fonts.BOLD,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                            IconButton(
+                                icon=icons.CLOSE,
+                                on_click=self.dialog_close,
+                                icon_color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
                     self.tf_value,
                 ],
+                scroll=ScrollMode.AUTO,
             ),
-            height=100,
+            width=400,
         )
         self.dialog.actions = [
             Row(

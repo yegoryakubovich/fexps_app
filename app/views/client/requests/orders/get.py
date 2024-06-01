@@ -18,7 +18,7 @@
 from functools import partial
 
 from flet_core import Column, Container, Row, Divider, MainAxisAlignment, \
-    padding, Image, colors, ScrollMode, AlertDialog
+    padding, Image, colors, ScrollMode, AlertDialog, IconButton, icons
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, InformationContainer
@@ -403,7 +403,7 @@ class RequestOrderView(ClientBaseView):
             await self.recreate_button.update_async()
 
     async def construct(self):
-        self.dialog = AlertDialog()
+        self.dialog = AlertDialog(modal=True)
         controls, buttons = [], []
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
@@ -522,13 +522,6 @@ class RequestOrderView(ClientBaseView):
         from .payment import RequestOrderPaymentView
         await self.client.change_view(view=RequestOrderPaymentView(order_id=self.order_id))
 
-    async def on_dev(self, _):
-        await self.client.session.bs_info.open_(
-            icon=Icons.CHILL,
-            title=await self.client.session.gtv(key='in_dev_title'),
-            description=await self.client.session.gtv(key='in_dev_description'),
-        )
-
     async def order_request_update(self, state: str, _):
         try:
             await self.client.session.api.client.orders.requests.update(id_=self.order_request.id, state=state)
@@ -551,6 +544,10 @@ class RequestOrderView(ClientBaseView):
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 
+    async def dialog_close(self, _):
+        self.dialog.open = False
+        await self.dialog.update_async()
+
     async def order_request_update_value_open(self, _):
         self.tf_value = TextField(
             label=await self.client.session.gtv(key='order_request_update_value_value'),
@@ -558,10 +555,27 @@ class RequestOrderView(ClientBaseView):
         self.dialog.content = Container(
             content=Column(
                 controls=[
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key='request_order_update_value_button'),
+                                size=12,
+                                font_family=Fonts.BOLD,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                            IconButton(
+                                icon=icons.CLOSE,
+                                on_click=self.dialog_close,
+                                icon_color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
                     self.tf_value,
                 ],
+                scroll=ScrollMode.AUTO,
             ),
-            height=100,
+            width=400,
         )
         self.dialog.actions = [
             Row(
