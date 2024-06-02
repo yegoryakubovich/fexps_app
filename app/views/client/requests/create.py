@@ -16,6 +16,7 @@
 
 
 import asyncio
+import logging
 from functools import partial
 
 from flet_core import Column, Container, KeyboardType, Row, alignment, Control, AlertDialog, Image, colors, ScrollMode, \
@@ -31,6 +32,7 @@ from app.utils.value import value_to_int
 from app.views.client.account.requisite_data.models import RequisiteDataCreateModel
 from app.views.client.requests.get import RequestView
 from config import settings
+from fexps_api_client import FexpsApiClient
 from fexps_api_client.utils import ApiException
 
 
@@ -356,7 +358,7 @@ class RequestCreateView(ClientBaseView):
             output_requisite_data_id = self.dd_output_requisite_data.value
         else:
             type_ = RequestTypes.ALL
-            if not self.dd_input_method.value or self.dd_output_requisite_data.value:
+            if not self.dd_input_method.value or not self.dd_output_requisite_data.value:
                 return
             input_method_id = self.dd_input_method.value
             output_requisite_data_id = self.dd_output_requisite_data.value
