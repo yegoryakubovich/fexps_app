@@ -16,7 +16,6 @@
 
 
 import asyncio
-import logging
 from functools import partial
 
 from flet_core import Column, Container, KeyboardType, Row, alignment, Control, AlertDialog, Image, colors, ScrollMode, \
@@ -32,7 +31,6 @@ from app.utils.value import value_to_int
 from app.views.client.account.requisite_data.models import RequisiteDataCreateModel
 from app.views.client.requests.get import RequestView
 from config import settings
-from fexps_api_client import FexpsApiClient
 from fexps_api_client.utils import ApiException
 
 
@@ -47,6 +45,7 @@ class RequestCreateView(ClientBaseView):
 
     methods = dict
     currencies = list[dict]
+    rate_info = dict
     dialog: AlertDialog
 
     # input
@@ -102,7 +101,6 @@ class RequestCreateView(ClientBaseView):
         self.dd_input_method = Dropdown(
             label=await self.client.session.gtv(key='request_create_input_method'),
             disabled=True,
-            on_change=self.maybe_calculate,
         )
         return [
             SubTitle(value=await self.client.session.gtv(key='request_create_input')),
@@ -140,7 +138,6 @@ class RequestCreateView(ClientBaseView):
         )
         self.dd_output_requisite_data = Dropdown(
             label=await self.client.session.gtv(key='request_create_output_requisite_data'),
-            on_change=self.maybe_calculate,
             disabled=True,
             expand=True,
         )
@@ -177,6 +174,7 @@ class RequestCreateView(ClientBaseView):
         await self.set_type(loading=True)
         self.methods = await self.client.session.api.client.methods.get_list()
         self.currencies = await self.client.session.api.client.currencies.get_list()
+        self.rate_info = None
         self.currencies.insert(
             0,
             {
@@ -219,6 +217,7 @@ class RequestCreateView(ClientBaseView):
         )
 
     async def change_currency(self, type_: str, _):
+        self.rate_info = None
         await self.set_type(loading=True)
         if type_ == 'input' and self.dd_input_currency.value:
             currency = self.dd_input_currency.value
@@ -241,6 +240,26 @@ class RequestCreateView(ClientBaseView):
             self.dd_output_requisite_data.value = None
         await self.set_type(loading=False)
         await self.update_async()
+        if self.dd_input_currency.value and self.dd_output_currency.value:
+            input_currency_id_str = self.dd_input_currency.value
+            output_currency_id_str = self.dd_output_currency.value
+            if self.dd_output_currency.value == 'ya_coin':
+                type_ = RequestTypes.INPUT
+                output_currency_id_str = None
+            elif self.dd_input_currency.value == 'ya_coin':
+                type_ = RequestTypes.OUTPUT
+                input_currency_id_str = None
+            else:
+                type_ = RequestTypes.ALL
+            try:
+                rate_info = await self.client.session.api.client.requests.calc(
+                    type_=type_,
+                    input_currency_id_str=input_currency_id_str,
+                    output_currency_id_str=output_currency_id_str,
+                )
+            except ApiException:
+                return
+            self.rate_info = rate_info
         await self.maybe_calculate(_)
 
     """
@@ -262,7 +281,6 @@ class RequestCreateView(ClientBaseView):
         self.dd_output_requisite_data.disabled = False
         self.dd_output_requisite_data.change_options(options=options)
         await self.set_type(loading=False)
-        await self.maybe_calculate(_)
 
     async def create_output_requisite_data(self, _):
         self.requisite_data_model = RequisiteDataCreateModel(
@@ -325,6 +343,16 @@ class RequestCreateView(ClientBaseView):
         # FIXME (1+ wallets)
 
     async def maybe_calculate(self, _):
+        if not self.rate_info:
+            if self.tf_output_value.disabled:
+                self.tf_output_value.value = None
+                self.tf_output_value.disabled = False
+                await self.tf_output_value.update_async()
+            if self.tf_input_value.disabled:
+                self.tf_input_value.value = None
+                self.tf_input_value.disabled = False
+                await self.tf_input_value.update_async()
+            return
         if not self.tf_input_value.value and self.tf_output_value.disabled:
             self.tf_output_value.value = None
             self.tf_output_value.disabled = False
@@ -333,44 +361,16 @@ class RequestCreateView(ClientBaseView):
             self.tf_input_value.value = None
             self.tf_input_value.disabled = False
             await self.tf_input_value.update_async()
-        if not self.tf_input_value.value and not self.tf_output_value.value:
-            return
-        input_method_id, output_requisite_data_id = None, None
-        for field in [self.dd_input_currency, self.dd_output_currency]:
-            if field.value is None:
-                return
         for field in [self.tf_input_value, self.tf_output_value]:
+            field.error_text = None
+            await field.update_async()
             if not field.value:
                 continue
             if not await Error.check_field(self, field, check_float=True):
                 field.error_text = await self.client.session.gtv(key='error_not_float')
                 await field.update_async()
                 return
-        if self.dd_output_currency.value == 'ya_coin':
-            type_ = RequestTypes.INPUT
-            if not self.dd_input_method.value:
-                return
-            input_method_id = self.dd_input_method.value
-        elif self.dd_input_currency.value == 'ya_coin':
-            type_ = RequestTypes.OUTPUT
-            if not self.dd_output_requisite_data.value:
-                return
-            output_requisite_data_id = self.dd_output_requisite_data.value
-        else:
-            type_ = RequestTypes.ALL
-            if not self.dd_input_method.value or not self.dd_output_requisite_data.value:
-                return
-            input_method_id = self.dd_input_method.value
-            output_requisite_data_id = self.dd_output_requisite_data.value
-        try:
-            rate_info = await self.client.session.api.client.requests.calc(
-                type_=type_,
-                input_method_id=input_method_id,
-                output_requisite_data_id=output_requisite_data_id,
-            )
-        except ApiException:
-            return
-        rate_float: float = value_to_float(value=rate_info.rate, decimal=rate_info.rate_decimal)
+        rate_float: float = value_to_float(value=self.rate_info.rate, decimal=self.rate_info.rate_decimal)
         if self.tf_input_value.value and not self.tf_input_value.disabled:
             self.tf_output_value.value = float(self.tf_input_value.value) / rate_float
             self.tf_output_value.disabled = True
