@@ -372,11 +372,11 @@ class RequestCreateView(ClientBaseView):
                 return
         rate_float: float = value_to_float(value=self.rate_info.rate, decimal=self.rate_info.rate_decimal)
         if self.tf_input_value.value and not self.tf_input_value.disabled:
-            self.tf_output_value.value = float(self.tf_input_value.value) / rate_float
+            self.tf_output_value.value = round(float(self.tf_input_value.value) / rate_float, 2)
             self.tf_output_value.disabled = True
             await self.tf_output_value.update_async()
         elif self.tf_output_value.value and not self.tf_output_value.disabled:
-            self.tf_input_value.value = float(self.tf_output_value.value) * rate_float
+            self.tf_input_value.value = round(float(self.tf_output_value.value) * rate_float, 2)
             self.tf_input_value.disabled = True
             await self.tf_input_value.update_async()
 
