@@ -16,13 +16,13 @@
 
 
 from flet_core import Column, Container, ScrollMode, padding, colors
-from fexps_api_client.utils import ApiException
 
 from app.controls.button import FilledButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts
+from fexps_api_client.utils import ApiException
 
 
 class ChangePasswordView(ClientBaseView):

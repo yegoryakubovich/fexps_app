@@ -31,10 +31,12 @@ class AccountNotificationSettingView(ClientBaseView):
     snack_bar: SnackBar
 
     cb_active: Checkbox
-    cb_request_change: Checkbox
-    cb_requisite_change: Checkbox
-    cb_order_change: Checkbox
-    cb_chat_change: Checkbox
+    cb_global: Checkbox
+    cb_request: Checkbox
+    cb_requisite: Checkbox
+    cb_order: Checkbox
+    cb_chat: Checkbox
+    cb_transfer: Checkbox
 
     def __init__(self, notification):
         super().__init__()
@@ -45,21 +47,29 @@ class AccountNotificationSettingView(ClientBaseView):
             label=await self.client.session.gtv(key='notification_setting_active'),
             value=self.notification.is_active,
         )
-        self.cb_request_change = Checkbox(
-            label=await self.client.session.gtv(key='notification_setting_request_change'),
-            value=self.notification.is_request_change,
+        self.cb_global = Checkbox(
+            label=await self.client.session.gtv(key='notification_setting_global'),
+            value=self.notification.is_global,
         )
-        self.cb_requisite_change = Checkbox(
-            label=await self.client.session.gtv(key='notification_setting_requisite_change'),
-            value=self.notification.is_requisite_change,
+        self.cb_request = Checkbox(
+            label=await self.client.session.gtv(key='notification_setting_request'),
+            value=self.notification.is_request,
         )
-        self.cb_order_change = Checkbox(
-            label=await self.client.session.gtv(key='notification_setting_order_change'),
-            value=self.notification.is_order_change,
+        self.cb_requisite = Checkbox(
+            label=await self.client.session.gtv(key='notification_setting_requisite'),
+            value=self.notification.is_requisite,
         )
-        self.cb_chat_change = Checkbox(
-            label=await self.client.session.gtv(key='notification_setting_chat_change'),
-            value=self.notification.is_chat_change,
+        self.cb_order = Checkbox(
+            label=await self.client.session.gtv(key='notification_setting_order'),
+            value=self.notification.is_order,
+        )
+        self.cb_chat = Checkbox(
+            label=await self.client.session.gtv(key='notification_setting_chat'),
+            value=self.notification.is_chat,
+        )
+        self.cb_transfer = Checkbox(
+            label=await self.client.session.gtv(key='notification_setting_transfer'),
+            value=self.notification.is_transfer,
         )
         self.snack_bar = SnackBar(content=Text(value=await self.client.session.gtv(key='successful')))
         self.controls = await self.get_controls(
@@ -71,10 +81,12 @@ class AccountNotificationSettingView(ClientBaseView):
                         controls=[
                             self.cb_active,
                             Divider(),
-                            self.cb_request_change,
-                            self.cb_requisite_change,
-                            self.cb_order_change,
-                            self.cb_chat_change,
+                            self.cb_global,
+                            self.cb_request,
+                            self.cb_requisite,
+                            self.cb_order,
+                            self.cb_chat,
+                            self.cb_transfer,
                         ],
                         scroll=ScrollMode.AUTO,
                     ),
@@ -105,10 +117,12 @@ class AccountNotificationSettingView(ClientBaseView):
             await self.set_type(loading=True)
             await self.client.session.api.client.notifications.updates.settings(
                 is_active=self.cb_active.value,
-                is_request_change=self.cb_request_change.value,
-                is_requisite_change=self.cb_requisite_change.value,
-                is_order_change=self.cb_order_change.value,
-                is_chat_change=self.cb_chat_change.value,
+                is_global=self.cb_global.value,
+                is_request=self.cb_request.value,
+                is_requisite=self.cb_requisite.value,
+                is_order=self.cb_order.value,
+                is_chat=self.cb_chat.value,
+                is_transfer=self.cb_transfer.value,
             )
             await self.client.session.get_text_pack()
             await self.set_type(loading=False)
