@@ -39,7 +39,7 @@ class RequisiteDataListView(ClientBaseView):
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='requisite_data_get_list_view_title'),
-            on_create_click=self.requisite_data_create,
+            create_button=self.requisite_data_create,
             main_section_controls=[
                 Card(
                     controls=[

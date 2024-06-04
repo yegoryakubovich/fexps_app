@@ -28,12 +28,12 @@ from app.utils import Fonts
 class ClientSection:
     title: str
     controls: list
-    on_create_click: Any = None
+    create_button: Any = None
 
     def __init__(self, title: str, controls: list, on_create_click: Any = None, ):
         self.title = title
         self.controls = controls
-        self.on_create_click = on_create_click
+        self.create_button = on_create_click
 
     @staticmethod
     async def get_title(title: str, on_create_click=None):
@@ -77,7 +77,7 @@ class ClientSection:
         )
 
     async def get_controls(self) -> list:
-        title_control = await self.get_title(title=self.title, on_create_click=self.on_create_click)
+        title_control = await self.get_title(title=self.title, on_create_click=self.create_button)
 
         controls = [
             Container(
@@ -105,15 +105,13 @@ class ClientBaseView(View):
             title: str,
             main_section_controls: list,
             sections: list[ClientSection] = None,
-            on_create_click: Any = None,
-            back_with_restart: bool = False,
+            create_button: Any = None,
             with_expand: bool = False,
             go_back_func: callable = None,
     ) -> list:
         title_control = await self.get_title(
             title=title,
-            on_create_click=on_create_click,
-            back_with_restart=back_with_restart,
+            create_button=create_button,
             go_back_func=go_back_func,
         )
 

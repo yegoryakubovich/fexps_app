@@ -16,6 +16,7 @@
 
 
 import asyncio
+import logging
 from functools import partial
 
 from flet_core import Column, Container, KeyboardType, Row, alignment, Control, AlertDialog, Image, colors, ScrollMode, \
@@ -334,10 +335,6 @@ class RequestCreateView(ClientBaseView):
         await self.dialog.update_async()
 
     async def request_create(self, _):
-        if self.tf_input_value.value and self.tf_output_value.value:
-            self.tf_output_value.error_text = await self.client.session.gtv(key='request_create_error_only_one_fields')
-            await self.update_async()
-            return
         if len(self.client.session.wallets) == 1:
             return await self.go_request_create(wallet_id=self.client.session.wallets[0]['id'])
         # FIXME (1+ wallets)
@@ -372,11 +369,11 @@ class RequestCreateView(ClientBaseView):
                 return
         rate_float: float = value_to_float(value=self.rate_info.rate, decimal=self.rate_info.rate_decimal)
         if self.tf_input_value.value and not self.tf_input_value.disabled:
-            self.tf_output_value.value = round(float(self.tf_input_value.value) / rate_float, 2)
+            self.tf_output_value.value = round(float(self.tf_input_value.value) * rate_float, 2)
             self.tf_output_value.disabled = True
             await self.tf_output_value.update_async()
         elif self.tf_output_value.value and not self.tf_output_value.disabled:
-            self.tf_input_value.value = round(float(self.tf_output_value.value) * rate_float, 2)
+            self.tf_input_value.value = round(float(self.tf_output_value.value) / rate_float, 2)
             self.tf_input_value.disabled = True
             await self.tf_input_value.update_async()
 
@@ -461,6 +458,10 @@ class RequestCreateView(ClientBaseView):
                 await self.set_type(loading=False)
                 await self.update_async()
                 return
+        logging.critical(f'input_currency_value={input_currency_value}')
+        logging.critical(f'input_value={input_value}')
+        logging.critical(f'output_currency_value={output_currency_value}')
+        logging.critical(f'output_value={output_value}')
         try:
             request_id = await self.client.session.api.client.requests.create(
                 wallet_id=wallet_id,

@@ -67,6 +67,7 @@ class Session:
         self.filepicker = FilePicker()
         self.datepicker = DatePicker()
 
+        self.page.overlay.clear()
         self.page.overlay.append(self.bs_error)
         self.page.overlay.append(self.bs_info)
         self.page.overlay.append(self.filepicker)

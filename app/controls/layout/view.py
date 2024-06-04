@@ -15,12 +15,15 @@
 #
 
 
+from functools import partial
+
 from flet_core import Container, Image, alignment, padding, BoxShadow, Row, colors
 from flet_manager.utils import get_svg
 from flet_manager.views import BaseView
 
 from app.controls.information.loading import Loading
 from app.controls.information.text import Text
+from app.controls.navigation.icon_text_button import IconTextButton
 from app.utils import Fonts, Icons
 
 
@@ -57,43 +60,54 @@ class View(BaseView):
             self,
             title: str,
             go_back_button=True,
-            on_create_click=None,
-            back_with_restart=False,
+            create_button=None,
+            text_key: str = None,
             go_back_func: callable = None,
     ):
 
         async def go_back(_):
-            await self.client.change_view(go_back=True, with_restart=back_with_restart)
+            await self.client.change_view(go_back=True, with_restart=True)
+
+        async def go_text(text_key_, _):
+            from app.views.admin.texts import TextView
+            await self.client.change_view(view=TextView(key=text_key_), delete_current=True)
 
         controls = []
-        # Go back button
-        if go_back_button:
+        if title:
             controls.append(
                 Row(
                     controls=[
                         Container(
                             content=Image(
                                 src=Icons.BACK,
-                                height=24,
+                                height=30,
                                 color=colors.ON_BACKGROUND,
                             ),
                             border_radius=6,
                             ink=True,
-                            on_click=go_back_func if go_back_func else go_back,
+                            on_click=go_back,
                         ),
                         Text(
                             value=title,
-                            size=32,
+                            size=36,
                             font_family=Fonts.SEMIBOLD,
                             color=colors.ON_BACKGROUND,
-                            no_wrap=False,
+                            width=None,
+                            expand=True,
                         ),
                     ],
-                    wrap=True,
+                ),
+
+            )
+
+        if text_key:
+            controls.append(
+                IconTextButton(
+                    on_click=partial(go_text, text_key),
                 )
             )
 
-        if on_create_click:
+        if create_button:
             controls.append(
                 Container(
                     content=Row(
@@ -104,7 +118,7 @@ class View(BaseView):
                                 color=colors.ON_PRIMARY,
                             ),
                             Text(
-                                value=await self.client.session.gtv(key='create'),
+                                value='Create',
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY,
                             ),
@@ -115,7 +129,7 @@ class View(BaseView):
                     padding=7,
                     border_radius=24,
                     bgcolor=colors.PRIMARY,
-                    on_click=on_create_click,
+                    on_click=create_button,
                 ),
             )
 
@@ -128,11 +142,18 @@ class View(BaseView):
         if loading:
             self.controls_last = self.controls
             self.controls = [
-                Loading(infinity=True, color='#1D1D1D'),
+                Loading(infinity=True, color=colors.PRIMARY),
             ]
-            await self.update_async()
+            if self.page:
+                await self.update_async()
         else:
-            loading_control = self.controls[0]
-            loading_control.infinity = False
-            self.controls = self.controls_last
-            await self.update_async()
+            if self.controls:
+                loading_control = self.controls[0]
+                loading_control.infinity = False
+                self.controls = self.controls_last
+                if self.page:
+                    await self.update_async()
+            else:
+                self.controls = []
+                if self.page:
+                    await self.update_async()
