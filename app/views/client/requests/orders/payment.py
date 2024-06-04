@@ -28,7 +28,7 @@ from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import FilePicker
 from app.controls.layout import ClientBaseView
-from app.utils import Icons, Error
+from app.utils import Icons, Error, Fonts
 from app.utils.crypto import create_id_str
 from config import settings
 from fexps_api_client.utils import ApiException
@@ -67,14 +67,21 @@ class RequestOrderPaymentView(ClientBaseView):
                 self.text_error = Text()
                 result += [
                     Text(value=' '.join(name_list)),
-                    Row(
+                    Column(
                         controls=[
-                            StandardButton(
-                                icon=Icons.PAYMENT,
-                                text=await self.client.session.gtv(key='add_image'),
-                                on_click=self.add_photo,
+                            Row(
+                                controls=[
+                                    StandardButton(
+                                        icon=Icons.PAYMENT,
+                                        text=await self.client.session.gtv(key='add_image'),
+                                        on_click=self.add_photo,
+                                    ),
+                                ],
+                                height=110,
                             ),
                         ],
+                        scroll=ScrollMode.AUTO,
+                        height=100,
                     ),
                     self.photo_row,
                     self.text_error,

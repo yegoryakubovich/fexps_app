@@ -67,14 +67,21 @@ class RequisiteOrderPaymentView(ClientBaseView):
                 self.text_error = Text()
                 result += [
                     Text(value=' '.join(name_list)),
-                    Row(
+                    Column(
                         controls=[
-                            StandardButton(
-                                icon=Icons.PAYMENT,
-                                text=await self.client.session.gtv(key='add_image'),
-                                on_click=self.add_photo,
+                            Row(
+                                controls=[
+                                    StandardButton(
+                                        icon=Icons.PAYMENT,
+                                        text=await self.client.session.gtv(key='add_image'),
+                                        on_click=self.add_photo,
+                                    ),
+                                ],
+                                height=110,
                             ),
                         ],
+                        scroll=ScrollMode.AUTO,
+                        height=100,
                     ),
                     self.photo_row,
                     self.text_error,

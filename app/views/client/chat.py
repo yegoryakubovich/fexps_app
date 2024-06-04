@@ -21,7 +21,7 @@ from base64 import b64encode
 from functools import partial
 
 from flet_core import Container, Row, colors, Image, FilePickerUploadEvent, Stack, ImageFit, \
-    IconButton, icons, alignment, FilePickerUploadFile, ProgressRing
+    IconButton, icons, alignment, FilePickerUploadFile, ProgressRing, Column, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -110,23 +110,30 @@ class ChatView(ClientBaseView):
                     content=self.text_error,
                 ),
                 Container(
-                    content=Row(
+                    content=Column(
                         controls=[
-                            self.sb_files,
-                            self.tf_message,
-                            StandardButton(
-                                content=Image(
-                                    src=Icons.PAYMENT,
-                                    color=colors.ON_BACKGROUND,
-                                    height=32,
-                                    width=32,
-                                ),
-                                horizontal=0,
-                                vertical=0,
-                                on_click=self.send,
-                                bgcolor=colors.BACKGROUND,
-                            ),
+                            Row(
+                                controls=[
+                                    self.sb_files,
+                                    self.tf_message,
+                                    StandardButton(
+                                        content=Image(
+                                            src=Icons.PAYMENT,
+                                            color=colors.ON_BACKGROUND,
+                                            height=32,
+                                            width=32,
+                                        ),
+                                        horizontal=0,
+                                        vertical=0,
+                                        on_click=self.send,
+                                        bgcolor=colors.BACKGROUND,
+                                    ),
+                                ],
+                                height=110,
+                            )
                         ],
+                        scroll=ScrollMode.AUTO,
+                        height=100,
                     ),
                 ),
             ],
