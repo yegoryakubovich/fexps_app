@@ -77,7 +77,7 @@ class RequestOrderPaymentView(ClientBaseView):
                                         on_click=self.add_photo,
                                     ),
                                 ],
-                                height=110,
+                                height=120,
                             ),
                         ],
                         scroll=ScrollMode.AUTO,
