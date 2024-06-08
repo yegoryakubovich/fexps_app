@@ -80,7 +80,7 @@ class HomeTab(BaseTab):
                     color=colors.ON_BACKGROUND,
                 ),
                 Text(
-                    value=f'{self.client.session.account.firstname.title()}.',
+                    value=f'{self.client.session.account.firstname}.',
                     size=24,
                     font_family=Fonts.SEMIBOLD,
                     color=colors.ON_BACKGROUND,
