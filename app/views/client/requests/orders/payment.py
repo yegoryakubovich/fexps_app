@@ -68,8 +68,15 @@ class RequestOrderPaymentView(ClientBaseView):
                         controls=[
                             self.attach_file_btn,
                             StandardButton(
-                                text=await self.client.session.gtv(key='reload'),
+                                content=Image(
+                                    src=Icons.RELOAD,
+                                    width=32,
+                                    height=32,
+                                    color=colors.ON_BACKGROUND,
+                                ),
                                 on_click=self.reload_file,
+                                color=colors.ON_BACKGROUND,
+                                bgcolor=colors.BACKGROUND,
                             ),
                         ],
                     ),
