@@ -122,7 +122,6 @@ class Chat(UserControl):
                                     controls=[
                                         Text(value=filename_str),
                                         Text(value=size_str),
-                                        Text(value=file['url']),
                                     ],
                                 ),
                             ],
