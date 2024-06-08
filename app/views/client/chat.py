@@ -15,21 +15,17 @@
 #
 
 
-import io
-import os
+import webbrowser
 from base64 import b64encode
-from functools import partial
 
-from flet_core import Container, Row, colors, Image, FilePickerUploadEvent, Stack, ImageFit, \
-    IconButton, icons, alignment, FilePickerUploadFile, ProgressRing, Column, ScrollMode
+from flet_core import Container, Row, colors, Image, Stack, ImageFit, alignment, ProgressRing, Column, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
-from app.controls.input import TextField, FilePicker
+from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Icons
 from app.utils.chat import Chat
-from app.utils.crypto import create_id_str
 
 
 class ChatView(ClientBaseView):
@@ -37,29 +33,20 @@ class ChatView(ClientBaseView):
 
     chat: Chat
     order_id: int
-    photos: dict
-    photo_dict: dict
-    filepicker: FilePicker
 
     tf_message: TextField
-    photo_row: Row
-    text_error: Text
-    sb_files: StandardButton
+    file_row: Row
+    attach_file_btn: StandardButton
+    attach_reload_btn: StandardButton
 
     prog_bars: dict[str, ProgressRing] = {}
 
     def __init__(self, order_id: int):
         super().__init__()
         self.order_id = order_id
-        self.photo_dict = {}
-        self.photos = {}
-        self.photo_size = 0
-        self.photo_row = Row(controls=[])
-        self.text_error = Text(value=None)
-        self.filepicker = FilePicker()
+        self.file_row = Row(controls=[])
 
     async def construct(self):
-        self.client.page.overlay.append(self.filepicker)
         account = self.client.session.account
         old_messages = await self.client.session.api.client.messages.get_list(order_id=self.order_id)
         old_messages_controls = [
@@ -78,14 +65,25 @@ class ChatView(ClientBaseView):
             controls=old_messages_controls,
             deviation=self.client.session.timezone.deviation,
         )
-        self.sb_files = StandardButton(
+        self.attach_file_btn = StandardButton(
             content=Image(
                 src=Icons.CLIP,
                 width=48,
                 height=48,
                 color=colors.ON_BACKGROUND,
             ),
-            on_click=self.add_photo,
+            on_click=self.add_file,
+            color=colors.ON_BACKGROUND,
+            bgcolor=colors.BACKGROUND,
+        )
+        self.attach_reload_btn = StandardButton(
+            content=Image(
+                src=Icons.RELOAD,
+                width=48,
+                height=48,
+                color=colors.ON_BACKGROUND,
+            ),
+            on_click=self.reload_file,
             color=colors.ON_BACKGROUND,
             bgcolor=colors.BACKGROUND,
         )
@@ -104,17 +102,15 @@ class ChatView(ClientBaseView):
                     expand=True,
                 ),
                 Container(
-                    content=self.photo_row,
-                ),
-                Container(
-                    content=self.text_error,
+                    content=self.file_row,
                 ),
                 Container(
                     content=Column(
                         controls=[
                             Row(
                                 controls=[
-                                    self.sb_files,
+                                    self.attach_file_btn,
+                                    self.attach_reload_btn,
                                     self.tf_message,
                                     StandardButton(
                                         content=Image(
@@ -139,24 +135,28 @@ class ChatView(ClientBaseView):
             ],
         )
 
-    """PHOTO"""
+    """FILE"""
 
-    async def set_text_error(self, text_value: str = None):
-        self.text_error.value = text_value
-        await self.text_error.update_async()
+    async def add_file(self, _):
+        self.file_keys = await self.client.session.api.client.files.keys.create()
+        self.attach_file_btn.on_click = None
+        self.attach_file_btn.url = self.file_keys.url
+        await self.attach_file_btn.update_async()
+        webbrowser.open(url=self.file_keys.url)
 
-    async def add_photo(self, _):
-        await self.set_text_error()
-        await self.filepicker.open_(
-            on_select=self.upload_files,
-            on_upload=self.on_upload_progress,
-            allow_multiple=True,
-        )
+    async def reload_file(self, _):
+        if not self.file_keys:
+            return
+        self.attach_file_btn.text = await self.client.session.gtv(key='add_image')
+        self.attach_file_btn.on_click = self.add_file
+        self.attach_file_btn.url = None
+        await self.attach_file_btn.update_async()
+        files = await self.client.session.api.client.files.keys.get(key=self.file_keys.key)
+        await self.update_file_row(files=files)
 
-    async def update_photo_row(self):
-        self.photo_row.controls = []
-        for id_str, value in self.photos.items():
-            stack_controls = []
+    async def update_file_row(self, files):
+        self.file_row.controls = []
+        for file in files:
             file_image = Container(
                 content=Image(
                     src=Icons.FILE,
@@ -167,142 +167,51 @@ class ChatView(ClientBaseView):
                 ),
                 alignment=alignment.center,
             )
-            if value['extension'] in ['jpg', 'jpeg', 'png']:
+            if file.extension in ['jpg', 'jpeg', 'png']:
+                file_byte = file.value.encode('ISO-8859-1')
                 file_image = Container(
                     content=Image(
-                        src=f"data:image/jpeg;base64,{b64encode(value['data']).decode()}",
+                        src=f'data:image/jpeg;base64,{b64encode(file_byte).decode()}',
                         width=150,
                         height=150,
                         fit=ImageFit.CONTAIN,
                     ),
                     alignment=alignment.center,
                 )
-            stack_controls += [
-                file_image,
-            ]
-            if id_str == 'temp':
-                stack_controls += [
-                    Container(
-                        content=ProgressRing(
-                            value=value['progress'],
-                            color=colors.PRIMARY_CONTAINER,
-                            bgcolor=colors.SECONDARY_CONTAINER,
-                            width=64,
-                            height=64,
-                        ),
-                        alignment=alignment.center,
-                    ),
-                ]
-            else:
-                stack_controls += [
-                    Container(
-                        content=Text(
-                            value=value['filename'],
-                            color=colors.ON_SECONDARY
-                        ),
-                        alignment=alignment.bottom_center,
-                    ),
-                    IconButton(
-                        icon=icons.CLOSE,
-                        on_click=partial(
-                            self.photo_delete,
-                            id_str,
-                        ),
-                        top=1,
-                        right=0,
-                        icon_color=colors.ON_SECONDARY,
-                    ),
-                ]
-            self.photo_row.controls += [
+            self.file_row.controls += [
                 Container(
                     content=Stack(
-                        controls=stack_controls,
+                        controls=[
+                            file_image,
+                            Container(
+                                content=Text(
+                                    value=file.filename,
+                                    color=colors.ON_SECONDARY
+                                ),
+                                alignment=alignment.bottom_center,
+                            ),
+                        ],
                     ),
                     bgcolor=colors.SECONDARY,
                     height=170,
                     width=150,
                 )
             ]
-        await self.photo_row.update_async()
-
-    async def upload_files(self, _):
-        uf = []
-        await self.set_text_error()
-        if not self.filepicker.result.files:
-            return
-        for f in self.filepicker.result.files:
-            if len(f.name.split('.')) < 2:
-                continue
-            # if f.size > 2097152:
-            #     await self.set_text_error(text_value=await self.client.session.gtv(key='file_max_size_2mb'))
-            #     continue
-            if len(self.photos) > 3:
-                await self.set_text_error(text_value=await self.client.session.gtv(key='files_max_count'))
-                continue
-            uf.append(
-                FilePickerUploadFile(
-                    f.name,
-                    upload_url=await self.client.session.page.get_upload_url_async(f.name, 600),
-                )
-            )
-            await self.filepicker.upload_async([uf[-1]])
-            await self.on_upload_progress(e=FilePickerUploadEvent(file_name=f.name, progress=1.0, error=None))
-
-    async def on_upload_progress(self, e: FilePickerUploadEvent):
-        await self.set_text_error()
-        if e.progress is not None and e.progress < 1.0:
-            self.photos['temp'] = {
-                'filename': '',
-                'extension': '',
-                'data': None,
-                'size': 0,
-                'progress': e.progress,
-            }
-            await self.update_photo_row()
-            return
-        if self.photos.get('temp'):
-            del self.photos['temp']
-        path = f'uploads/{e.file_name}'
-        if not os.path.exists(path):
-            return
-        with open(path, 'rb') as f:
-            file_data = f.read()
-        self.photos[create_id_str()] = {
-            'filename': e.file_name,
-            'extension': e.file_name.split('.')[-1],
-            'data': file_data,
-            'size': len(file_data),
-            'progress': e.progress,
-        }
-        os.remove(path)
-        await self.update_photo_row()
-
-    async def photo_delete(self, id_str, _):
-        await self.set_text_error()
-        del self.photos[id_str]
-        await self.update_photo_row()
+        await self.file_row.update_async()
 
     async def send(self, _):
         text = None
         if self.tf_message.value:
             text = self.tf_message.value
-        if not self.photos and not text:
+        if not self.file_keys and not text:
             return
         await self.chat.send(
             data={
                 'role': 'user',
                 'text': text,
-                'files': [
-                    {
-                        'filename': value['filename'],
-                        'data': io.BytesIO(value['data']).getvalue().decode('ISO-8859-1'),
-                    }
-                    for id_str, value in self.photos.items()
-                ],
+                'files_key': self.file_keys.key if self.file_keys else None,
             },
         )
-        await self.set_text_error()
-        self.photos = {}
-        await self.update_photo_row()
+        await self.update_file_row(files=[])
         self.tf_message.value = None
         await self.tf_message.update_async()
