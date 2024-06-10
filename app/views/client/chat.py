@@ -142,7 +142,7 @@ class ChatView(ClientBaseView):
         self.attach_file_btn.on_click = None
         self.attach_file_btn.url = self.file_keys.url
         await self.attach_file_btn.update_async()
-        webbrowser.open(url=self.file_keys.url)
+        ф = self.client.session.page.launch_url(self.file_keys.url)
 
     async def reload_file(self, _):
         if not self.file_keys:

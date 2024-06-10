@@ -134,7 +134,7 @@ class RequisiteOrderPaymentView(ClientBaseView):
         self.attach_file_btn.on_click = None
         self.attach_file_btn.url = self.file_keys.url
         await self.attach_file_btn.update_async()
-        await self.client.session.page.launch_url(self.file_keys.url)
+        self.client.session.page.launch_url(self.file_keys.url)
         # webbrowser.open(url=self.file_keys.url)
 
     async def reload_file(self, _):
