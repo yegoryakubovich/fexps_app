@@ -17,52 +17,59 @@
 
 from base64 import b64encode
 
-from flet_core import Container, Row, colors, Image, Stack, ImageFit, alignment, ProgressRing, Column, ScrollMode
+from flet_core import Container, Row, colors, Image, Column, ScrollMode, ImageFit, Control, alignment, Stack
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Icons
-from app.utils.chat import Chat
+from app.utils.websockets.chat import ChatWebSockets
+from app.utils.websockets.file import FileWebSockets
 
 
 class ChatView(ClientBaseView):
     route = '/client/chat'
 
-    chat: Chat
+    file_keys = dict
+    chat: ChatWebSockets
+    file_row: [Row, FileWebSockets]
     order_id: int
 
     tf_message: TextField
-    file_row: Row
     attach_file_btn: StandardButton
-    attach_reload_btn: StandardButton
-
-    prog_bars: dict[str, ProgressRing] = {}
 
     def __init__(self, order_id: int):
         super().__init__()
         self.order_id = order_id
-        self.file_row = Row(controls=[])
+        self.send_key = None
 
     async def construct(self):
         account = self.client.session.account
+        await self.set_type(loading=True)
         old_messages = await self.client.session.api.client.messages.get_list(order_id=self.order_id)
+        self.file_keys = await self.client.session.api.client.files.keys.create()
+        await self.set_type(loading=False)
         old_messages_controls = [
-            await Chat.create_message_card(
+            await ChatWebSockets.create_message_card(
                 gtv=self.client.session.gtv,
                 account_id=account.id,
                 message=message,
             )
             for message in old_messages[::-1]
         ]
-        self.chat = Chat(
+        self.chat = ChatWebSockets(
             account_id=account.id,
             gtv=self.client.session.gtv,
             token=self.client.session.token,
             order_id=self.order_id,
             controls=old_messages_controls,
             deviation=self.client.session.timezone.deviation,
+        )
+        self.file_row = FileWebSockets(
+            get_key=self.get_key,
+            update_file_keys=self.update_file_keys,
+            create_file_row_controls=self.create_file_row_controls,
         )
         self.attach_file_btn = StandardButton(
             content=Image(
@@ -71,18 +78,7 @@ class ChatView(ClientBaseView):
                 height=48,
                 color=colors.ON_BACKGROUND,
             ),
-            on_click=self.add_file,
-            color=colors.ON_BACKGROUND,
-            bgcolor=colors.BACKGROUND,
-        )
-        self.attach_reload_btn = StandardButton(
-            content=Image(
-                src=Icons.RELOAD,
-                width=48,
-                height=48,
-                color=colors.ON_BACKGROUND,
-            ),
-            on_click=self.reload_file,
+            url=self.file_keys.url,
             color=colors.ON_BACKGROUND,
             bgcolor=colors.BACKGROUND,
         )
@@ -109,7 +105,6 @@ class ChatView(ClientBaseView):
                             Row(
                                 controls=[
                                     self.attach_file_btn,
-                                    self.attach_reload_btn,
                                     self.tf_message,
                                     StandardButton(
                                         content=Image(
@@ -136,27 +131,18 @@ class ChatView(ClientBaseView):
 
     """FILE"""
 
-    async def add_file(self, _):
+    async def get_key(self):
+        return self.file_keys.key
+
+    async def update_file_keys(self, key: str):
+        self.send_key = key
         self.file_keys = await self.client.session.api.client.files.keys.create()
-        self.attach_file_btn.on_click = None
         self.attach_file_btn.url = self.file_keys.url
-        await self.attach_file_btn.update_async()
-        self.client.session.page.launch_url(self.file_keys.url)
+        self.attach_file_btn.update()
 
-    async def reload_file(self, _):
-        if not self.file_keys:
-            return
-        files = await self.client.session.api.client.files.keys.get(key=self.file_keys.key)
-        if not files:
-            return
-        await self.update_file_row(files=files)
-        self.attach_file_btn.text = await self.client.session.gtv(key='add_image')
-        self.attach_file_btn.on_click = self.add_file
-        self.attach_file_btn.url = None
-        await self.attach_file_btn.update_async()
-
-    async def update_file_row(self, files):
-        self.file_row.controls = []
+    @staticmethod
+    async def create_file_row_controls(files: list) -> list[Control]:
+        controls = []
         for file in files:
             file_image = Container(
                 content=Image(
@@ -168,8 +154,8 @@ class ChatView(ClientBaseView):
                 ),
                 alignment=alignment.center,
             )
-            if file.extension in ['jpg', 'jpeg', 'png']:
-                file_byte = file.value.encode('ISO-8859-1')
+            if file['extension'] in ['jpg', 'jpeg', 'png']:
+                file_byte = file['value'].encode('ISO-8859-1')
                 file_image = Container(
                     content=Image(
                         src=f'data:image/jpeg;base64,{b64encode(file_byte).decode()}',
@@ -179,14 +165,14 @@ class ChatView(ClientBaseView):
                     ),
                     alignment=alignment.center,
                 )
-            self.file_row.controls += [
+            controls += [
                 Container(
                     content=Stack(
                         controls=[
                             file_image,
                             Container(
                                 content=Text(
-                                    value=file.filename,
+                                    value=file['filename'],
                                     color=colors.ON_SECONDARY
                                 ),
                                 alignment=alignment.bottom_center,
@@ -198,21 +184,22 @@ class ChatView(ClientBaseView):
                     width=150,
                 )
             ]
-        await self.file_row.update_async()
+        return controls
 
     async def send(self, _):
         text = None
         if self.tf_message.value:
             text = self.tf_message.value
-        if not self.file_keys and not text:
+        if not self.send_key and not text:
             return
         await self.chat.send(
             data={
                 'role': 'user',
                 'text': text,
-                'files_key': self.file_keys.key if self.file_keys else None,
+                'files_key': self.send_key,
             },
         )
-        await self.update_file_row(files=[])
+        self.send_key = None
         self.tf_message.value = None
+        await self.file_row.rebuild()
         await self.tf_message.update_async()

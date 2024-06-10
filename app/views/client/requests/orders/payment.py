@@ -25,6 +25,7 @@ from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.layout import ClientBaseView
 from app.utils import Icons, Error
+from app.utils.websockets.file import FileWebSockets
 from config import settings
 from fexps_api_client.utils import ApiException
 
@@ -33,7 +34,7 @@ class RequestOrderPaymentView(ClientBaseView):
     route = '/client/request/order/payment'
     order = dict
     file_keys = dict
-    file_row: Row
+    file_row: [Row, FileWebSockets]
     attach_file_btn: StandardButton
 
     input_scheme_fields: list
@@ -43,6 +44,7 @@ class RequestOrderPaymentView(ClientBaseView):
     def __init__(self, order_id: int):
         super().__init__()
         self.order_id = order_id
+        self.send_key = None
 
     async def get_field_controls(self) -> list[Control]:
         result = []
@@ -56,27 +58,20 @@ class RequestOrderPaymentView(ClientBaseView):
             if not input_scheme_field['optional']:
                 name_list += ['*']
             if type_ == 'image':
-                self.file_row = Row()
+                self.file_row = FileWebSockets(
+                    get_key=self.get_key,
+                    update_file_keys=self.update_file_keys,
+                    create_file_row_controls=self.create_file_row_controls,
+                )
                 self.attach_file_btn = StandardButton(
                     text=await self.client.session.gtv(key='add_image'),
-                    on_click=self.add_file,
+                    url=self.file_keys.url,
                 )
                 result += [
                     Text(value=' '.join(name_list)),
                     Row(
                         controls=[
                             self.attach_file_btn,
-                            StandardButton(
-                                content=Image(
-                                    src=Icons.RELOAD,
-                                    width=32,
-                                    height=32,
-                                    color=colors.ON_BACKGROUND,
-                                ),
-                                on_click=self.reload_file,
-                                color=colors.ON_BACKGROUND,
-                                bgcolor=colors.BACKGROUND,
-                            ),
                         ],
                     ),
                     self.file_row,
@@ -96,6 +91,7 @@ class RequestOrderPaymentView(ClientBaseView):
         self.input_fields = {}
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
+        self.file_keys = await self.client.session.api.client.files.keys.create()
         await self.set_type(loading=False)
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='request_order_title'),
@@ -127,28 +123,18 @@ class RequestOrderPaymentView(ClientBaseView):
 
     """FILE FIELD"""
 
-    async def add_file(self, _):
+    async def get_key(self):
+        return self.file_keys.key
+
+    async def update_file_keys(self, key: str):
+        self.send_key = key
         self.file_keys = await self.client.session.api.client.files.keys.create()
-        self.attach_file_btn.text = await self.client.session.gtv(key='order_open_file_upload')
-        self.attach_file_btn.on_click = None
         self.attach_file_btn.url = self.file_keys.url
-        await self.attach_file_btn.update_async()
-        self.client.session.page.launch_url(self.file_keys.url)
+        self.attach_file_btn.update()
 
-    async def reload_file(self, _):
-        if not self.file_keys:
-            return
-        files = await self.client.session.api.client.files.keys.get(key=self.file_keys.key)
-        if not files:
-            return
-        await self.update_file_row(files=files)
-        self.attach_file_btn.text = await self.client.session.gtv(key='add_image')
-        self.attach_file_btn.on_click = self.add_file
-        self.attach_file_btn.url = None
-        await self.attach_file_btn.update_async()
-
-    async def update_file_row(self, files):
-        self.file_row.controls = []
+    @staticmethod
+    async def create_file_row_controls(files):
+        controls = []
         for file in files:
             file_image = Container(
                 content=Image(
@@ -160,8 +146,8 @@ class RequestOrderPaymentView(ClientBaseView):
                 ),
                 alignment=alignment.center,
             )
-            if file.extension in ['jpg', 'jpeg', 'png']:
-                file_byte = file.value.encode('ISO-8859-1')
+            if file['extension'] in ['jpg', 'jpeg', 'png']:
+                file_byte = file['value'].encode('ISO-8859-1')
                 file_image = Container(
                     content=Image(
                         src=f'data:image/jpeg;base64,{b64encode(file_byte).decode()}',
@@ -171,14 +157,14 @@ class RequestOrderPaymentView(ClientBaseView):
                     ),
                     alignment=alignment.center,
                 )
-            self.file_row.controls += [
+            controls += [
                 Container(
                     content=Stack(
                         controls=[
                             file_image,
                             Container(
                                 content=Text(
-                                    value=file.filename,
+                                    value=file['filename'],
                                     color=colors.ON_SECONDARY
                                 ),
                                 alignment=alignment.bottom_center,
@@ -190,7 +176,7 @@ class RequestOrderPaymentView(ClientBaseView):
                     width=150,
                 )
             ]
-        await self.file_row.update_async()
+        return controls
 
     """TEXT FIELD"""
 
@@ -202,8 +188,8 @@ class RequestOrderPaymentView(ClientBaseView):
         try:
             for input_scheme_field in self.order.input_scheme_fields:
                 if not self.input_fields.get(input_scheme_field['key']):
-                    if input_scheme_field['type'] == 'image' and self.file_keys:
-                        self.input_fields[input_scheme_field['key']] = self.file_keys.key
+                    if input_scheme_field['type'] == 'image' and self.send_key:
+                        self.input_fields[input_scheme_field['key']] = self.send_key
                     continue
                 if input_scheme_field['type'] == 'int':
                     if not await Error.check_field(self, self.fields[input_scheme_field['key']], check_int=True):
