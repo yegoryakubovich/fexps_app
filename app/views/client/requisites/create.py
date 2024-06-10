@@ -279,7 +279,7 @@ class RequisiteCreateView(ClientBaseView):
         await self.update_output(update=False)
         await self.update_subtitle(update=False)
         self.controls = await self.get_controls(
-            title=self.requisite_data_model.title,
+            title=await self.client.session.gtv(key='requisite_create_title'),
             with_expand=True,
             main_section_controls=[
                 self.dialog,
