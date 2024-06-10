@@ -27,11 +27,13 @@ class Settings(BaseSettings):
     url_telegram: str = 'https://t.me/fexps_manager'
     url: str
     chat_url: str
+    file_url: str
 
     debug: bool = False
     test: bool
     test_url: str
     test_chat_url: str
+    test_file_url: str
 
     default_decimal: int = 2
     default_div: int = 100
@@ -48,6 +50,11 @@ class Settings(BaseSettings):
         if self.test:
             return self.test_chat_url
         return self.chat_url
+
+    def get_file_url(self):
+        if self.test:
+            return self.test_file_url
+        return self.file_url
 
 
 settings = Settings()

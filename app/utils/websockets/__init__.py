@@ -13,19 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
-APP_PORT=
-
-SECRET_KEY=
-VERSION=
-LANGUAGE_DEFAULT=
-URL=
-CHAT_URL=
-TEST_URL=
-URL_TELEGRAM=
-
-TEST=False
-TEST_URL=
-TEST_CHAT_URL=
-TEST_FILE_URL=

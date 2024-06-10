@@ -31,7 +31,7 @@ from app.utils.value import size_value_to_str
 from config import settings
 
 
-class Chat(UserControl):
+class ChatWebSockets(UserControl):
     running: bool
     url: str = settings.get_chat_url()
     message_column: Column
