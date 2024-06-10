@@ -15,7 +15,6 @@
 #
 
 
-import webbrowser
 from base64 import b64encode
 
 from flet_core import Container, Row, colors, Image, Stack, ImageFit, alignment, ProgressRing, Column, ScrollMode
@@ -142,17 +141,19 @@ class ChatView(ClientBaseView):
         self.attach_file_btn.on_click = None
         self.attach_file_btn.url = self.file_keys.url
         await self.attach_file_btn.update_async()
-        ф = self.client.session.page.launch_url(self.file_keys.url)
+        self.client.session.page.launch_url(self.file_keys.url)
 
     async def reload_file(self, _):
         if not self.file_keys:
             return
+        files = await self.client.session.api.client.files.keys.get(key=self.file_keys.key)
+        if not files:
+            return
+        await self.update_file_row(files=files)
         self.attach_file_btn.text = await self.client.session.gtv(key='add_image')
         self.attach_file_btn.on_click = self.add_file
         self.attach_file_btn.url = None
         await self.attach_file_btn.update_async()
-        files = await self.client.session.api.client.files.keys.get(key=self.file_keys.key)
-        await self.update_file_row(files=files)
 
     async def update_file_row(self, files):
         self.file_row.controls = []

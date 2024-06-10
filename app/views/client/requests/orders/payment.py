@@ -15,7 +15,6 @@
 #
 
 
-import webbrowser
 from base64 import b64encode
 from functools import partial
 
@@ -139,12 +138,14 @@ class RequestOrderPaymentView(ClientBaseView):
     async def reload_file(self, _):
         if not self.file_keys:
             return
+        files = await self.client.session.api.client.files.keys.get(key=self.file_keys.key)
+        if not files:
+            return
+        await self.update_file_row(files=files)
         self.attach_file_btn.text = await self.client.session.gtv(key='add_image')
         self.attach_file_btn.on_click = self.add_file
         self.attach_file_btn.url = None
         await self.attach_file_btn.update_async()
-        files = await self.client.session.api.client.files.keys.get(key=self.file_keys.key)
-        await self.update_file_row(files=files)
 
     async def update_file_row(self, files):
         self.file_row.controls = []
