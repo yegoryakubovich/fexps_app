@@ -59,6 +59,7 @@ class RequestCreateView(ClientBaseView):
     dd_output_currency = Dropdown(value=None)
     dd_output_method = Dropdown(value=None)
     dd_output_requisite_data = Dropdown(value=None)
+
     requisite_data_model: RequisiteDataCreateModel
 
     """

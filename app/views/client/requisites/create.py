@@ -63,6 +63,8 @@ class RequisiteCreateView(ClientBaseView):
     dd_output_method: Dropdown
     dd_output_requisite_data: Dropdown
 
+    requisite_data_model: RequisiteDataCreateModel
+
     async def update_subtitle(self, update: bool = True) -> None:
         if not self.dd_type.value or not self.dd_currency.value:
             self.input_subtitle_text.value = await self.client.session.gtv(
