@@ -113,6 +113,7 @@ class RegistrationFirstView(AuthView):
 
         # Save in Registration
         self.client.session.registration = Registration()
+        self.client.session.registration.contacts = []
         self.client.session.registration.username = self.tf_username.value
         self.client.session.registration.password = self.tf_password.value
 
