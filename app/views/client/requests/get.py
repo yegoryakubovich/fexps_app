@@ -81,6 +81,7 @@ class RequestView(ClientBaseView):
     info_card: InformationContainer
     confirmation_true_button: StandardButton
     confirmation_false_button: StandardButton
+    cancel_button: StandardButton
     orders_row: Row
 
     def __init__(self, request_id: int):
@@ -350,6 +351,24 @@ class RequestView(ClientBaseView):
         if update:
             await self.confirmation_false_button.update_async()
 
+    async def update_cancel_button(self, update: bool = True) -> None:
+        self.cancel_button = StandardButton(
+            content=Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='request_cancel_title'),
+                        size=16,
+                        font_family=Fonts.BOLD,
+                    ),
+                ],
+                alignment=MainAxisAlignment.CENTER,
+            ),
+            on_click=self.cancel,
+            expand=1,
+        )
+        if update:
+            await self.confirmation_false_button.update_async()
+
     """
     ORDERS SEND
     """
@@ -476,6 +495,14 @@ class RequestView(ClientBaseView):
             controls += [
                 self.orders_row,
             ]
+            await self.update_cancel_button(update=False)
+            buttons += [
+                Row(
+                    controls=[
+                        self.cancel_button,
+                    ]
+                ),
+            ]
         title_str = await self.client.session.gtv(key='request_get_title')
         self.controls = await self.get_controls(
             title=f'{title_str} #{self.request.id:08}',
@@ -539,3 +566,6 @@ class RequestView(ClientBaseView):
             await self.update_async()
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
+
+    async def cancel(self, _): # FIXME
+        return
