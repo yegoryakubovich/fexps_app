@@ -15,6 +15,9 @@
 #
 
 
+from flet_core import Control
+
+
 class Error:
 
     @staticmethod
@@ -49,3 +52,24 @@ class Error:
                 await self.update_async()
                 return False
         return True
+
+    @staticmethod
+    async def field_error_set(
+            fields: list[Control],
+            text: str,
+            update: bool = True,
+    ) -> None:
+        for field in fields:
+            field.error_text = text
+            if update:
+                await field.update_async()
+
+    @staticmethod
+    async def field_error_reset(
+            fields: list[Control],
+            update: bool = True,
+    ) -> None:
+        for field in fields:
+            field.error_text = None
+            if update:
+                await field.update_async()

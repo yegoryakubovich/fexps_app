@@ -55,12 +55,12 @@ VALUE FORMAT
 """
 
 
-def value_to_int(value: Optional[float], decimal: int = settings.default_decimal) -> Optional[int]:
+def value_to_int(value: Optional[float], decimal: int = settings.default_decimal, round_method=round) -> Optional[int]:
     if isinstance(value, str):
         value = value.replace(',', '.')
     if not value and value != 0:
         return
-    return round(float(value) * (10 ** decimal))
+    return round_method(float(value) * (10 ** decimal))
 
 
 def value_to_float(value: Optional[int], decimal: int = settings.default_decimal) -> Optional[float]:
