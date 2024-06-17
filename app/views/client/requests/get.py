@@ -25,8 +25,7 @@ from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, value_to_str
-from app.utils.value import requisite_value_to_str, get_fix_rate, get_input_currency_value, get_input_value, \
-    get_output_currency_value, get_output_value
+from app.utils.value import requisite_value_to_str, get_fix_rate
 from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView
 from fexps_api_client.utils import ApiException
@@ -93,74 +92,47 @@ class RequestView(ClientBaseView):
 
     async def update_info_card(self, update: bool = True) -> None:
         rate = value_to_float(value=self.request.rate, decimal=self.request.rate_decimal)
-        rate_str = ''
+        input_currency_id_str, output_currency_id_str, rate_currency_id_str = '', '', ''
         if self.request.type == 'input':
-            input_currency = self.request.input_currency
-            input_currency_value = value_to_float(
-                value=get_input_currency_value(request=self.request),
-                decimal=input_currency.decimal,
-            )
+            input_currency = self.request.input_method.currency
+            rate_currency_id_str = input_currency_id_str = input_currency.id_str.upper()
             input_value = value_to_float(
-                value=get_input_value(request=self.request),
+                value=self.request.input_currency_value,
                 decimal=input_currency.decimal,
             )
-            value_str = (
-                f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
-                f' -> '
-                f'{value_to_str(value=input_value)}'
-            )
-            if rate:
-                rate_fix, rate_decimal = get_fix_rate(rate=rate)
-                rate_str = (
-                    f'{rate_fix} {input_currency.id_str.upper()}'
-                    f' / '
-                    f'{rate_decimal}'
-                )
+            output_value = value_to_float(value=self.request.input_value)
         elif self.request.type == 'output':
-            output_currency = self.request.output_currency
-            output_currency_value = value_to_float(
-                value=get_output_currency_value(request=self.request),
-                decimal=output_currency.decimal,
-            )
+            input_value = value_to_float(value=self.request.output_value)
+            output_currency = self.request.output_method.currency
+            rate_currency_id_str = output_currency_id_str = output_currency.id_str.upper()
             output_value = value_to_float(
-                value=get_output_value(request=self.request),
+                value=self.request.output_currency_value,
                 decimal=output_currency.decimal,
             )
-            value_str = (
-                f'{value_to_str(value=output_value)}'
-                f' -> '
-                f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
-            )
-            if rate:
-                rate_fix, rate_decimal = get_fix_rate(rate=rate)
-                rate_str = (
-                    f'{rate_fix} {output_currency.id_str.upper()}'
-                    f' / '
-                    f'{rate_decimal}'
-                )
         else:
-            input_currency = self.request.input_currency
-            output_currency = self.request.output_currency
-            input_currency_value = value_to_float(
-                value=get_input_currency_value(request=self.request),
+            input_currency = self.request.input_method.currency
+            input_currency_id_str = input_currency.id_str.upper()
+            input_value = value_to_float(
+                value=self.request.input_currency_value,
                 decimal=input_currency.decimal,
             )
-            output_currency_value = value_to_float(
-                value=get_output_currency_value(request=self.request),
+            output_currency = self.request.output_method.currency
+            output_currency_id_str = output_currency.id_str.upper()
+            output_value = value_to_float(
+                value=self.request.output_currency_value,
                 decimal=output_currency.decimal,
             )
-            value_str = (
-                f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
-                f' -> '
-                f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
-            )
-            if rate:
-                rate_fix, rate_decimal = get_fix_rate(rate=rate)
-                rate_str = (
-                    f'{rate_fix} {input_currency.id_str.upper()}'
-                    f' / '
-                    f'{rate_decimal} {output_currency.id_str.upper()}'
-                )
+        value_str = (
+            f'{value_to_str(value=input_value)} {input_currency_id_str}'
+            f' -> '
+            f'{value_to_str(value=output_value)} {output_currency_id_str}'
+        )
+        rate_fix, rate_decimal = get_fix_rate(rate=rate)
+        rate_str = (
+            f'{rate_fix} {rate_currency_id_str}'
+            f' / '
+            f'{rate_decimal}'
+        )
         if self.request.name:
             value_str = f'{self.request.name} ({value_str})'
         state_row = await self.client.session.gtv(key=f'request_state_{self.request.state}')
@@ -477,9 +449,7 @@ class RequestView(ClientBaseView):
         controls += [
             self.info_card,
         ]
-        if self.request.state == 'loading':
-            pass
-        elif self.request.state == 'waiting':
+        if self.request.state == 'confirmation':
             await self.update_confirmation_true_button(update=False)
             await self.update_confirmation_false_button(update=False)
             buttons += [
@@ -489,6 +459,11 @@ class RequestView(ClientBaseView):
                         self.confirmation_false_button,
                     ]
                 ),
+            ]
+        elif self.request.state in ['completed', 'canceled']:
+            await self.update_orders_row(update=False)
+            controls += [
+                self.orders_row,
             ]
         else:
             await self.update_orders_row(update=False)
@@ -567,5 +542,5 @@ class RequestView(ClientBaseView):
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 
-    async def cancel(self, _): # FIXME
+    async def cancel(self, _):  # FIXME
         return

@@ -24,8 +24,7 @@ from app.controls.button.actions import ActionItem
 from app.controls.information import Text, SubTitle, Title
 from app.controls.navigation import PaginationWidget
 from app.utils import Fonts, Icons, value_to_float
-from app.utils.value import value_to_str, get_output_currency_value, get_input_currency_value, get_output_value, \
-    get_input_value
+from app.utils.value import value_to_str
 from app.views.client.requests import RequestView
 from app.views.main.tabs.base import BaseTab
 
@@ -65,53 +64,41 @@ class RequestTab(BaseTab):
         cards: list[StandardButton] = []
         for request in self.current_requests:
             state_str = await self.client.session.gtv(key=f'request_state_{request.state}')
+            input_currency_id_str, output_currency_id_str, rate_currency_id_str = '', '', ''
             if request.type == 'input':
-                input_currency = request.input_currency
-                input_currency_value = value_to_float(
-                    value=get_input_currency_value(request=request),
-                    decimal=input_currency.decimal,
-                )
+                input_currency = request.input_method.currency
+                input_currency_id_str = input_currency.id_str.upper()
                 input_value = value_to_float(
-                    value=get_input_value(request=request),
+                    value=request.input_currency_value,
                     decimal=input_currency.decimal,
                 )
-                value_str = (
-                    f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
-                    f' -> '
-                    f'{value_to_str(value=input_value)}'
-                )
+                output_value = value_to_float(value=request.input_value)
             elif request.type == 'output':
-                output_currency = request.output_currency
-                output_currency_value = value_to_float(
-                    value=get_output_currency_value(request=request),
-                    decimal=output_currency.decimal,
-                )
+                input_value = value_to_float(value=request.output_value)
+                output_currency = request.output_method.currency
+                output_currency_id_str = output_currency.id_str.upper()
                 output_value = value_to_float(
-                    value=get_output_value(request=request),
+                    value=request.output_currency_value,
                     decimal=output_currency.decimal,
                 )
-                value_str = (
-                    f'{value_to_str(value=output_value)}'
-                    f' -> '
-                    f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
-                )
-
             else:
-                input_currency = request.input_currency
-                output_currency = request.output_currency
-                input_currency_value = value_to_float(
-                    value=get_input_currency_value(request=request),
+                input_currency = request.input_method.currency
+                input_currency_id_str = input_currency.id_str.upper()
+                input_value = value_to_float(
+                    value=request.input_currency_value,
                     decimal=input_currency.decimal,
                 )
-                output_currency_value = value_to_float(
-                    value=get_output_currency_value(request=request),
+                output_currency = request.output_method.currency
+                output_currency_id_str = output_currency.id_str.upper()
+                output_value = value_to_float(
+                    value=request.output_currency_value,
                     decimal=output_currency.decimal,
                 )
-                value_str = (
-                    f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
-                    f' -> '
-                    f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
-                )
+            value_str = (
+                f'{value_to_str(value=input_value)} {input_currency_id_str}'
+                f' -> '
+                f'{value_to_str(value=output_value)} {output_currency_id_str}'
+            )
             cards.append(
                 StandardButton(
                     content=Row(
@@ -209,53 +196,41 @@ class RequestTab(BaseTab):
         for request in self.history_requests:
             state_str = await self.client.session.gtv(key=f'request_state_{request.state}')
             date_str = request.date.strftime('%d %b %Y, %H:%M')
+            input_currency_id_str, output_currency_id_str, rate_currency_id_str = '', '', ''
             if request.type == 'input':
-                input_currency = request.input_currency
-                input_currency_value = value_to_float(
-                    value=get_input_currency_value(request=request),
-                    decimal=input_currency.decimal,
-                )
+                input_currency = request.input_method.currency
+                input_currency_id_str = input_currency.id_str.upper()
                 input_value = value_to_float(
-                    value=get_input_value(request=request),
+                    value=request.input_currency_value,
                     decimal=input_currency.decimal,
                 )
-                value_str = (
-                    f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
-                    f' -> '
-                    f'{value_to_str(value=input_value)}'
-                )
+                output_value = value_to_float(value=request.input_value)
             elif request.type == 'output':
-                output_currency = request.output_currency
-                output_currency_value = value_to_float(
-                    value=get_output_currency_value(request=request),
-                    decimal=output_currency.decimal,
-                )
+                input_value = value_to_float(value=request.output_value)
+                output_currency = request.output_method.currency
+                output_currency_id_str = output_currency.id_str.upper()
                 output_value = value_to_float(
-                    value=get_output_value(request=request),
+                    value=request.output_currency_value,
                     decimal=output_currency.decimal,
                 )
-                value_str = (
-                    f'{value_to_str(value=output_value)}'
-                    f' -> '
-                    f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
-                )
-
             else:
-                input_currency = request.input_currency
-                output_currency = request.output_currency
-                input_currency_value = value_to_float(
-                    value=get_input_currency_value(request=request),
+                input_currency = request.input_method.currency
+                input_currency_id_str = input_currency.id_str.upper()
+                input_value = value_to_float(
+                    value=request.input_currency_value,
                     decimal=input_currency.decimal,
                 )
-                output_currency_value = value_to_float(
-                    value=get_output_currency_value(request=request),
+                output_currency = request.output_method.currency
+                output_currency_id_str = output_currency.id_str.upper()
+                output_value = value_to_float(
+                    value=request.output_currency_value,
                     decimal=output_currency.decimal,
                 )
-                value_str = (
-                    f'{value_to_str(value=input_currency_value)} {input_currency.id_str.upper()}'
-                    f' -> '
-                    f'{value_to_str(value=output_currency_value)} {output_currency.id_str.upper()}'
-                )
+            value_str = (
+                f'{value_to_str(value=input_value)} {input_currency_id_str}'
+                f' -> '
+                f'{value_to_str(value=output_value)} {output_currency_id_str}'
+            )
             cards.append(
                 StandardButton(
                     content=Row(
