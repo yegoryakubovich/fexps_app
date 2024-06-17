@@ -127,12 +127,7 @@ class RequestView(ClientBaseView):
             f' -> '
             f'{value_to_str(value=output_value)} {output_currency_id_str}'
         )
-        rate_fix, rate_decimal = get_fix_rate(rate=rate)
-        rate_str = (
-            f'{rate_fix} {rate_currency_id_str}'
-            f' / '
-            f'{rate_decimal}'
-        )
+        rate_str = value_to_str(value=get_fix_rate(rate=rate))
         if self.request.name:
             value_str = f'{self.request.name} ({value_str})'
         state_row = await self.client.session.gtv(key=f'request_state_{self.request.state}')
