@@ -332,6 +332,7 @@ class RequisiteCreateView(ClientBaseView):
             )
             self.dd_output_method.disabled = False
             self.dd_output_requisite_data.value = None
+            await self.change_output_method('')
         await self.update_async()
 
     async def change_output_method(self, _):
@@ -363,23 +364,24 @@ class RequisiteCreateView(ClientBaseView):
         self.dialog.content = Container(
             content=Column(
                 controls=[
-                             Row(
-                                 controls=[
-                                     Text(
-                                         value=await self.client.session.gtv(key='request_change_name_title'),
-                                         size=12,
-                                         font_family=Fonts.BOLD,
-                                         color=colors.ON_BACKGROUND,
-                                     ),
-                                     IconButton(
-                                         icon=icons.CLOSE,
-                                         on_click=self.create_output_requisite_data_close,
-                                         icon_color=colors.ON_BACKGROUND,
-                                     ),
-                                 ],
-                                 alignment=MainAxisAlignment.SPACE_BETWEEN,
-                             ),
-                         ] + self.requisite_data_model.controls,
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key='request_change_name_title'),
+                                size=12,
+                                font_family=Fonts.BOLD,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                            IconButton(
+                                icon=icons.CLOSE,
+                                on_click=self.create_output_requisite_data_close,
+                                icon_color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    *self.requisite_data_model.controls,
+                ],
                 scroll=ScrollMode.AUTO,
             ),
             width=400,
