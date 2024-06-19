@@ -24,7 +24,7 @@ from app.utils import Fonts
 
 class BottomSheet(BottomSheetFlet):
     def __init__(self):
-        super().__init__(open=False)
+        super().__init__(content=Container(), open=False)
         self.bgcolor = colors.BACKGROUND
 
     async def close(self, _):
