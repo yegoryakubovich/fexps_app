@@ -38,10 +38,12 @@ class RequestOrderView(ClientBaseView):
     currency = dict
 
     info_card: InformationContainer
+
+    chat_button: StandardButton
+    back_button: StandardButton
     input_payment_button: StandardButton
     output_confirmation_button: StandardButton
     output_cancel_button: StandardButton
-    chat_button: StandardButton
     update_value_button: StandardButton
     cancel_button: StandardButton
     recreate_button: StandardButton
@@ -402,9 +404,28 @@ class RequestOrderView(ClientBaseView):
         if update:
             await self.recreate_button.update_async()
 
+    async def update_back_button(self, update: bool = True) -> None:
+        self.back_button = StandardButton(
+            content=Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='request_order_back_button'),
+                        size=20,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.CENTER,
+            ),
+            bgcolor=colors.PRIMARY_CONTAINER,
+            on_click=self.back,
+            expand=1,
+        )
+        if update:
+            await self.back_button.update_async()
+
     async def construct(self):
         self.dialog = AlertDialog(modal=True)
-        controls, buttons = [], []
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
         self.order_request = self.order.order_request
@@ -413,10 +434,19 @@ class RequestOrderView(ClientBaseView):
         self.method = self.order.method
         await self.set_type(loading=False)
         await self.update_info_card(update=False)
-        await self.update_chat_button(update=False)
-        controls += [
+        controls = [
             self.info_card,
         ]
+        await self.update_back_button(update=False)
+        buttons = [
+            Row(
+                controls=[
+                    self.back_button,
+                ]
+            ),
+        ]
+        await self.update_chat_button(update=False)
+        await self.update_chat_button(update=False)
         if self.order_request:
             if self.client.session.current_wallet.id != self.order_request.wallet.id:
                 await self.update_order_request_completed_button(update=False)
@@ -509,6 +539,12 @@ class RequestOrderView(ClientBaseView):
                     for button in buttons
                 ],
             ],
+        )
+
+    async def back(self, _):
+        await self.client.change_view(
+            go_back=True,
+            delete_current=True,
         )
 
     async def copy_to_clipboard(self, data, _):
