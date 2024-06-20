@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+import logging
 from copy import deepcopy
 
 from flet_core import Checkbox, colors, Column, Row, ScrollMode, Divider, KeyboardType
@@ -40,10 +39,10 @@ class MethodCreateView(AdminBaseView):
     tf_name: TextField
     schema_fields: list[Column]
     schema_input_fields: list[Column]
-    tf_rate_input_default = TextField
-    tf_rate_output_default = TextField
-    tf_rate_input_percent = TextField
-    tf_rate_output_percent = TextField
+    tf_input_rate_default = TextField
+    tf_output_rate_default = TextField
+    tf_input_rate_percent = TextField
+    tf_output_rate_percent = TextField
     tf_color: TextField
     tf_bgcolor: TextField
     cb_is_rate_default: Checkbox
@@ -83,23 +82,23 @@ class MethodCreateView(AdminBaseView):
         self.tf_name = TextField(
             label=await self.client.session.gtv(key='name'),
         )
-        self.tf_rate_input_default = TextField(
-            label=await self.client.session.gtv(key='admin_method_rate_input_default'),
+        self.tf_input_rate_default = TextField(
+            label=await self.client.session.gtv(key='admin_method_input_rate_default'),
             keyboard_type=KeyboardType.NUMBER,
             value=0,
         )
-        self.tf_rate_output_default = TextField(
-            label=await self.client.session.gtv(key='admin_method_rate_output_default'),
+        self.tf_output_rate_default = TextField(
+            label=await self.client.session.gtv(key='admin_method_output_rate_default'),
             keyboard_type=KeyboardType.NUMBER,
             value=0,
         )
-        self.tf_rate_input_percent = TextField(
-            label=await self.client.session.gtv(key='admin_method_rate_input_percent'),
+        self.tf_input_rate_percent = TextField(
+            label=await self.client.session.gtv(key='admin_method_input_rate_percent'),
             keyboard_type=KeyboardType.NUMBER,
             value=0,
         )
-        self.tf_rate_output_percent = TextField(
-            label=await self.client.session.gtv(key='admin_method_rate_output_percent'),
+        self.tf_output_rate_percent = TextField(
+            label=await self.client.session.gtv(key='admin_method_output_rate_percent'),
             keyboard_type=KeyboardType.NUMBER,
             value=0,
         )
@@ -127,10 +126,10 @@ class MethodCreateView(AdminBaseView):
             main_section_controls=[
                 self.dd_currency,
                 self.tf_name,
-                self.tf_rate_input_default,
-                self.tf_rate_output_default,
-                self.tf_rate_input_percent,
-                self.tf_rate_output_percent,
+                self.tf_input_rate_default,
+                self.tf_output_rate_default,
+                self.tf_input_rate_percent,
+                self.tf_output_rate_percent,
                 self.tf_color,
                 self.tf_bgcolor,
                 self.cb_is_rate_default,
@@ -218,14 +217,14 @@ class MethodCreateView(AdminBaseView):
                 'optional': column.controls[4].controls[0].value,
             })
         custom_field_list = [
-            ('rate_input_default', self.tf_rate_input_default),
-            ('rate_output_default', self.tf_rate_output_default),
-            ('rate_input_percent', self.tf_rate_input_percent),
-            ('rate_output_percent', self.tf_rate_output_percent),
+            ('input_rate_default', self.tf_input_rate_default),
+            ('output_rate_default', self.tf_output_rate_default),
+            ('input_rate_percent', self.tf_input_rate_percent),
+            ('output_rate_percent', self.tf_output_rate_percent),
         ]
         try:
             currency = await self.client.session.api.client.currencies.get(id_str=self.dd_currency.value)
-            updates = {
+            obj_data = {
                 'currency': currency.id_str,
                 'name': self.tf_name.value,
                 'fields': fields,
@@ -237,11 +236,17 @@ class MethodCreateView(AdminBaseView):
             for field_key, field in custom_field_list:
                 if not await Error.check_field(self, field=field, check_float=True):
                     return
-                updates[field_key] = value_to_int(value=field.value, decimal=currency.rate_decimal)
-            method_id = await self.client.session.api.admin.methods.create(**updates )
+                obj_data[field_key] = value_to_int(value=field.value, decimal=currency.rate_decimal)
+            method_id = await self.client.session.api.admin.methods.create(
+                **obj_data,
+            )
             await self.client.session.get_text_pack()
             await self.set_type(loading=False)
-            await self.client.change_view(view=MethodView(id_=method_id), delete_current=True, with_restart=True)
+            await self.client.change_view(
+                view=MethodView(method_id=method_id),
+                delete_current=True,
+                with_restart=True,
+            )
         except ApiException as exception:
             await self.set_type(loading=False)
             return await self.client.session.error(exception=exception)

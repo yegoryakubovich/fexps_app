@@ -142,9 +142,6 @@ class AdminView(AdminBaseView):
             main_section_controls=main_sections_controls,
         )
 
-    async def coming_soon(self):
-        pass
-
     async def go_back(self, _):
         await self.client.change_view(go_back=True)
 

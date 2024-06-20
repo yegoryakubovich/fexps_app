@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 from copy import deepcopy
 
 from flet_core import Row, Column, colors, Checkbox, ScrollMode, Divider, KeyboardType
@@ -41,19 +43,19 @@ class MethodView(AdminBaseView):
     schema: Column
     schema_fields: list[Column]
     schema_input_fields: list[Column]
-    tf_rate_input_default = TextField
-    tf_rate_output_default = TextField
-    tf_rate_input_percent = TextField
-    tf_rate_output_percent = TextField
+    tf_input_rate_default = TextField
+    tf_output_rate_default = TextField
+    tf_input_rate_percent = TextField
+    tf_output_rate_percent = TextField
     tf_color: TextField
     tf_bgcolor: TextField
     cb_is_rate_default: Checkbox
 
     snack_bar: SnackBar
 
-    def __init__(self, id_: int):
+    def __init__(self, method_id: int):
         super().__init__()
-        self.method_id = id_
+        self.method_id = method_id
 
     async def construct(self):
         await self.set_type(loading=True)
@@ -92,25 +94,25 @@ class MethodView(AdminBaseView):
             label=await self.client.session.gtv(key='name'),
             value=await self.client.session.gtv(key=self.method.name_text),
         )
-        self.tf_rate_input_default = TextField(
-            label=await self.client.session.gtv(key='admin_method_rate_input_default'),
+        self.tf_input_rate_default = TextField(
+            label=await self.client.session.gtv(key='admin_method_input_rate_default'),
             keyboard_type=KeyboardType.NUMBER,
-            value=value_to_float(value=self.method.rate_input_default, decimal=self.currency.rate_decimal),
+            value=value_to_float(value=self.method.input_rate_default, decimal=self.currency.rate_decimal),
         )
-        self.tf_rate_output_default = TextField(
-            label=await self.client.session.gtv(key='admin_method_rate_output_default'),
+        self.tf_output_rate_default = TextField(
+            label=await self.client.session.gtv(key='admin_method_output_rate_default'),
             keyboard_type=KeyboardType.NUMBER,
-            value=value_to_float(value=self.method.rate_output_default, decimal=self.currency.rate_decimal),
+            value=value_to_float(value=self.method.output_rate_default, decimal=self.currency.rate_decimal),
         )
-        self.tf_rate_input_percent = TextField(
-            label=await self.client.session.gtv(key='admin_method_rate_input_percent'),
+        self.tf_input_rate_percent = TextField(
+            label=await self.client.session.gtv(key='admin_method_input_rate_percent'),
             keyboard_type=KeyboardType.NUMBER,
-            value=value_to_float(value=self.method.rate_input_percent, decimal=self.currency.rate_decimal),
+            value=value_to_float(value=self.method.input_rate_percent, decimal=self.currency.rate_decimal),
         )
-        self.tf_rate_output_percent = TextField(
-            label=await self.client.session.gtv(key='admin_method_rate_output_percent'),
+        self.tf_output_rate_percent = TextField(
+            label=await self.client.session.gtv(key='admin_method_output_rate_percent'),
             keyboard_type=KeyboardType.NUMBER,
-            value=value_to_float(value=self.method.rate_output_percent, decimal=self.currency.rate_decimal),
+            value=value_to_float(value=self.method.output_rate_percent, decimal=self.currency.rate_decimal),
         )
         self.tf_color = TextField(
             label=await self.client.session.gtv(key='admin_method_color'),
@@ -159,10 +161,10 @@ class MethodView(AdminBaseView):
                         ),
                         self.dd_currency,
                         self.tf_name,
-                        self.tf_rate_input_default,
-                        self.tf_rate_output_default,
-                        self.tf_rate_input_percent,
-                        self.tf_rate_output_percent,
+                        self.tf_input_rate_default,
+                        self.tf_output_rate_default,
+                        self.tf_input_rate_percent,
+                        self.tf_output_rate_percent,
                         self.tf_color,
                         self.tf_bgcolor,
                         self.cb_is_rate_default,
@@ -262,10 +264,10 @@ class MethodView(AdminBaseView):
 
         try:
             custom_field_list = [
-                ('rate_input_default', self.tf_rate_input_default, self.method.rate_input_default),
-                ('rate_output_default', self.tf_rate_output_default, self.method.rate_output_default),
-                ('rate_input_percent', self.tf_rate_input_percent, self.method.rate_input_percent),
-                ('rate_output_percent', self.tf_rate_output_percent, self.method.rate_output_percent),
+                ('input_rate_default', self.tf_input_rate_default, self.method.input_rate_default),
+                ('output_rate_default', self.tf_output_rate_default, self.method.output_rate_default),
+                ('input_rate_percent', self.tf_input_rate_percent, self.method.input_rate_percent),
+                ('output_rate_percent', self.tf_output_rate_percent, self.method.output_rate_percent),
             ]
             updates = {
                 'fields': fields,

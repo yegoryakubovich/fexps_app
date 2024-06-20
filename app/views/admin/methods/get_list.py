@@ -84,8 +84,10 @@ class MethodListView(AdminBaseView):
     async def create_text(self, _):
         await self.client.change_view(view=MethodCreateView())
 
-    async def method_view(self, id_: int, _):
-        await self.client.change_view(view=MethodView(id_=id_))
+    async def method_view(self, method_id: int, _):
+        await self.client.change_view(
+            view=MethodView(method_id=method_id),
+        )
 
     async def next_page(self, _):
         if self.page_method < self.total_pages:
