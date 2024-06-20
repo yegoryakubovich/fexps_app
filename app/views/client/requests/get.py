@@ -80,8 +80,8 @@ class RequestView(ClientBaseView):
     orders = list[dict]
 
     info_card: InformationContainer
-    confirmation_true_button: StandardButton
     confirmation_false_button: StandardButton
+    confirmation_true_button: StandardButton
     cancel_button: StandardButton
     orders_row: Row
 
@@ -287,12 +287,10 @@ class RequestView(ClientBaseView):
                     Text(
                         value=await self.client.session.gtv(key='request_confirm_true'),
                         size=16,
-                        color=colors.WHITE,
                         font_family=Fonts.BOLD,
                     ),
                     DynamicTimer(
                         seconds=self.request.confirmation_delta,
-                        color=colors.WHITE,
                     ),
                 ],
                 alignment=MainAxisAlignment.CENTER,
@@ -311,12 +309,10 @@ class RequestView(ClientBaseView):
                     Text(
                         value=await self.client.session.gtv(key='request_confirm_false'),
                         size=16,
-                        color=colors.WHITE,
                         font_family=Fonts.BOLD,
                     ),
                     DynamicTimer(
                         seconds=self.request.confirmation_delta,
-                        color=colors.WHITE,
                     ),
                 ],
                 alignment=MainAxisAlignment.CENTER,
@@ -455,13 +451,13 @@ class RequestView(ClientBaseView):
             self.info_card,
         ]
         if self.request.state == 'confirmation':
-            await self.update_confirmation_true_button(update=False)
             await self.update_confirmation_false_button(update=False)
+            await self.update_confirmation_true_button(update=False)
             buttons += [
                 Row(
                     controls=[
-                        self.confirmation_true_button,
                         self.confirmation_false_button,
+                        self.confirmation_true_button,
                     ]
                 ),
             ]
