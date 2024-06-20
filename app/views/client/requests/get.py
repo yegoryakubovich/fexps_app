@@ -34,10 +34,11 @@ from fexps_api_client.utils import ApiException
 class DynamicTimer(UserControl):
     time_text: Text
 
-    def __init__(self, seconds: int):
+    def __init__(self, seconds: int, color=colors.BLACK):
         super().__init__()
         self.running = True
         self.seconds = seconds
+        self.color = color
 
     def did_mount(self):
         asyncio.create_task(self.update_second())
@@ -64,6 +65,7 @@ class DynamicTimer(UserControl):
         self.time_text = Text(
             value='',
             size=16,
+            color=self.color,
             font_family=Fonts.BOLD,
         )
         return self.time_text
@@ -285,12 +287,17 @@ class RequestView(ClientBaseView):
                     Text(
                         value=await self.client.session.gtv(key='request_confirm_true'),
                         size=16,
+                        color=colors.WHITE,
                         font_family=Fonts.BOLD,
                     ),
-                    DynamicTimer(seconds=self.request.waiting_delta),
+                    DynamicTimer(
+                        seconds=self.request.confirmation_delta,
+                        color=colors.WHITE,
+                    ),
                 ],
                 alignment=MainAxisAlignment.CENTER,
             ),
+            bgcolor=colors.GREEN,
             on_click=partial(self.confirmation_answer, True),
             expand=1,
         )
@@ -304,12 +311,17 @@ class RequestView(ClientBaseView):
                     Text(
                         value=await self.client.session.gtv(key='request_confirm_false'),
                         size=16,
+                        color=colors.WHITE,
                         font_family=Fonts.BOLD,
                     ),
-                    DynamicTimer(seconds=self.request.waiting_delta),
+                    DynamicTimer(
+                        seconds=self.request.confirmation_delta,
+                        color=colors.WHITE,
+                    ),
                 ],
                 alignment=MainAxisAlignment.CENTER,
             ),
+            bgcolor=colors.RED,
             on_click=partial(self.confirmation_answer, False),
             expand=1,
         )
@@ -536,4 +548,8 @@ class RequestView(ClientBaseView):
             return await self.client.session.error(exception=exception)
 
     async def cancel(self, _):  # FIXME
-        return
+        await self.client.session.bs_info.open_(
+            icon=Icons.CHILL,
+            title=await self.client.session.gtv(key='coming_soon'),
+            description=await self.client.session.gtv(key='coming_soon_description'),
+        )
