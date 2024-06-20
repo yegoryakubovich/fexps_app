@@ -46,8 +46,6 @@ class RequisiteView(ClientBaseView):
 
     def __init__(self, requisite_id: int):
         super().__init__()
-        self.reload_bool = False
-        self.reload_stop = False
         self.requisite_id = requisite_id
 
     """

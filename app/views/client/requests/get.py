@@ -88,8 +88,6 @@ class RequestView(ClientBaseView):
     def __init__(self, request_id: int):
         super().__init__()
         self.request_id = request_id
-        self.reload_bool = False
-        self.reload_stop = False
         self.dialog = AlertDialog(modal=True)
 
     async def update_info_card(self, update: bool = True) -> None:
@@ -504,7 +502,6 @@ class RequestView(ClientBaseView):
         await self.update_async()
 
     async def request_edit_name_open(self, _):
-        self.reload_stop = True
         self.request_edit_name_model = RequestUpdateNameModel(
             session=self.client.session,
             update_async=self.update_async,
@@ -528,7 +525,6 @@ class RequestView(ClientBaseView):
         self.dialog.open = False
         await self.dialog.update_async()
         await asyncio.sleep(0.01)
-        self.reload_stop = False
         await self.construct()
         await self.update_async()
 

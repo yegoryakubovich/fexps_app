@@ -56,8 +56,6 @@ class RequestOrderView(ClientBaseView):
 
     def __init__(self, order_id: int):
         super().__init__()
-        self.reload_bool = False
-        self.reload_stop = False
         self.order_id = order_id
         self.dialog = AlertDialog()
         self.tf_value = TextField()
