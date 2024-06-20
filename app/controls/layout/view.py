@@ -59,10 +59,8 @@ class View(BaseView):
     async def get_title(
             self,
             title: str,
-            go_back_button=True,
             create_button=None,
             text_key: str = None,
-            go_back_func: callable = None,
     ):
 
         async def go_back(_):

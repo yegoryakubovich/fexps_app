@@ -107,12 +107,10 @@ class ClientBaseView(View):
             sections: list[ClientSection] = None,
             create_button: Any = None,
             with_expand: bool = False,
-            go_back_func: callable = None,
     ) -> list:
         title_control = await self.get_title(
             title=title,
             create_button=create_button,
-            go_back_func=go_back_func,
         )
 
         main_content = [
