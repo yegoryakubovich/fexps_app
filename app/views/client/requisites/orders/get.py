@@ -473,13 +473,13 @@ class RequisiteOrderView(ClientBaseView):
                     ),
                 ]
             elif self.order.state == 'confirmation':
-                await self.update_input_confirmation_button(update=False)
                 await self.update_input_cancel_button(update=False)
+                await self.update_input_confirmation_button(update=False)
                 buttons += [
                     Row(
                         controls=[
-                            self.input_confirmation_button,
                             self.input_cancel_button,
+                            self.input_confirmation_button,
                         ],
                     ),
                 ]

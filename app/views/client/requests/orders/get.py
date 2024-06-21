@@ -500,13 +500,13 @@ class RequestOrderView(ClientBaseView):
                     ),
                 ]
             elif self.order.state == 'confirmation':
-                await self.update_output_confirmation_button(update=False)
                 await self.update_output_cancel_button(update=False)
+                await self.update_output_confirmation_button(update=False)
                 buttons += [
                     Row(
                         controls=[
-                            self.output_confirmation_button,
                             self.output_cancel_button,
+                            self.output_confirmation_button,
                         ]
                     ),
                 ]
