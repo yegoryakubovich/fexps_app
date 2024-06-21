@@ -423,6 +423,8 @@ class RequisiteCreateView(ClientBaseView):
                 return
         if input_value_bool and rate_bool:
             if self.dd_type.value == RequisiteTypes.INPUT:
+                if float(rate) == 0:
+                    return
                 self.tf_output_value.value = round(float(input_value) / float(rate), 2)
             elif self.dd_type.value == RequisiteTypes.OUTPUT:
                 self.tf_output_value.value = round(float(input_value) * float(rate), 2)
@@ -432,13 +434,19 @@ class RequisiteCreateView(ClientBaseView):
             if self.dd_type.value == RequisiteTypes.INPUT:
                 self.tf_input_value.value = round(float(output_value) * float(rate), 2)
             elif self.dd_type.value == RequisiteTypes.OUTPUT:
+                if float(rate) == 0:
+                    return
                 self.tf_input_value.value = round(float(output_value) / float(rate), 2)
             self.tf_input_value.disabled = True
             await self.tf_input_value.update_async()
         elif input_value_bool and output_value_bool:
             if self.dd_type.value == RequisiteTypes.INPUT:
+                if float(input_value) == 0:
+                    return
                 self.tf_rate.value = round(float(output_value) / float(input_value), 2)
             elif self.dd_type.value == RequisiteTypes.OUTPUT:
+                if float(output_value) == 0:
+                    return
                 self.tf_rate.value = round(float(input_value) / float(output_value), 2)
             self.tf_rate.disabled = True
             await self.tf_rate.update_async()
