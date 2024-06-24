@@ -36,7 +36,7 @@ class Dropdown(FletDropdown):
             color=colors.ON_BACKGROUND,
         )
 
-    def change_options(self, options: Optional[list[Option]] = None, value: Optional[str] = None):
-        if not value and len(options) == 1:
+    def change_options(self, options: Optional[list[Option]] = None):
+        if len(options) == 1:
             self.value = options[0].key
         self.options = options

@@ -18,7 +18,7 @@
 import asyncio
 from functools import partial
 
-from flet_core import Column, Container, KeyboardType, Row, alignment, Control, AlertDialog, Image, colors, ScrollMode, \
+from flet_core import Column, Container, KeyboardType, Row, alignment, AlertDialog, Image, colors, ScrollMode, \
     IconButton, icons, MainAxisAlignment
 from flet_core.dropdown import Option
 
@@ -44,6 +44,13 @@ class RequestTypes:
     ALL = 'all'
 
 
+def copy_options(options: list[Option]) -> list[Option]:
+    return [
+        Option(key=option.key, text=option.text)
+        for option in options
+    ]
+
+
 class RequestCreateView(ClientBaseView):
     route = '/client/request/create'
 
@@ -57,7 +64,8 @@ class RequestCreateView(ClientBaseView):
     tf_input_value: TextField
     dd_input_currency: Dropdown
     dd_input_method: Dropdown
-
+    # common
+    common_column: Column
     # output
     output_column: Column
     tf_output_value: TextField
@@ -127,17 +135,6 @@ class RequestCreateView(ClientBaseView):
             on_change=self.change_method,
             disabled=True,
         )
-        return [
-            SubTitle(value=await self.client.session.gtv(key='request_create_input')),
-            Row(
-                controls=[
-                    self.tf_input_value,
-                    self.dd_input_currency,
-                ],
-                spacing=16,
-            ),
-            self.dd_input_method,
-        ]
         self.input_column = Column(
             controls=[
                 SubTitle(value=await self.client.session.gtv(key='request_create_input')),
@@ -154,6 +151,34 @@ class RequestCreateView(ClientBaseView):
         if update:
             await self.input_column.update_async()
 
+    """
+    COMMON
+    """
+
+    async def update_common(self, update: bool = True) -> None:
+        self.common_column = Column(
+            controls=[
+                Row(
+                    controls=[
+                        StandardButton(
+                            content=Image(
+                                src=Icons.REVERSE,
+                                height=18,
+                                color=colors.ON_PRIMARY,
+                            ),
+                            horizontal=5,
+                            vertical=5,
+                            bgcolor=colors.PRIMARY,
+                            on_click=self.reverse_all,
+                        ),
+                    ],
+                    alignment=MainAxisAlignment.CENTER,
+                    spacing=16,
+                ),
+            ],
+        )
+        if update:
+            await self.common_column.update_async()
 
     """
     RECEIVE
@@ -239,6 +264,7 @@ class RequestCreateView(ClientBaseView):
         self.calculate = None
         await self.set_type(loading=False)
         await self.update_input(update=False)
+        await self.update_common(update=False)
         await self.update_output(update=False)
         self.controls = await self.get_controls(
             with_expand=True,
@@ -248,9 +274,8 @@ class RequestCreateView(ClientBaseView):
                     content=Column(
                         controls=[
                             self.dialog,
-                            *await self.get_input(),
-                            *await self.get_output(),
                             self.input_column,
+                            self.common_column,
                             self.output_column,
                         ],
                         scroll=ScrollMode.AUTO,
@@ -373,23 +398,24 @@ class RequestCreateView(ClientBaseView):
         self.dialog.content = Container(
             content=Column(
                 controls=[
-                             Row(
-                                 controls=[
-                                     Text(
-                                         value=self.requisite_data_model.title,
-                                         size=12,
-                                         font_family=Fonts.BOLD,
-                                         color=colors.ON_BACKGROUND,
-                                     ),
-                                     IconButton(
-                                         icon=icons.CLOSE,
-                                         on_click=self.create_output_requisite_data_close,
-                                         icon_color=colors.ON_BACKGROUND,
-                                     ),
-                                 ],
-                                 alignment=MainAxisAlignment.SPACE_BETWEEN,
-                             ),
-                         ] + self.requisite_data_model.controls,
+                    Row(
+                        controls=[
+                            Text(
+                                value=self.requisite_data_model.title,
+                                size=12,
+                                font_family=Fonts.BOLD,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                            IconButton(
+                                icon=icons.CLOSE,
+                                on_click=self.create_output_requisite_data_close,
+                                icon_color=colors.ON_BACKGROUND,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    ),
+                    *self.requisite_data_model.controls,
+                ],
                 scroll=ScrollMode.AUTO,
             ),
             width=400,
@@ -416,6 +442,51 @@ class RequestCreateView(ClientBaseView):
     """
     ALL
     """
+
+    async def reverse_all(self, _=None):
+        await self.reverse_currency()
+        await self.reverse_method()
+        await self.reverse_value()
+
+    async def reverse_currency(self):
+        new_input_currency = (copy_options(self.dd_output_currency.options), self.dd_output_currency.value)
+        new_output_currency = (copy_options(self.dd_input_currency.options), self.dd_input_currency.value)
+        self.dd_input_currency.change_options(options=new_input_currency[0])
+        self.dd_input_currency.value = new_input_currency[1]
+        await self.dd_input_currency.update_async()
+        self.dd_output_currency.change_options(options=new_output_currency[0])
+        self.dd_output_currency.value = new_output_currency[1]
+        await self.dd_output_currency.update_async()
+
+    async def reverse_method(self):
+        new_input_method = (copy_options(self.dd_output_method.options), self.dd_output_method.value)
+        new_output_method = (copy_options(self.dd_input_method.options), self.dd_input_method.value)
+        self.dd_input_method.change_options(options=new_input_method[0])
+        self.dd_input_method.value = new_input_method[1]
+        await self.dd_input_method.update_async()
+        self.dd_output_method.change_options(options=new_output_method[0])
+        self.dd_output_method.value = new_output_method[1]
+        await self.change_output_method()
+        await self.dd_output_method.update_async()
+
+    async def reverse_value(self):
+        if self.tf_input_value.value and not self.tf_input_value.disabled:
+            new_value = self.tf_input_value.value
+            self.tf_input_value.value = None
+            self.tf_input_value.disabled = False
+            await self.tf_input_value.update_async()
+            self.tf_output_value.value = new_value
+            self.tf_output_value.disabled = False
+            await self.tf_output_value.update_async()
+        elif self.tf_output_value.value and not self.tf_output_value.disabled:
+            new_value = self.tf_output_value.value
+            self.tf_output_value.value = None
+            self.tf_output_value.disabled = False
+            await self.tf_output_value.update_async()
+            self.tf_input_value.value = new_value
+            self.tf_input_value.disabled = False
+            await self.tf_input_value.update_async()
+        await self.calculation()
 
     async def calculation(self, _=None):
         await self.delete_error_texts()
