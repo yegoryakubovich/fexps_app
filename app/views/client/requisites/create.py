@@ -378,9 +378,7 @@ class RequisiteCreateView(ClientBaseView):
             return
         currency = self.dd_currency.value
         if self.dd_type.value == RequisiteTypes.INPUT:
-            self.dd_input_method.change_options(
-                options=await self.get_method_options(currency_id_str=currency),
-            )
+            self.dd_input_method.change_options(options=await self.get_method_options(currency_id_str=currency))
             self.dd_input_method.disabled = False
             self.dd_output_method.value = None
             self.dd_output_requisite_data.value = None

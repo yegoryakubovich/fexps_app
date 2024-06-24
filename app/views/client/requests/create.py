@@ -53,11 +53,13 @@ class RequestCreateView(ClientBaseView):
     dialog: AlertDialog
 
     # input
+    input_column: Column
     tf_input_value: TextField
     dd_input_currency: Dropdown
     dd_input_method: Dropdown
 
     # output
+    output_column: Column
     tf_output_value: TextField
     dd_output_currency: Dropdown
     dd_output_method: Dropdown
@@ -65,10 +67,6 @@ class RequestCreateView(ClientBaseView):
     btn_output_requisite_data: StandardButton
 
     requisite_data_model: RequisiteDataCreateModel
-
-    """
-    SEND
-    """
 
     async def delete_error_texts(self, _=None) -> None:
         fields = [
@@ -106,7 +104,11 @@ class RequestCreateView(ClientBaseView):
             ]
         return options
 
-    async def get_input(self) -> list[Control]:
+    """
+    SEND
+    """
+
+    async def update_input(self, update: bool = True) -> None:
         self.tf_input_value = TextField(
             label=await self.client.session.gtv(key='value'),
             keyboard_type=KeyboardType.NUMBER,
@@ -119,6 +121,7 @@ class RequestCreateView(ClientBaseView):
             on_change=partial(self.change_currency, 'input'),
             expand=1,
         )
+
         self.dd_input_method = Dropdown(
             label=await self.client.session.gtv(key='request_create_input_method'),
             on_change=self.change_method,
@@ -135,12 +138,28 @@ class RequestCreateView(ClientBaseView):
             ),
             self.dd_input_method,
         ]
+        self.input_column = Column(
+            controls=[
+                SubTitle(value=await self.client.session.gtv(key='request_create_input')),
+                Row(
+                    controls=[
+                        self.tf_input_value,
+                        self.dd_input_currency,
+                    ],
+                    spacing=16,
+                ),
+                self.dd_input_method,
+            ],
+        )
+        if update:
+            await self.input_column.update_async()
+
 
     """
     RECEIVE
     """
 
-    async def get_output(self) -> list[Control]:
+    async def update_output(self, update: bool = True) -> None:
         self.tf_output_value = TextField(
             label=await self.client.session.gtv(key='value'),
             keyboard_type=KeyboardType.NUMBER,
@@ -176,23 +195,31 @@ class RequestCreateView(ClientBaseView):
             on_click=self.create_output_requisite_data,
             disabled=True,
         )
-        return [
-            SubTitle(value=await self.client.session.gtv(key='request_create_output')),
-            Row(
-                controls=[
-                    self.tf_output_value,
-                    self.dd_output_currency,
-                ],
-                spacing=16,
-            ),
-            self.dd_output_method,
-            Row(
-                controls=[
-                    self.dd_output_requisite_data,
-                    self.btn_output_requisite_data,
-                ]
-            )
-        ]
+        self.output_column = Column(
+            controls=[
+                SubTitle(value=await self.client.session.gtv(key='request_create_output')),
+                Row(
+                    controls=[
+                        self.tf_output_value,
+                        self.dd_output_currency,
+                    ],
+                    spacing=16,
+                ),
+                self.dd_output_method,
+                Row(
+                    controls=[
+                        self.dd_output_requisite_data,
+                        self.btn_output_requisite_data,
+                    ]
+                )
+            ],
+        )
+        if update:
+            await self.output_column.update_async()
+
+    """
+    ALL
+    """
 
     async def construct(self):
         self.dialog = AlertDialog(modal=True)
@@ -211,6 +238,8 @@ class RequestCreateView(ClientBaseView):
         )
         self.calculate = None
         await self.set_type(loading=False)
+        await self.update_input(update=False)
+        await self.update_output(update=False)
         self.controls = await self.get_controls(
             with_expand=True,
             title=await self.client.session.gtv(key='request_create_title'),
@@ -221,6 +250,8 @@ class RequestCreateView(ClientBaseView):
                             self.dialog,
                             *await self.get_input(),
                             *await self.get_output(),
+                            self.input_column,
+                            self.output_column,
                         ],
                         scroll=ScrollMode.AUTO,
                     ),
@@ -280,18 +311,18 @@ class RequestCreateView(ClientBaseView):
         if self.dd_input_currency.value == 'ya_coin':
             request_type = 'output'
             output_method_id = self.dd_output_method.value
-            if output_method_id is None:
+            if not output_method_id:
                 return
         elif self.dd_output_currency.value == 'ya_coin':
             request_type = 'input'
             input_method_id = self.dd_input_method.value
-            if input_method_id is None:
+            if not input_method_id:
                 return
         else:
             request_type = 'all'
             input_method_id = self.dd_input_method.value
             output_method_id = self.dd_output_method.value
-            if [input_method_id, output_method_id].count(None) == 2:
+            if not input_method_id or not output_method_id:
                 return
         try:
             self.calculate = await self.client.session.api.client.requests.calculate(
@@ -381,6 +412,10 @@ class RequestCreateView(ClientBaseView):
     async def create_output_requisite_data_close(self, _=None):
         self.dialog.open = False
         await self.dialog.update_async()
+
+    """
+    ALL
+    """
 
     async def calculation(self, _=None):
         await self.delete_error_texts()
