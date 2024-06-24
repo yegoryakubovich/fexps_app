@@ -421,7 +421,7 @@ class RequisiteCreateView(ClientBaseView):
         input_value_bool = self.tf_input_value.value and not self.tf_input_value.disabled
         input_value = str(self.tf_input_value.value).replace(',', '.')
         rate_bool = self.tf_rate.value and not self.tf_rate.disabled
-        rate = self.tf_rate.value
+        rate = str(self.tf_rate.value).replace(',', '.')
         output_value_bool = self.tf_output_value.value and not self.tf_output_value.disabled
         output_value = str(self.tf_output_value.value).replace(',', '.')
         if self.tf_input_value.disabled and (not rate_bool or not output_value_bool):
