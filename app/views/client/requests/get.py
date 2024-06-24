@@ -34,11 +34,13 @@ from fexps_api_client.utils import ApiException
 class DynamicTimer(UserControl):
     time_text: Text
 
-    def __init__(self, seconds: int, color=colors.BLACK):
+    def __init__(self, seconds: int, font_size: int = 16, font_family=Fonts.BOLD, color=colors.BLACK):
         super().__init__()
         self.running = True
         self.seconds = seconds
         self.color = color
+        self.font_size = font_size
+        self.font_family = font_family
 
     def did_mount(self):
         asyncio.create_task(self.update_second())
@@ -52,7 +54,7 @@ class DynamicTimer(UserControl):
         while seconds >= 60:
             seconds -= 60
             minutes += 1
-        return f'{minutes:02}:{seconds:02}'
+        return f'({minutes:02}:{seconds:02})'
 
     async def update_second(self):
         while self.seconds and self.running:
@@ -60,14 +62,12 @@ class DynamicTimer(UserControl):
             await self.time_text.update_async()
             await asyncio.sleep(1)
             self.seconds -= 1
+        self.time_text.color = colors.RED
+        self.time_text.value = f'(X)'
+        await self.time_text.update_async()
 
     def build(self):
-        self.time_text = Text(
-            value='',
-            size=16,
-            color=self.color,
-            font_family=Fonts.BOLD,
-        )
+        self.time_text = Text(value='', size=self.font_size, color=self.color, font_family=self.font_family)
         return self.time_text
 
 
@@ -197,11 +197,21 @@ class RequestView(ClientBaseView):
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
-                    Text(
-                        value=rate_str,
-                        size=14,
-                        font_family=Fonts.SEMIBOLD,
-                        color=colors.ON_PRIMARY_CONTAINER,
+                    Row(
+                        controls=[
+                            Text(
+                                value=rate_str,
+                                size=14,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                            DynamicTimer(
+                                seconds=self.request.rate_fixed_delta,
+                                font_size=14,
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                        ],
                     ),
                 ],
                 alignment=MainAxisAlignment.SPACE_BETWEEN,
@@ -287,9 +297,7 @@ class RequestView(ClientBaseView):
                         size=16,
                         font_family=Fonts.BOLD,
                     ),
-                    DynamicTimer(
-                        seconds=self.request.confirmation_delta,
-                    ),
+                    DynamicTimer(seconds=self.request.confirmation_delta),
                 ],
                 alignment=MainAxisAlignment.CENTER,
             ),
@@ -309,9 +317,7 @@ class RequestView(ClientBaseView):
                         size=16,
                         font_family=Fonts.BOLD,
                     ),
-                    DynamicTimer(
-                        seconds=self.request.confirmation_delta,
-                    ),
+                    DynamicTimer(seconds=self.request.confirmation_delta),
                 ],
                 alignment=MainAxisAlignment.CENTER,
             ),
