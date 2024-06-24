@@ -70,6 +70,21 @@ class RequestCreateView(ClientBaseView):
     SEND
     """
 
+    async def delete_error_texts(self, _=None) -> None:
+        fields = [
+            self.tf_input_value,
+            self.dd_input_currency,
+            self.dd_input_method,
+            self.tf_output_value,
+            self.dd_output_currency,
+            self.dd_output_method,
+            self.dd_output_requisite_data,
+            self.btn_output_requisite_data,
+        ]
+        for field in fields:
+            field.error_text = None
+            await field.update_async()
+
     async def get_currency_options(self, exclude_currency_id_str: str = None) -> list[Option]:
         options = []
         for currency in self.currencies:
@@ -145,6 +160,7 @@ class RequestCreateView(ClientBaseView):
         )
         self.dd_output_requisite_data = Dropdown(
             label=await self.client.session.gtv(key='request_create_output_requisite_data'),
+            on_change=self.change_output_requisite_data,
             disabled=True,
             expand=True,
         )
@@ -226,13 +242,13 @@ class RequestCreateView(ClientBaseView):
         )
 
     async def change_currency(self, type_: str, _=None):
+        await self.delete_error_texts()
         await self.set_type(loading=True)
         if type_ == 'input' and self.dd_input_currency.value:
             currency = self.dd_input_currency.value
             self.dd_output_currency.change_options(
                 options=await self.get_currency_options(exclude_currency_id_str=currency),
             )
-
             self.dd_input_method.disabled = False
             self.dd_input_method.change_options(
                 options=await self.get_method_options(currency_id_str=currency),
@@ -256,6 +272,7 @@ class RequestCreateView(ClientBaseView):
         await self.change_method()
 
     async def change_method(self, _=None):
+        await self.delete_error_texts()
         self.calculate = None
         if [self.dd_input_currency.value, self.dd_output_currency.value].count(None) == 2:
             return
@@ -292,6 +309,7 @@ class RequestCreateView(ClientBaseView):
     """
 
     async def change_output_method(self, _=None):
+        await self.delete_error_texts()
         if not self.dd_output_method or not self.dd_output_method.value:
             return
         await self.set_type(loading=True)
@@ -308,7 +326,11 @@ class RequestCreateView(ClientBaseView):
         await self.set_type(loading=False)
         await self.change_method()
 
+    async def change_output_requisite_data(self, _=None):
+        await self.delete_error_texts()
+
     async def create_output_requisite_data(self, _=None):
+        await self.delete_error_texts()
         self.requisite_data_model = RequisiteDataCreateModel(
             session=self.client.session,
             update_async=self.update_async,
@@ -361,6 +383,7 @@ class RequestCreateView(ClientBaseView):
         await self.dialog.update_async()
 
     async def calculation(self, _=None):
+        await self.delete_error_texts()
         if not self.calculate:
             if self.tf_output_value.disabled:
                 self.tf_output_value.value = None
@@ -380,13 +403,9 @@ class RequestCreateView(ClientBaseView):
             self.tf_input_value.disabled = False
             await self.tf_input_value.update_async()
         for field in [self.tf_input_value, self.tf_output_value]:
-            field.error_text = None
-            await field.update_async()
             if not field.value:
                 continue
             if not await Error.check_field(self, field, check_float=True):
-                field.error_text = await self.client.session.gtv(key='error_not_float')
-                await field.update_async()
                 return
 
         input_currency = self.calculate['input_method']['currency']
@@ -533,10 +552,6 @@ class RequestCreateView(ClientBaseView):
             if field.value and not field.disabled:
                 if not await Error.check_field(self, field, check_float=True):
                     await self.set_type(loading=False)
-                    await Error.field_error_set(
-                        fields=[field],
-                        text=await self.client.session.gtv(key='error_not_float'),
-                    )
                     return
                 decimal = settings.default_decimal
                 div_float = settings.default_div / (10 ** decimal)

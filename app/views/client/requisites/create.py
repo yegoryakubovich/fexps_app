@@ -69,6 +69,28 @@ class RequisiteCreateView(ClientBaseView):
 
     requisite_data_model: RequisiteDataCreateModel
 
+    async def delete_error_texts(self, _=None) -> None:
+        fields = [
+            self.dd_type,
+            self.dd_wallet,
+            self.dd_currency,
+            self.tf_input_value,
+            self.tf_input_value_min,
+            self.tf_input_value_max,
+            self.dd_input_method,
+            self.tf_rate,
+            self.output_subtitle_text,
+            self.tf_output_value,
+            self.tf_output_value_min,
+            self.tf_output_value_max,
+            self.dd_output_method,
+            self.dd_output_requisite_data,
+            self.btn_output_requisite_data,
+        ]
+        for field in fields:
+            field.error_text = None
+            await field.update_async()
+
     async def update_subtitle(self, update: bool = True) -> None:
         if not self.dd_type.value or not self.dd_currency.value:
             self.input_subtitle_text.value = await self.client.session.gtv(
@@ -394,6 +416,7 @@ class RequisiteCreateView(ClientBaseView):
         await self.dd_output_requisite_data.update_async()
 
     async def calculation(self, _=None):
+        await self.delete_error_texts()
         if not self.dd_type.value:
             return
         elements = [not self.tf_input_value.value, not self.tf_rate.value, not self.tf_output_value.value]
@@ -405,17 +428,14 @@ class RequisiteCreateView(ClientBaseView):
         output_value = self.tf_output_value.value
         if self.tf_input_value.disabled and (not rate_bool or not output_value_bool):
             self.tf_input_value.value = None
-            self.tf_input_value.error_text = None
             self.tf_input_value.disabled = False
             await self.tf_input_value.update_async()
         if self.tf_rate.disabled and (not input_value_bool or not output_value_bool):
             self.tf_rate.value = None
-            self.tf_rate.error_text = None
             self.tf_rate.disabled = False
             await self.tf_rate.update_async()
         if self.tf_output_value.disabled and (not input_value_bool or not rate_bool):
             self.tf_output_value.value = None
-            self.tf_output_value.error_text = None
             self.tf_output_value.disabled = False
             await self.tf_output_value.update_async()
         if elements.count(True) > 1:
@@ -424,8 +444,6 @@ class RequisiteCreateView(ClientBaseView):
             if not field.value:
                 continue
             if not await Error.check_field(self, field, check_float=True):
-                field.error_text = await self.client.session.gtv(key='error_not_float')
-                await field.update_async()
                 return
         if input_value_bool and rate_bool:
             if self.dd_type.value == RequisiteTypes.INPUT:
@@ -513,6 +531,8 @@ class RequisiteCreateView(ClientBaseView):
         await self.set_type(loading=True)
         # check exist
         for _field in [self.dd_type, self.dd_currency]:
+            _field.error_text = None
+            await _field.update_async()
             if _field.value is not None:
                 continue
             await self.set_type(loading=False)
@@ -553,6 +573,8 @@ class RequisiteCreateView(ClientBaseView):
         final_check_list = []
         if type_ == RequisiteTypes.INPUT:
             for _field in [self.dd_input_method]:
+                _field.error_text = None
+                await _field.update_async()
                 if _field.value is not None:
                     continue
                 await self.set_type(loading=False)
@@ -581,6 +603,8 @@ class RequisiteCreateView(ClientBaseView):
             ]
         elif type_ == RequisiteTypes.OUTPUT:
             for _field in [self.dd_output_method, self.dd_output_requisite_data]:
+                _field.error_text = None
+                await _field.update_async()
                 if _field.value is not None:
                     continue
                 await self.set_type(loading=False)
@@ -610,6 +634,8 @@ class RequisiteCreateView(ClientBaseView):
         error_less_div_str = await self.client.session.gtv(key='error_less_div')
         error_div_str = await self.client.session.gtv(key='error_div')
         for _value, _field, _currency in final_check_list:
+            _field.error_text = None
+            await _field.update_async()
             if _value is None:
                 continue
             div, decimal = settings.default_div, settings.default_decimal

@@ -31,6 +31,7 @@ class Error:
             error_text_key='error_count_letter'
     ) -> bool:
         field.error_text = None
+        await self.update_async()
         if check_int:
             try:
                 int(str(field.value))
@@ -38,14 +39,15 @@ class Error:
                 field.error_text = await self.client.session.gtv(key='error_not_int')
                 await self.update_async()
                 return False
-        if not check_int and check_float:
+        elif check_float:
+            field_value = str(field.value).replace(',', '.')
             try:
-                float(str(field.value))
+                float(field_value)
             except:
                 field.error_text = await self.client.session.gtv(key='error_not_float')
                 await self.update_async()
                 return False
-        if not check_int and not check_float and (min_len or max_len):
+        elif min_len or max_len:
             len_value = len(field.value)
             if (min_len and len_value < min_len) or (max_len and len_value > max_len):
                 field.error_text = await self.client.session.gtv(key=error_text_key) + ' ' + f'{min_len}-{max_len}'
