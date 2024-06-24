@@ -81,3 +81,4 @@ class Icons:
     METHOD = get_svg('method')
     COMMISSION_PACK = get_svg('commission_pack')
     CONTACT = get_svg('contact')
+    REVERSE = get_svg('reverse')
