@@ -466,7 +466,7 @@ class RequisiteCreateView(ClientBaseView):
                     Row(
                         controls=[
                             Text(
-                                value=await self.client.session.gtv(key='request_change_name_title'),
+                                value=self.requisite_data_model.title,
                                 size=12,
                                 font_family=Fonts.BOLD,
                                 color=colors.ON_BACKGROUND,
