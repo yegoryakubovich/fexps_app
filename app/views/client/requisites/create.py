@@ -65,6 +65,7 @@ class RequisiteCreateView(ClientBaseView):
     tf_output_value_max = TextField
     dd_output_method: Dropdown
     dd_output_requisite_data: Dropdown
+    btn_output_requisite_data: StandardButton
 
     requisite_data_model: RequisiteDataCreateModel
 
@@ -260,6 +261,18 @@ class RequisiteCreateView(ClientBaseView):
             disabled=True,
             expand=True,
         )
+        self.btn_output_requisite_data = StandardButton(
+            content=Image(
+                src=Icons.CREATE,
+                height=10,
+                color=colors.ON_PRIMARY,
+            ),
+            vertical=7,
+            horizontal=7,
+            bgcolor=colors.PRIMARY,
+            on_click=self.create_output_requisite_data,
+            disabled=True,
+        )
         self.output_column = Column(
             controls=[
                 Row(
@@ -279,17 +292,7 @@ class RequisiteCreateView(ClientBaseView):
                 Row(
                     controls=[
                         self.dd_output_requisite_data,
-                        StandardButton(
-                            content=Image(
-                                src=Icons.CREATE,
-                                height=10,
-                                color=colors.ON_PRIMARY,
-                            ),
-                            vertical=7,
-                            horizontal=7,
-                            bgcolor=colors.PRIMARY,
-                            on_click=self.create_output_requisite_data,
-                        ),
+                        self.btn_output_requisite_data,
                     ],
                 ),
             ],
@@ -340,7 +343,7 @@ class RequisiteCreateView(ClientBaseView):
             ],
         )
 
-    async def change_type_currency(self, _):
+    async def change_type_currency(self, _=None):
         await self.update_subtitle()
         self.dd_input_method.disabled = True
         self.dd_output_method.disabled = True
@@ -356,16 +359,19 @@ class RequisiteCreateView(ClientBaseView):
             self.dd_input_method.change_options(
                 options=await self.get_method_options(currency_id_str=currency),
             )
-            self.dd_output_method.value = None
             self.dd_input_method.disabled = False
+            self.dd_output_method.value = None
             self.dd_output_requisite_data.value = None
+            self.btn_output_requisite_data.disabled = True
         elif self.dd_type.value == RequisiteTypes.OUTPUT:
-            self.dd_output_method.change_options(
-                options=await self.get_method_options(currency_id_str=currency),
-            )
-            self.dd_input_method.value = None
+            output_method_options = await self.get_method_options(currency_id_str=currency)
+            self.dd_output_method.change_options(options=output_method_options)
             self.dd_output_method.disabled = False
+            self.btn_output_requisite_data.disabled = False
+            if not output_method_options:
+                self.btn_output_requisite_data.disabled = True
             self.dd_output_requisite_data.value = None
+            self.dd_input_method.value = None
             await self.change_output_method()
         await self.calculation()
         await self.update_async()
@@ -451,7 +457,7 @@ class RequisiteCreateView(ClientBaseView):
             self.tf_rate.disabled = True
             await self.tf_rate.update_async()
 
-    async def create_output_requisite_data(self, _):
+    async def create_output_requisite_data(self, _=None):
         self.requisite_data_model = RequisiteDataCreateModel(
             session=self.client.session,
             update_async=self.update_async,
@@ -493,17 +499,17 @@ class RequisiteCreateView(ClientBaseView):
         self.dialog.open = False
         await self.dialog.update_async()
         await asyncio.sleep(0.1)
-        await self.change_output_method('')
+        await self.change_output_method()
         if self.dd_currency.value == self.requisite_data_model.currency_id_str:
             if str(self.dd_output_method.value) == str(self.requisite_data_model.method_id):
                 self.dd_output_requisite_data.value = self.requisite_data_model.requisite_data_id
         await self.update_async()
 
-    async def create_output_requisite_data_close(self, _):
+    async def create_output_requisite_data_close(self, _=None):
         self.dialog.open = False
         await self.dialog.update_async()
 
-    async def requisite_create(self, _):
+    async def requisite_create(self, _=None):
         await self.set_type(loading=True)
         # check exist
         for _field in [self.dd_type, self.dd_currency]:

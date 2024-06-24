@@ -53,15 +53,16 @@ class RequestCreateView(ClientBaseView):
     dialog: AlertDialog
 
     # input
-    tf_input_value = TextField(value=None)
-    dd_input_currency = Dropdown(value=None)
-    dd_input_method = Dropdown(value=None)
+    tf_input_value: TextField
+    dd_input_currency: Dropdown
+    dd_input_method: Dropdown
 
     # output
-    tf_output_value = TextField(value=None)
-    dd_output_currency = Dropdown(value=None)
-    dd_output_method = Dropdown(value=None)
-    dd_output_requisite_data = Dropdown(value=None)
+    tf_output_value: TextField
+    dd_output_currency: Dropdown
+    dd_output_method: Dropdown
+    dd_output_requisite_data: Dropdown
+    btn_output_requisite_data: StandardButton
 
     requisite_data_model: RequisiteDataCreateModel
 
@@ -94,7 +95,7 @@ class RequestCreateView(ClientBaseView):
         self.tf_input_value = TextField(
             label=await self.client.session.gtv(key='value'),
             keyboard_type=KeyboardType.NUMBER,
-            on_change=self.maybe_calculate,
+            on_change=self.calculation,
             expand=4,
         )
         self.dd_input_currency = Dropdown(
@@ -128,7 +129,7 @@ class RequestCreateView(ClientBaseView):
         self.tf_output_value = TextField(
             label=await self.client.session.gtv(key='value'),
             keyboard_type=KeyboardType.NUMBER,
-            on_change=self.maybe_calculate,
+            on_change=self.calculation,
             expand=4,
         )
         self.dd_output_currency = Dropdown(
@@ -147,6 +148,18 @@ class RequestCreateView(ClientBaseView):
             disabled=True,
             expand=True,
         )
+        self.btn_output_requisite_data = StandardButton(
+            content=Image(
+                src=Icons.CREATE,
+                height=10,
+                color=colors.ON_PRIMARY,
+            ),
+            vertical=7,
+            horizontal=7,
+            bgcolor=colors.PRIMARY,
+            on_click=self.create_output_requisite_data,
+            disabled=True,
+        )
         return [
             SubTitle(value=await self.client.session.gtv(key='request_create_output')),
             Row(
@@ -160,17 +173,7 @@ class RequestCreateView(ClientBaseView):
             Row(
                 controls=[
                     self.dd_output_requisite_data,
-                    StandardButton(
-                        content=Image(
-                            src=Icons.CREATE,
-                            height=10,
-                            color=colors.ON_PRIMARY,
-                        ),
-                        vertical=7,
-                        horizontal=7,
-                        bgcolor=colors.PRIMARY,
-                        on_click=self.create_output_requisite_data,
-                    ),
+                    self.btn_output_requisite_data,
                 ]
             )
         ]
@@ -222,14 +225,14 @@ class RequestCreateView(ClientBaseView):
             ],
         )
 
-    async def change_currency(self, type_: str, _):
-        self.rate_info = None
+    async def change_currency(self, type_: str, _=None):
         await self.set_type(loading=True)
         if type_ == 'input' and self.dd_input_currency.value:
             currency = self.dd_input_currency.value
             self.dd_output_currency.change_options(
                 options=await self.get_currency_options(exclude_currency_id_str=currency),
             )
+
             self.dd_input_method.disabled = False
             self.dd_input_method.change_options(
                 options=await self.get_method_options(currency_id_str=currency),
@@ -241,16 +244,18 @@ class RequestCreateView(ClientBaseView):
                 options=await self.get_currency_options(exclude_currency_id_str=currency),
             )
             self.dd_output_method.disabled = False
-            self.dd_output_method.change_options(
-                options=await self.get_method_options(currency_id_str=currency),
-            )
+            output_method_options = await self.get_method_options(currency_id_str=currency)
+            self.dd_output_method.change_options(options=output_method_options)
+            self.btn_output_requisite_data.disabled = False
+            if not output_method_options:
+                self.btn_output_requisite_data.disabled = True
             self.dd_output_requisite_data.value = None
             await self.set_type(loading=False)
-            await self.change_output_method('')
+            await self.change_output_method()
         await self.update_async()
-        await self.change_method('')
+        await self.change_method()
 
-    async def change_method(self, _):
+    async def change_method(self, _=None):
         self.calculate = None
         if [self.dd_input_currency.value, self.dd_output_currency.value].count(None) == 2:
             return
@@ -280,13 +285,13 @@ class RequestCreateView(ClientBaseView):
             )
         except:
             pass
-        await self.maybe_calculate('')
+        await self.calculation()
 
     """
     OUTPUT
     """
 
-    async def change_output_method(self, _):
+    async def change_output_method(self, _=None):
         if not self.dd_output_method or not self.dd_output_method.value:
             return
         await self.set_type(loading=True)
@@ -301,9 +306,9 @@ class RequestCreateView(ClientBaseView):
         self.dd_output_requisite_data.disabled = False
         self.dd_output_requisite_data.change_options(options=options)
         await self.set_type(loading=False)
-        await self.change_method('')
+        await self.change_method()
 
-    async def create_output_requisite_data(self, _):
+    async def create_output_requisite_data(self, _=None):
         self.requisite_data_model = RequisiteDataCreateModel(
             session=self.client.session,
             update_async=self.update_async,
@@ -339,23 +344,23 @@ class RequestCreateView(ClientBaseView):
         self.dialog.actions = self.requisite_data_model.buttons
         self.dialog.open = True
         await self.dialog.update_async()
-        await self.change_method('')
+        await self.change_method()
 
     async def create_output_requisite_data_after_close(self):
         self.dialog.open = False
         await self.dialog.update_async()
         await asyncio.sleep(0.1)
-        await self.change_output_method('')
+        await self.change_output_method()
         if self.dd_output_currency.value == self.requisite_data_model.currency_id_str:
             if str(self.dd_output_method.value) == str(self.requisite_data_model.method_id):
                 self.dd_output_requisite_data.value = self.requisite_data_model.requisite_data_id
         await self.update_async()
 
-    async def create_output_requisite_data_close(self, _):
+    async def create_output_requisite_data_close(self, _=None):
         self.dialog.open = False
         await self.dialog.update_async()
 
-    async def maybe_calculate(self, _):
+    async def calculation(self, _=None):
         if not self.calculate:
             if self.tf_output_value.disabled:
                 self.tf_output_value.value = None
@@ -457,7 +462,7 @@ class RequestCreateView(ClientBaseView):
             self.tf_input_value.disabled = True
             await self.tf_input_value.update_async()
 
-    async def request_create(self, _):
+    async def request_create(self, _=None):
         if len(self.client.session.wallets) == 1:
             return await self.go_request_create(wallet_id=self.client.session.wallets[0]['id'])
         # FIXME (1+ wallets)
@@ -571,7 +576,6 @@ class RequestCreateView(ClientBaseView):
             )
             return
         try:
-
             request_id = await self.client.session.api.client.requests.create(
                 name=None,
                 wallet_id=wallet_id,
