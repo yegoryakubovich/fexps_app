@@ -464,10 +464,13 @@ class RequestCreateView(ClientBaseView):
         self.dd_input_method.change_options(options=new_input_method[0])
         self.dd_input_method.value = new_input_method[1]
         await self.dd_input_method.update_async()
+        await self.change_method()
         self.dd_output_method.change_options(options=new_output_method[0])
         self.dd_output_method.value = new_output_method[1]
-        await self.change_output_method()
         await self.dd_output_method.update_async()
+        self.dd_output_requisite_data.value = None
+        await self.dd_output_requisite_data.update_async()
+        await self.change_output_method()
 
     async def reverse_value(self):
         if self.tf_input_value.value and not self.tf_input_value.disabled:
@@ -513,11 +516,9 @@ class RequestCreateView(ClientBaseView):
                 continue
             if not await Error.check_field(self, field, check_float=True):
                 return
-
-        input_currency = self.calculate['input_method']['currency']
-        output_currency = self.calculate['output_method']['currency']
         if self.tf_input_value.value and not self.tf_input_value.disabled:
             if self.dd_output_currency.value == 'ya_coin':
+                input_currency = self.calculate['input_method']['currency']
                 _input_currency_value = value_to_int(
                     value=self.tf_input_value.value,
                     decimal=input_currency['decimal'],
@@ -530,6 +531,7 @@ class RequestCreateView(ClientBaseView):
                     return
                 self.tf_output_value.value = result_value
             elif self.dd_input_currency.value == 'ya_coin':
+                output_currency = self.calculate['output_method']['currency']
                 _output_value = value_to_int(
                     value=self.tf_input_value.value,
                     decimal=output_currency['decimal'],
@@ -542,6 +544,7 @@ class RequestCreateView(ClientBaseView):
                     return
                 self.tf_output_value.value = result_value
             else:
+                input_currency = self.calculate['input_method']['currency']
                 _input_currency_value = value_to_int(
                     value=self.tf_input_value.value,
                     decimal=input_currency['decimal'],
@@ -557,6 +560,7 @@ class RequestCreateView(ClientBaseView):
             await self.tf_output_value.update_async()
         elif self.tf_output_value.value and not self.tf_output_value.disabled:
             if self.dd_output_currency.value == 'ya_coin':
+                input_currency = self.calculate['input_method']['currency']
                 _input_value = value_to_int(
                     value=self.tf_output_value.value,
                     decimal=input_currency['decimal'],
@@ -566,6 +570,7 @@ class RequestCreateView(ClientBaseView):
                     input_value=_input_value,
                 )
             elif self.dd_input_currency.value == 'ya_coin':
+                output_currency = self.calculate['output_method']['currency']
                 _output_currency_value = value_to_int(
                     value=self.tf_output_value.value,
                     decimal=output_currency['decimal'],
@@ -575,6 +580,7 @@ class RequestCreateView(ClientBaseView):
                     output_currency_value=_output_currency_value,
                 )
             else:
+                input_currency = self.calculate['input_method']['currency']
                 _output_currency_value = value_to_int(
                     value=self.tf_output_value.value,
                     decimal=input_currency['decimal'],
