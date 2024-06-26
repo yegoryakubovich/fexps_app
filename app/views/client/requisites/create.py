@@ -529,8 +529,6 @@ class RequisiteCreateView(ClientBaseView):
         await self.set_type(loading=True)
         # check exist
         for _field in [self.dd_type, self.dd_currency]:
-            _field.error_text = None
-            await _field.update_async()
             if _field.value is not None:
                 continue
             await self.set_type(loading=False)
@@ -571,8 +569,6 @@ class RequisiteCreateView(ClientBaseView):
         final_check_list = []
         if type_ == RequisiteTypes.INPUT:
             for _field in [self.dd_input_method]:
-                _field.error_text = None
-                await _field.update_async()
                 if _field.value is not None:
                     continue
                 await self.set_type(loading=False)
@@ -601,8 +597,6 @@ class RequisiteCreateView(ClientBaseView):
             ]
         elif type_ == RequisiteTypes.OUTPUT:
             for _field in [self.dd_output_method, self.dd_output_requisite_data]:
-                _field.error_text = None
-                await _field.update_async()
                 if _field.value is not None:
                     continue
                 await self.set_type(loading=False)
@@ -632,8 +626,6 @@ class RequisiteCreateView(ClientBaseView):
         error_less_div_str = await self.client.session.gtv(key='error_less_div')
         error_div_str = await self.client.session.gtv(key='error_div')
         for _value, _field, _currency in final_check_list:
-            _field.error_text = None
-            await _field.update_async()
             if _value is None:
                 continue
             div, decimal = settings.default_div, settings.default_decimal
