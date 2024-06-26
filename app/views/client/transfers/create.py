@@ -88,11 +88,5 @@ class TransferCreateView(ClientBaseView):
                 value=value_to_int(value=self.value_tf.value),
             )
             await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
-        except ApiException as e:
-            if e.code in [1000, ]:
-                self.wallet_to_id_tf.error_text = e.message
-            elif e.code in [6002, ]:
-                self.value_tf.error_text = e.message
-            else:
-                self.value_tf.error_text = f'{e.code} - {e.message}'
-            await self.update_async()
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
