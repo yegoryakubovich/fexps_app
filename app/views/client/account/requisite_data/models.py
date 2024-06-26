@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from functools import partial
 
 from flet_core import Column, Control, Row, ControlEvent, KeyboardType
 from flet_core.dropdown import Option
@@ -36,11 +36,11 @@ class RequisiteDataCreateModel:
 
     title: str
     optional: Column
+    error_field: Text
     tf_name: TextField
     dd_currency: Dropdown
     dd_method: Dropdown
     fields: dict
-    fields_keys: dict
 
     def __init__(
             self,
@@ -76,6 +76,7 @@ class RequisiteDataCreateModel:
                 method_options += [
                     Option(text=method_str, key=method.id),
                 ]
+        self.error_field = Text(value='', size=15, font_family=Fonts.REGULAR)
         self.tf_name = TextField(label=await self.session.gtv(key='name'))
         self.dd_currency = Dropdown(
             label=await self.session.gtv(key='currency'),
@@ -92,6 +93,7 @@ class RequisiteDataCreateModel:
         if self.currency_id_str:
             await self.change_currency('')
         self.controls = [
+            self.error_field,
             self.tf_name,
             self.dd_currency,
             self.dd_method,
@@ -136,7 +138,9 @@ class RequisiteDataCreateModel:
     async def change_method(self, _):
         self.method = await self.session.api.client.methods.get(id_=self.dd_method.value)
         self.method_id = self.method['id']
-        controls = []
+        controls = [
+            self.error_field,
+        ]
         for field in self.method['schema_fields']:
             type_ = field["type"]
             name_list = [await self.session.gtv(key=field[f'name_text_key'])]
@@ -148,16 +152,15 @@ class RequisiteDataCreateModel:
             controls += [
                 TextField(
                     label=' '.join(name_list),
-                    on_change=self.change_fields,
+                    on_change=partial(self.change_fields, field['key']),
                     keyboard_type=KeyboardType.NUMBER if type_ == 'int' else None,
                 ),
             ]
-            self.fields_keys[' '.join(name_list)] = field['key']
         self.optional.controls = controls
         await self.update_async()
 
-    async def change_fields(self, event: ControlEvent):
-        self.fields[self.fields_keys[event.control.label]] = event.data
+    async def change_fields(self, key: str, event: ControlEvent):
+        self.fields[key] = event.data
 
     async def create_requisite_data(self, _):
         for field in self.method['schema_fields']:
