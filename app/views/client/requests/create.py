@@ -444,6 +444,7 @@ class RequestCreateView(ClientBaseView):
     """
 
     async def reverse_all(self, _=None):
+        self.calculate = None
         await self.reverse_currency()
         await self.reverse_method()
         await self.reverse_value()
