@@ -199,9 +199,9 @@ class RequisiteOrderView(ClientBaseView):
                 ),
                 size=20,
                 font_family=Fonts.SEMIBOLD,
-                color=colors.ON_PRIMARY,
+                color=colors.BLACK,
             ),
-            bgcolor=colors.PRIMARY,
+            bgcolor=colors.GREEN,
             on_click=self.input_confirmation_confirm,
             expand=2,
         )
@@ -214,9 +214,9 @@ class RequisiteOrderView(ClientBaseView):
                 value=await self.client.session.gtv(key='requisite_order_input_cancel_button'),
                 size=20,
                 font_family=Fonts.SEMIBOLD,
-                color=colors.ON_PRIMARY,
+                color=colors.BLACK,
             ),
-            bgcolor=colors.PRIMARY,
+            bgcolor=colors.RED,
             on_click=self.input_cancel_confirm,
             expand=2,
         )
@@ -297,12 +297,12 @@ class RequisiteOrderView(ClientBaseView):
                         value=text_str,
                         size=20,
                         font_family=Fonts.SEMIBOLD,
-                        color=colors.ON_PRIMARY,
+                        color=colors.BLACK,
                     ),
                 ],
                 alignment=MainAxisAlignment.CENTER,
             ),
-            bgcolor=colors.PRIMARY,
+            bgcolor=colors.GREEN,
             on_click=partial(self.order_request_update, 'completed'),
             expand=1,
         )
@@ -327,12 +327,12 @@ class RequisiteOrderView(ClientBaseView):
                         value=text_str,
                         size=20,
                         font_family=Fonts.SEMIBOLD,
-                        color=colors.ON_PRIMARY,
+                        color=colors.BLACK,
                     ),
                 ],
                 alignment=MainAxisAlignment.CENTER,
             ),
-            bgcolor=colors.PRIMARY,
+            bgcolor=colors.RED,
             on_click=partial(self.order_request_update, 'canceled'),
             expand=1,
         )
@@ -518,7 +518,7 @@ class RequisiteOrderView(ClientBaseView):
                 ]
             ),
         ]
-        title_str = await self.client.session.gtv(key='request_order_title')
+        title_str = await self.client.session.gtv(key='requisite_order_title')
         self.controls = await self.get_controls(
             title=f'{title_str} #{self.order.id:08}',
             with_expand=True,

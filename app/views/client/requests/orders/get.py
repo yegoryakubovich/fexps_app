@@ -225,9 +225,9 @@ class RequestOrderView(ClientBaseView):
                 ),
                 size=20,
                 font_family=Fonts.SEMIBOLD,
-                color=colors.ON_PRIMARY,
+                color=colors.BLACK,
             ),
-            bgcolor=colors.PRIMARY,
+            bgcolor=colors.GREEN,
             on_click=self.output_confirmation_confirm,
             expand=2,
         )
@@ -240,9 +240,9 @@ class RequestOrderView(ClientBaseView):
                 value=await self.client.session.gtv(key='request_order_output_cancel_button'),
                 size=20,
                 font_family=Fonts.SEMIBOLD,
-                color=colors.ON_PRIMARY,
+                color=colors.BLACK,
             ),
-            bgcolor=colors.PRIMARY,
+            bgcolor=colors.RED,
             on_click=self.output_cancel_confirm,
             expand=2,
         )
