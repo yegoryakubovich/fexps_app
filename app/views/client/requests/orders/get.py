@@ -41,12 +41,12 @@ class RequestOrderView(ClientBaseView):
 
     chat_button: StandardButton
     back_button: StandardButton
-    input_payment_button: StandardButton
-    output_confirmation_button: StandardButton
-    output_cancel_button: StandardButton
-    update_value_button: StandardButton
-    cancel_button: StandardButton
-    recreate_button: StandardButton
+    payment_payment_button: StandardButton
+    payment_confirmation_confirm_button: StandardButton
+    payment_confirmation_cancel_button: StandardButton
+    order_request_create_update_value_button: StandardButton
+    order_request_create_cancel_button: StandardButton
+    order_request_create_recreate_button: StandardButton
     order_request_completed_button: StandardButton
     order_request_canceled_button: StandardButton
 
@@ -187,15 +187,12 @@ class RequestOrderView(ClientBaseView):
     INPUT PAYMENT
     """
 
-    async def update_input_payment_button(self, update: bool = True) -> None:
-        currency_value = value_to_float(
-            value=self.order.currency_value,
-            decimal=self.currency.decimal,
-        )
-        self.input_payment_button = StandardButton(
+    async def update_payment_payment_button(self, update: bool = True) -> None:
+        currency_value = value_to_float(value=self.order.currency_value, decimal=self.currency.decimal)
+        self.payment_payment_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(
-                    key='request_order_input_payment_button',
+                    key='request_order_payment_payment_button',
                     value=value_to_str(currency_value),
                     currency=self.currency.id_str.upper(),
                 ),
@@ -204,22 +201,22 @@ class RequestOrderView(ClientBaseView):
                 color=colors.ON_PRIMARY,
             ),
             bgcolor=colors.PRIMARY,
-            on_click=self.order_payment,
+            on_click=self.payment,
             expand=2,
         )
         if update:
-            await self.input_payment_button.update_async()
+            await self.payment_payment_button.update_async()
 
     """
     OUTPUT CONFIRMATION
     """
 
-    async def update_output_confirmation_button(self, update: bool = True) -> None:
+    async def update_payment_confirmation_confirm_button(self, update: bool = True) -> None:
         currency_value = value_to_float(value=self.order.currency_value, decimal=self.currency.decimal)
-        self.output_confirmation_button = StandardButton(
+        self.payment_confirmation_confirm_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(
-                    key='request_order_output_confirmation_button',
+                    key='request_order_payment_confirmation_confirm_button',
                     value=value_to_str(currency_value),
                     currency=self.currency.id_str.upper(),
                 ),
@@ -228,26 +225,26 @@ class RequestOrderView(ClientBaseView):
                 color=colors.BLACK,
             ),
             bgcolor=colors.GREEN,
-            on_click=self.output_confirmation_confirm,
+            on_click=self.payment_confirmation_confirm,
             expand=2,
         )
         if update:
-            await self.output_confirmation_button.update_async()
+            await self.payment_confirmation_confirm_button.update_async()
 
-    async def update_output_cancel_button(self, update: bool = True) -> None:
-        self.output_cancel_button = StandardButton(
+    async def update_payment_confirmation_cancel_button(self, update: bool = True) -> None:
+        self.payment_confirmation_cancel_button = StandardButton(
             content=Text(
-                value=await self.client.session.gtv(key='request_order_output_cancel_button'),
+                value=await self.client.session.gtv(key='request_order_payment_confirmation_cancel_button'),
                 size=20,
                 font_family=Fonts.SEMIBOLD,
                 color=colors.BLACK,
             ),
             bgcolor=colors.RED,
-            on_click=self.output_cancel_confirm,
+            on_click=self.payment_confirmation_cancel,
             expand=2,
         )
         if update:
-            await self.output_cancel_button.update_async()
+            await self.payment_confirmation_cancel_button.update_async()
 
     """
     CHAT
@@ -342,12 +339,12 @@ class RequestOrderView(ClientBaseView):
     UPDATES
     """
 
-    async def update_update_value_button(self, update: bool = True) -> None:
-        self.update_value_button = StandardButton(
+    async def update_order_request_create_update_value_button(self, update: bool = True) -> None:
+        self.order_request_create_update_value_button = StandardButton(
             content=Row(
                 controls=[
                     Text(
-                        value=await self.client.session.gtv(key='request_order_update_value_button'),
+                        value=await self.client.session.gtv(key='request_order_order_request_update_value_button'),
                         size=20,
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
@@ -360,14 +357,14 @@ class RequestOrderView(ClientBaseView):
             expand=1,
         )
         if update:
-            await self.update_value_button.update_async()
+            await self.order_request_create_update_value_button.update_async()
 
-    async def update_cancel_button(self, update: bool = True) -> None:
-        self.cancel_button = StandardButton(
+    async def update_order_request_create_cancel_button(self, update: bool = True) -> None:
+        self.order_request_create_cancel_button = StandardButton(
             content=Row(
                 controls=[
                     Text(
-                        value=await self.client.session.gtv(key='request_order_cancel_button'),
+                        value=await self.client.session.gtv(key='request_order_order_request_cancel_button'),
                         size=20,
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
@@ -382,12 +379,12 @@ class RequestOrderView(ClientBaseView):
         if update:
             await self.chat_button.update_async()
 
-    async def update_recreate_button(self, update: bool = True) -> None:
-        self.recreate_button = StandardButton(
+    async def update_order_request_create_recreate_button(self, update: bool = True) -> None:
+        self.order_request_create_recreate_button = StandardButton(
             content=Row(
                 controls=[
                     Text(
-                        value=await self.client.session.gtv(key='request_order_recreate_button'),
+                        value=await self.client.session.gtv(key='request_order_order_request_recreate_button'),
                         size=20,
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
@@ -400,7 +397,7 @@ class RequestOrderView(ClientBaseView):
             expand=1,
         )
         if update:
-            await self.recreate_button.update_async()
+            await self.order_request_create_recreate_button.update_async()
 
     async def update_back_button(self, update: bool = True) -> None:
         self.back_button = StandardButton(
@@ -447,13 +444,13 @@ class RequestOrderView(ClientBaseView):
         await self.update_chat_button(update=False)
         if self.order_request:
             if self.client.session.current_wallet.id != self.order_request.wallet.id:
-                await self.update_order_request_completed_button(update=False)
                 await self.update_order_request_canceled_button(update=False)
+                await self.update_order_request_completed_button(update=False)
                 buttons += [
                     Row(
                         controls=[
-                            self.order_request_completed_button,
                             self.order_request_canceled_button,
+                            self.order_request_completed_button,
                         ]
                     ),
                 ]
@@ -461,21 +458,21 @@ class RequestOrderView(ClientBaseView):
             if self.order.state == 'waiting':
                 pass
             elif self.order.state == 'payment':
-                await self.update_update_value_button(update=False)
-                await self.update_cancel_button(update=False)
-                await self.update_recreate_button(update=False)
-                await self.update_input_payment_button(update=False)
+                await self.update_order_request_create_update_value_button(update=False)
+                await self.update_order_request_create_cancel_button(update=False)
+                await self.update_order_request_create_recreate_button(update=False)
+                await self.update_payment_payment_button(update=False)
                 buttons += [
                     Row(
                         controls=[
-                            self.update_value_button,
-                            self.cancel_button,
-                            self.recreate_button,
+                            self.order_request_create_update_value_button,
+                            self.order_request_create_cancel_button,
+                            self.order_request_create_recreate_button,
                         ]
                     ),
                     Row(
                         controls=[
-                            self.input_payment_button,
+                            self.payment_payment_button,
                         ]
                     ),
                 ]
@@ -487,26 +484,26 @@ class RequestOrderView(ClientBaseView):
             if self.order.state == 'waiting':
                 pass
             elif self.order.state == 'payment':
-                await self.update_update_value_button(update=False)
-                await self.update_cancel_button(update=False)
-                await self.update_recreate_button(update=False)
+                await self.update_order_request_create_update_value_button(update=False)
+                await self.update_order_request_create_cancel_button(update=False)
+                await self.update_order_request_create_recreate_button(update=False)
                 buttons += [
                     Row(
                         controls=[
-                            self.update_value_button,
-                            self.cancel_button,
-                            self.recreate_button,
+                            self.order_request_create_update_value_button,
+                            self.order_request_create_cancel_button,
+                            self.order_request_create_recreate_button,
                         ]
                     ),
                 ]
             elif self.order.state == 'confirmation':
-                await self.update_output_cancel_button(update=False)
-                await self.update_output_confirmation_button(update=False)
+                await self.update_payment_confirmation_cancel_button(update=False)
+                await self.update_payment_confirmation_confirm_button(update=False)
                 buttons += [
                     Row(
                         controls=[
-                            self.output_cancel_button,
-                            self.output_confirmation_button,
+                            self.payment_confirmation_cancel_button,
+                            self.payment_confirmation_confirm_button,
                         ]
                     ),
                 ]
@@ -552,7 +549,7 @@ class RequestOrderView(ClientBaseView):
         from app.views.client.chat import ChatView
         await self.client.change_view(view=ChatView(order_id=self.order_id))
 
-    async def order_payment(self, _):
+    async def payment(self, _):
         from .payment import RequestOrderPaymentView
         await self.client.change_view(view=RequestOrderPaymentView(order_id=self.order_id))
 
@@ -643,7 +640,7 @@ class RequestOrderView(ClientBaseView):
     OUTPUT
     """
 
-    async def output_confirmation_confirm(self, _):
+    async def payment_confirmation_confirm(self, _):
         try:
             await self.client.session.api.client.orders.updates.completed(id_=self.order_id)
             await self.construct()
@@ -651,7 +648,7 @@ class RequestOrderView(ClientBaseView):
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 
-    async def output_cancel_confirm(self, _):
+    async def payment_confirmation_cancel(self, _):
         try:
             await self.client.session.api.client.orders.updates.payment(id_=self.order_id)
             await self.construct()

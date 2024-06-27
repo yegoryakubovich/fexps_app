@@ -82,7 +82,7 @@ class RequestView(ClientBaseView):
     info_card: InformationContainer
     confirmation_false_button: StandardButton
     confirmation_true_button: StandardButton
-    cancel_button: StandardButton
+    cancellation_button: StandardButton
     orders_row: Row
 
     def __init__(self, request_id: int):
@@ -329,22 +329,22 @@ class RequestView(ClientBaseView):
             await self.confirmation_false_button.update_async()
 
     async def update_cancel_button(self, update: bool = True) -> None:
-        self.cancel_button = StandardButton(
+        self.cancellation_button = StandardButton(
             content=Row(
                 controls=[
                     Text(
-                        value=await self.client.session.gtv(key='request_cancel_title'),
+                        value=await self.client.session.gtv(key='request_cancellation_title'),
                         size=16,
                         font_family=Fonts.BOLD,
                     ),
                 ],
                 alignment=MainAxisAlignment.CENTER,
             ),
-            on_click=self.cancel,
+            on_click=self.cancellation,
             expand=1,
         )
         if update:
-            await self.confirmation_false_button.update_async()
+            await self.cancellation_button.update_async()
 
     """
     ORDERS SEND
@@ -479,7 +479,7 @@ class RequestView(ClientBaseView):
             buttons += [
                 Row(
                     controls=[
-                        self.cancel_button,
+                        self.cancellation_button,
                     ]
                 ),
             ]
@@ -545,9 +545,10 @@ class RequestView(ClientBaseView):
         except ApiException as exception:
             return await self.client.session.error(exception=exception)
 
-    async def cancel(self, _):  # FIXME
-        await self.client.session.bs_info.open_(
-            icon=Icons.CHILL,
-            title=await self.client.session.gtv(key='coming_soon'),
-            description=await self.client.session.gtv(key='coming_soon_description'),
-        )
+    async def cancellation(self, _):
+        try:
+            await self.client.session.api.client.requests.updates.cancellation(id_=self.request_id)
+            await self.construct()
+            await self.update_async()
+        except ApiException as exception:
+            return await self.client.session.error(exception=exception)
