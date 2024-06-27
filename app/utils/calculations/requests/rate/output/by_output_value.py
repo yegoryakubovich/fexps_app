@@ -34,4 +34,4 @@ async def calculate_request_rate_output_by_output_value(
     output_currency_value = value_to_int(value=output_currency_value_float, decimal=output_currency['decimal'])
     output_currency_value = math.floor(output_currency_value / output_currency['div']) * output_currency['div']
 
-    return value_to_float(value=output_currency_value, decimal=output_currency['rate_decimal'])
+    return value_to_float(value=output_currency_value, decimal=output_currency['decimal'])
