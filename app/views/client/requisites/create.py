@@ -382,16 +382,18 @@ class RequisiteCreateView(ClientBaseView):
             return
         currency = self.dd_currency.value
         if self.dd_type.value == RequisiteTypes.INPUT:
+            self.tf_input_currency_value_min.disabled = False
+            self.tf_input_currency_value_max.disabled = False
             self.dd_input_method.change_options(options=await self.get_method_options(currency_id_str=currency))
             self.dd_input_method.disabled = False
-            self.tf_output_currency_value_min.value = None
-            self.tf_output_currency_value_min.disabled = True
-            self.tf_output_currency_value_max.value = None
-            self.tf_output_currency_value_max.disabled = True
+            self.tf_output_currency_value_min.value, self.tf_output_currency_value_min.disabled = None, True
+            self.tf_output_currency_value_max.value, self.tf_output_currency_value_max.disabled = None, True
             self.dd_output_method.value = None
             self.dd_output_requisite_data.value = None
             self.btn_output_requisite_data.disabled = True
         elif self.dd_type.value == RequisiteTypes.OUTPUT:
+            self.tf_output_currency_value_min.disabled = False
+            self.tf_output_currency_value_max.disabled = False
             output_method_options = await self.get_method_options(currency_id_str=currency)
             self.dd_output_method.change_options(options=output_method_options)
             self.dd_output_method.disabled = False
@@ -400,10 +402,8 @@ class RequisiteCreateView(ClientBaseView):
                 self.btn_output_requisite_data.disabled = True
             self.dd_output_requisite_data.value = None
             self.dd_input_method.value = None
-            self.tf_input_currency_value_min.value = None
-            self.tf_input_currency_value_min.disabled = True
-            self.tf_input_currency_value_max.value = None
-            self.tf_input_currency_value_max.disabled = True
+            self.tf_input_currency_value_min.value, self.tf_input_currency_value_min.disabled = None, True
+            self.tf_input_currency_value_max.value, self.tf_input_currency_value_max.disabled = None, True
             await self.change_output_method()
         await self.calculation()
         await self.update_async()

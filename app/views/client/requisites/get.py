@@ -264,8 +264,8 @@ class RequisiteView(ClientBaseView):
                 controls=[
                     self.tf_currency_value,
                 ],
+                scroll=ScrollMode.AUTO,
             ),
-            expand=True,
             width=400,
         )
         self.dialog.actions = [
