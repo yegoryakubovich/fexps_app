@@ -255,7 +255,7 @@ class RequestCreateView(ClientBaseView):
             0,
             {
                 'id': 0,
-                'id_str': 'ya_coin',
+                'id_str': settings.coin_name,
                 'decimal': 2,
                 'rate_decimal': 2,
                 'div': 100,
@@ -333,12 +333,12 @@ class RequestCreateView(ClientBaseView):
         if [self.dd_input_currency.value, self.dd_output_currency.value].count(None) == 2:
             return
         input_method_id, output_method_id = None, None
-        if self.dd_input_currency.value == 'ya_coin':
+        if self.dd_input_currency.value == settings.coin_name:
             request_type = 'output'
             output_method_id = self.dd_output_method.value
             if not output_method_id:
                 return
-        elif self.dd_output_currency.value == 'ya_coin':
+        elif self.dd_output_currency.value == settings.coin_name:
             request_type = 'input'
             input_method_id = self.dd_input_method.value
             if not input_method_id:
@@ -518,7 +518,7 @@ class RequestCreateView(ClientBaseView):
             if not await Error.check_field(self, field, check_float=True):
                 return
         if self.tf_input_value.value and not self.tf_input_value.disabled:
-            if self.dd_output_currency.value == 'ya_coin':
+            if self.dd_output_currency.value == settings.coin_name:
                 input_currency = self.calculate['input_method']['currency']
                 _input_currency_value = value_to_int(
                     value=self.tf_input_value.value,
@@ -531,7 +531,7 @@ class RequestCreateView(ClientBaseView):
                 if not result_value:
                     return
                 self.tf_output_value.value = result_value
-            elif self.dd_input_currency.value == 'ya_coin':
+            elif self.dd_input_currency.value == settings.coin_name:
                 output_currency = self.calculate['output_method']['currency']
                 _output_value = value_to_int(
                     value=self.tf_input_value.value,
@@ -560,7 +560,7 @@ class RequestCreateView(ClientBaseView):
             self.tf_output_value.disabled = True
             await self.tf_output_value.update_async()
         elif self.tf_output_value.value and not self.tf_output_value.disabled:
-            if self.dd_output_currency.value == 'ya_coin':
+            if self.dd_output_currency.value == settings.coin_name:
                 input_currency = self.calculate['input_method']['currency']
                 _input_value = value_to_int(
                     value=self.tf_output_value.value,
@@ -570,7 +570,7 @@ class RequestCreateView(ClientBaseView):
                     calculation=self.calculate,
                     input_value=_input_value,
                 )
-            elif self.dd_input_currency.value == 'ya_coin':
+            elif self.dd_input_currency.value == settings.coin_name:
                 output_currency = self.calculate['output_method']['currency']
                 _output_currency_value = value_to_int(
                     value=self.tf_output_value.value,
@@ -613,7 +613,7 @@ class RequestCreateView(ClientBaseView):
             return
         input_currency, output_currency = None, None
         input_method_id, output_requisite_data_id = None, None
-        if self.dd_output_currency.value == 'ya_coin':
+        if self.dd_output_currency.value == settings.coin_name:
             request_type = 'input'
             input_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_input_currency.value)
             if self.dd_input_method.value is None:
@@ -624,7 +624,7 @@ class RequestCreateView(ClientBaseView):
                 )
                 return
             input_method_id = self.dd_input_method.value
-        elif self.dd_input_currency.value == 'ya_coin':
+        elif self.dd_input_currency.value == settings.coin_name:
             request_type = 'output'
             output_currency = await self.client.session.api.client.currencies.get(id_str=self.dd_output_currency.value)
             if self.dd_output_requisite_data.value is None:

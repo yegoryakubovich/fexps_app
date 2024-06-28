@@ -113,12 +113,12 @@ class RequisiteCreateView(ClientBaseView):
             )
             self.output_subtitle_text.value = await self.client.session.gtv(
                 key='requisite_create_output',
-                currency='YA COIN',
+                currency=settings.coin_name,
             )
         elif self.dd_type.value == RequisiteTypes.OUTPUT:
             self.input_subtitle_text.value = await self.client.session.gtv(
                 key='requisite_create_input',
-                currency='YA COIN',
+                currency=settings.coin_name,
             )
             self.output_subtitle_text.value = await self.client.session.gtv(
                 key='requisite_create_output',

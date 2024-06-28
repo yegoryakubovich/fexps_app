@@ -23,6 +23,7 @@ class Settings(BaseSettings):
 
     secret_key: str
     version: str = '0.1'
+    coin_name: str = 'YACoin'
     language_default: str = 'eng'
     url_telegram: str = 'https://t.me/fexps_manager'
     url: str
