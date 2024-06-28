@@ -95,6 +95,7 @@ class RequestView(ClientBaseView):
         input_currency_id_str, output_currency_id_str = '', ''
         if self.request.type == 'input':
             input_currency = self.request.input_method.currency
+            input_currency_id_str = input_currency.id_str.upper()
             input_value = value_to_float(
                 value=self.request.input_currency_value,
                 decimal=input_currency.decimal,
@@ -103,6 +104,7 @@ class RequestView(ClientBaseView):
         elif self.request.type == 'output':
             input_value = value_to_float(value=self.request.output_value)
             output_currency = self.request.output_method.currency
+            output_currency_id_str = output_currency.id_str.upper()
             output_value = value_to_float(
                 value=self.request.output_currency_value,
                 decimal=output_currency.decimal,
