@@ -26,24 +26,22 @@ class FAQView(ClientBaseView):
 
     async def construct(self):
         questions_answers = {
-            await self.client.session.gtv(key='faq_question_1'):
-                await self.client.session.gtv(key='faq_answer_1'),
-            await self.client.session.gtv(key='faq_question_2'):
-                await self.client.session.gtv(key='faq_answer_2'),
-            await self.client.session.gtv(key='faq_question_3'):
-                await self.client.session.gtv(key='faq_answer_3'),
-            await self.client.session.gtv(key='faq_question_4'):
-                await self.client.session.gtv(key='faq_answer_4'),
+            await self.client.session.gtv(key='faq_question_1'): await self.client.session.gtv(key='faq_answer_1'),
+            await self.client.session.gtv(key='faq_question_2'): await self.client.session.gtv(key='faq_answer_2'),
+            await self.client.session.gtv(key='faq_question_3'): await self.client.session.gtv(key='faq_answer_3'),
+            await self.client.session.gtv(key='faq_question_4'): await self.client.session.gtv(key='faq_answer_4'),
         }
         expansion_panels = [
             ExpansionPanel(
                 header=ListTile(
-                    title=Text(value=question, color=colors.ON_PRIMARY),
+                    title=Text(value=question, color=colors.ON_BACKGROUND),
+                    bgcolor=colors.BACKGROUND,
                 ),
                 content=ListTile(
-                    title=Text(value=answer, color=colors.ON_PRIMARY),
+                    title=Text(value=answer, color=colors.ON_BACKGROUND),
+                    bgcolor=colors.BACKGROUND,
                 ),
-                bgcolor=colors.PRIMARY,
+                bgcolor=colors.BACKGROUND,
             )
             for question, answer in questions_answers.items()
         ]
