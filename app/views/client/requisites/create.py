@@ -18,7 +18,7 @@
 import asyncio
 
 from flet_core import ScrollMode, Row, Column, Container, AlertDialog, alignment, Image, IconButton, icons, \
-    MainAxisAlignment, colors, ExpansionTile
+    MainAxisAlignment, colors, ExpansionTile, border
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -207,25 +207,31 @@ class RequisiteCreateView(ClientBaseView):
                 ),
                 self.tf_input_value,
                 self.dd_input_method,
-                ExpansionTile(
-                    title=Text(
-                        value=await self.client.session.gtv(key='requisite_create_extra_options'),
-                        size=18,
-                        font_family=Fonts.BOLD,
-                        color=colors.ON_BACKGROUND,
-                    ),
-                    maintain_state=True,
-                    collapsed_text_color=colors.RED,
-                    text_color=colors.RED,
-                    controls=[
-                        Row(
-                            controls=[
-                                self.tf_input_currency_value_min,
-                                self.tf_input_currency_value_max,
-                            ],
-                            spacing=16,
+                Container(
+                    content=ExpansionTile(
+                        title=Text(
+                            value=await self.client.session.gtv(key='requisite_create_extra_options'),
+                            size=18,
+                            font_family=Fonts.BOLD,
+                            color=colors.ON_BACKGROUND,
                         ),
-                    ],
+                        maintain_state=True,
+                        controls=[
+                            Row(
+                                controls=[
+                                    self.tf_input_currency_value_min,
+                                    self.tf_input_currency_value_max,
+                                ],
+                                spacing=16,
+                            ),
+                        ],
+                        bgcolor=colors.BACKGROUND,
+                        collapsed_bgcolor=colors.BACKGROUND,
+                        icon_color=colors.ON_BACKGROUND,
+                        collapsed_icon_color=colors.ON_BACKGROUND,
+                        initially_expanded=settings.debug,
+                    ),
+                    border=border.all(color=colors.ON_BACKGROUND, width=1),
                 ),
             ],
         )
@@ -313,25 +319,31 @@ class RequisiteCreateView(ClientBaseView):
                         self.btn_output_requisite_data,
                     ],
                 ),
-                ExpansionTile(
-                    title=Text(
-                        value=await self.client.session.gtv(key='requisite_create_extra_options'),
-                        size=18,
-                        font_family=Fonts.BOLD,
-                        color=colors.ON_BACKGROUND,
-                    ),
-                    maintain_state=True,
-                    collapsed_text_color=colors.RED,
-                    text_color=colors.RED,
-                    controls=[
-                        Row(
-                            controls=[
-                                self.tf_output_currency_value_min,
-                                self.tf_output_currency_value_max,
-                            ],
-                            spacing=16,
+                Container(
+                    content=ExpansionTile(
+                        title=Text(
+                            value=await self.client.session.gtv(key='requisite_create_extra_options'),
+                            size=18,
+                            font_family=Fonts.BOLD,
+                            color=colors.ON_BACKGROUND,
                         ),
-                    ],
+                        maintain_state=True,
+                        controls=[
+                            Row(
+                                controls=[
+                                    self.tf_output_currency_value_min,
+                                    self.tf_output_currency_value_max,
+                                ],
+                                spacing=16,
+                            ),
+                        ],
+                        bgcolor=colors.BACKGROUND,
+                        collapsed_bgcolor=colors.BACKGROUND,
+                        icon_color=colors.ON_BACKGROUND,
+                        collapsed_icon_color=colors.ON_BACKGROUND,
+                        initially_expanded=settings.debug,
+                    ),
+                    border=border.all(color=colors.ON_BACKGROUND, width=1),
                 ),
             ],
         )
