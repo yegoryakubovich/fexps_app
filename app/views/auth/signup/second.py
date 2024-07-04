@@ -42,16 +42,21 @@ class RegistrationSecondView(AuthView):
                 key=country.id_str,
             ) for country in self.countries
         ]
-        self.tf_firstname, self.tf_lastname = [
-            TextField(
-                label=await self.client.session.gtv(key=key),
-            )
-            for key in ['firstname', 'lastname']
-        ]
+        country_value = None
+        for country in self.countries:
+            if not country.is_default:
+                continue
+            country_value = country.id_str
+        self.tf_firstname = TextField(
+            label=await self.client.session.gtv(key='firstname'),
+        )
+        self.tf_lastname = TextField(
+            label=await self.client.session.gtv(key='lastname'),
+        )
         self.dd_country = Dropdown(
             label=await self.client.session.gtv(key='country'),
             options=country_options,
-            value=country_options[0].key,
+            value=country_value,
         )
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
@@ -83,9 +88,7 @@ class RegistrationSecondView(AuthView):
                 await self.set_type(loading=False)
                 return
 
-        country = await self.client.session.api.client.countries.get(
-            id_str=self.dd_country.value
-        )
+        country = await self.client.session.api.client.countries.get(id_str=self.dd_country.value)
 
         self.client.session.registration.firstname = self.tf_firstname.value
         self.client.session.registration.lastname = self.tf_lastname.value

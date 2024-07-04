@@ -25,7 +25,7 @@ from config import settings
 
 
 class LanguageView(AuthView):
-    dropdown: Dropdown
+    dd_language: Dropdown
     languages: list
     is_go_back: bool
 
@@ -36,24 +36,28 @@ class LanguageView(AuthView):
     async def construct(self):
         self.languages = await self.client.session.api.client.languages.get_list()
         await self.client.session.get_text_pack(language=settings.language_default)
-
         options = [
             Option(
                 text=language.get('name'),
                 key=language.get('id_str'),
             ) for language in self.languages
         ]
-        self.dropdown = Dropdown(
+        language_value = None
+        for language in self.languages:
+            if not language.get('is_default'):
+                continue
+            language_value = language.get('id_str')
+        self.dd_language = Dropdown(
             label=await self.client.session.gtv(key='language'),
             options=options,
+            value=language_value,
         )
-
-        self.scroll=ScrollMode.AUTO
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='set_language_view_title'),
             go_back=self.is_go_back,
             controls=[
-                self.dropdown,
+                self.dd_language,
                 Row(
                     controls=[
                         StandardButton(
@@ -67,11 +71,11 @@ class LanguageView(AuthView):
             ],
         )
 
-    async def select(self, _):
-        language = self.dropdown.value
+    async def select(self, _=None):
+        language = self.dd_language.value
         # If user not selected language
         if not language:
-            self.dropdown.error_text = await self.client.session.gtv(key='error_language_select')
+            self.dd_language.error_text = await self.client.session.gtv(key='error_language_select')
             await self.update_async()
             return
         await self.client.session.set_cs(key='language', value=language)
