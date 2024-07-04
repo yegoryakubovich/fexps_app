@@ -47,6 +47,7 @@ class RequisiteCreateView(ClientBaseView):
     dd_type: Dropdown
     dd_wallet: Dropdown
     dd_currency: Dropdown
+    optional_container: Container
     # input
     input_column: Column
     input_subtitle_text: Text
@@ -182,21 +183,21 @@ class RequisiteCreateView(ClientBaseView):
         )
         self.tf_input_value = TextField(
             label=await self.client.session.gtv(key='value'),
-            on_change=self.calculation,
+            # on_change=self.calculation,
+        )
+        self.dd_input_method = Dropdown(
+            label=await self.client.session.gtv(key='requisite_create_input_method'),
+            # disabled=True,
         )
         self.tf_input_currency_value_min = TextField(
             label=await self.client.session.gtv(key='value_min'),
-            disabled=True,
+            # disabled=True,
             expand=1,
         )
         self.tf_input_currency_value_max = TextField(
             label=await self.client.session.gtv(key='value_max'),
-            disabled=True,
+            # disabled=True,
             expand=1,
-        )
-        self.dd_input_method = Dropdown(
-            label=await self.client.session.gtv(key='requisite_create_input_method'),
-            disabled=True,
         )
         self.input_column = Column(
             controls=[
@@ -233,33 +234,11 @@ class RequisiteCreateView(ClientBaseView):
                     ),
                     border=border.all(color=colors.ON_BACKGROUND, width=1),
                 ),
-            ],
-        )
-        if update:
-            await self.input_column.update_async()
-
-    async def update_common(self, update: bool = True) -> None:
-        self.tf_rate = TextField(
-            label=await self.client.session.gtv(key='rate'),
-            on_change=self.calculation,
-        )
-        self.common_column = Column(
-            controls=[
-                Row(
-                    controls=[
-                        Text(
-                            value=await self.client.session.gtv(key='rate'),
-                            size=24,
-                            font_family=Fonts.BOLD,
-                            color=colors.ON_BACKGROUND,
-                        ),
-                    ],
-                ),
                 self.tf_rate,
             ],
         )
         if update:
-            await self.common_column.update_async()
+            await self.input_column.update_async()
 
     async def update_output(self, update: bool = True) -> None:
         self.output_subtitle_text = Text(
@@ -270,26 +249,16 @@ class RequisiteCreateView(ClientBaseView):
         )
         self.tf_output_value = TextField(
             label=await self.client.session.gtv(key='value'),
-            on_change=self.calculation,
-        )
-        self.tf_output_currency_value_min = TextField(
-            label=await self.client.session.gtv(key='value_min'),
-            disabled=True,
-            expand=1,
-        )
-        self.tf_output_currency_value_max = TextField(
-            label=await self.client.session.gtv(key='value_max'),
-            disabled=True,
-            expand=1,
+            # on_change=self.calculation,
         )
         self.dd_output_method = Dropdown(
             label=await self.client.session.gtv(key='requisite_create_output_method'),
             on_change=self.change_output_method,
-            disabled=True,
+            # disabled=True,
         )
         self.dd_output_requisite_data = Dropdown(
             label=await self.client.session.gtv(key='requisite_create_output_requisite_data'),
-            disabled=True,
+            # disabled=True,
             expand=True,
         )
         self.btn_output_requisite_data = StandardButton(
@@ -302,7 +271,17 @@ class RequisiteCreateView(ClientBaseView):
             horizontal=7,
             bgcolor=colors.PRIMARY,
             on_click=self.create_output_requisite_data,
-            disabled=True,
+            # disabled=True,
+        )
+        self.tf_output_currency_value_min = TextField(
+            label=await self.client.session.gtv(key='value_min'),
+            # disabled=True,
+            expand=1,
+        )
+        self.tf_output_currency_value_max = TextField(
+            label=await self.client.session.gtv(key='value_max'),
+            # disabled=True,
+            expand=1,
         )
         self.output_column = Column(
             controls=[
@@ -345,6 +324,7 @@ class RequisiteCreateView(ClientBaseView):
                     ),
                     border=border.all(color=colors.ON_BACKGROUND, width=1),
                 ),
+                self.tf_rate,
             ],
         )
         if update:
@@ -356,11 +336,15 @@ class RequisiteCreateView(ClientBaseView):
         self.methods = await self.client.session.api.client.methods.get_list()
         self.currencies = await self.client.session.api.client.currencies.get_list()
         await self.set_type(loading=False)
+        self.tf_rate = TextField(
+            label=await self.client.session.gtv(key='rate'),
+            # on_change=self.calculation,
+        )
         await self.update_general(update=False)
         await self.update_input(update=False)
-        await self.update_common(update=False)
         await self.update_output(update=False)
         await self.update_subtitle(update=False)
+        self.optional_container = Container(content=None)
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='requisite_create_title'),
             with_expand=True,
@@ -370,9 +354,7 @@ class RequisiteCreateView(ClientBaseView):
                     content=Column(
                         controls=[
                             self.general_column,
-                            self.input_column,
-                            self.common_column,
-                            self.output_column,
+                            self.optional_container
                         ],
                         scroll=ScrollMode.AUTO,
                     ),
@@ -394,45 +376,44 @@ class RequisiteCreateView(ClientBaseView):
         )
 
     async def change_type_currency(self, _=None):
-        await self.update_subtitle()
-        self.dd_input_method.disabled = True
-        self.dd_output_method.disabled = True
-        self.dd_output_requisite_data.disabled = True
+        await self.update_subtitle(update=False)
         if not self.dd_type.value or not self.dd_currency.value:
-            self.dd_input_method.value = None
-            self.dd_output_method.value = None
-            self.dd_output_requisite_data.value = None
-            await self.update_async()
+            # self.dd_input_method.value = None
+            # self.dd_output_method.value = None
+            # self.dd_output_requisite_data.value = None
+            self.optional_container.content = None
+            await self.optional_container.update_async()
             return
         currency = self.dd_currency.value
         if self.dd_type.value == RequisiteTypes.INPUT:
-            self.tf_input_currency_value_min.disabled = False
-            self.tf_input_currency_value_max.disabled = False
+            self.optional_container.content = self.input_column
+            await self.optional_container.update_async()
+            # self.tf_input_currency_value_min.disabled = False
+            # self.tf_input_currency_value_max.disabled = False
+            # self.dd_input_method.disabled = False
+            # self.tf_output_currency_value_min.value, self.tf_output_currency_value_min.disabled = None, True
+            # self.tf_output_currency_value_max.value, self.tf_output_currency_value_max.disabled = None, True
+            # self.dd_output_method.value = None
+            # self.dd_output_requisite_data.value = None
+            # self.btn_output_requisite_data.disabled = True
             self.dd_input_method.change_options(options=await self.get_method_options(currency_id_str=currency))
-            self.dd_input_method.disabled = False
-            self.tf_output_currency_value_min.value, self.tf_output_currency_value_min.disabled = None, True
-            self.tf_output_currency_value_max.value, self.tf_output_currency_value_max.disabled = None, True
-            self.dd_output_method.value = None
-            self.dd_output_requisite_data.value = None
-            self.btn_output_requisite_data.disabled = True
         elif self.dd_type.value == RequisiteTypes.OUTPUT:
-            self.tf_output_currency_value_min.disabled = False
-            self.tf_output_currency_value_max.disabled = False
-            output_method_options = await self.get_method_options(currency_id_str=currency)
-            self.dd_output_method.change_options(options=output_method_options)
-            self.dd_output_method.disabled = False
-            self.btn_output_requisite_data.disabled = False
-            if not output_method_options:
-                self.btn_output_requisite_data.disabled = True
-            self.dd_output_requisite_data.value = None
-            self.dd_input_method.value = None
-            self.tf_input_currency_value_min.value, self.tf_input_currency_value_min.disabled = None, True
-            self.tf_input_currency_value_max.value, self.tf_input_currency_value_max.disabled = None, True
+            self.optional_container.content = self.output_column
+            await self.optional_container.update_async()
+            # self.tf_output_currency_value_min.disabled = False
+            # self.tf_output_currency_value_max.disabled = False
+            # self.dd_output_method.disabled = False
+            # self.btn_output_requisite_data.disabled = False
+            # self.dd_output_requisite_data.value = None
+            # self.dd_input_method.value = None
+            # self.tf_input_currency_value_min.value, self.tf_input_currency_value_min.disabled = None, True
+            # self.tf_input_currency_value_max.value, self.tf_input_currency_value_max.disabled = None, True
+            self.dd_output_method.change_options(options=await self.get_method_options(currency_id_str=currency))
             await self.change_output_method()
-        await self.calculation()
-        await self.update_async()
+        # await self.calculation()
+        await self.optional_container.update_async()
 
-    async def change_output_method(self, _=None):
+    async def change_output_method(self, update: bool = True, _=None):
         if not self.dd_output_method or not self.dd_output_method.value:
             return
         await self.set_type(loading=True)
@@ -445,69 +426,70 @@ class RequisiteCreateView(ClientBaseView):
             options += [
                 Option(text=f'{requisite_data.name}', key=requisite_data.id),
             ]
-        self.dd_output_requisite_data.disabled = False
         self.dd_output_requisite_data.change_options(options=options)
-        await self.dd_output_requisite_data.update_async()
+        if update:
+            await self.dd_output_requisite_data.update_async()
 
-    async def calculation(self, _=None):
-        await self.delete_error_texts()
-        if not self.dd_type.value:
-            return
-        elements = [not self.tf_input_value.value, not self.tf_rate.value, not self.tf_output_value.value]
-        input_value_bool = bool(self.tf_input_value.value) and not self.tf_input_value.disabled
-        input_value = str(self.tf_input_value.value).replace(',', '.')
-        rate_bool = bool(self.tf_rate.value) and not self.tf_rate.disabled
-        rate = str(self.tf_rate.value).replace(',', '.')
-        output_value_bool = bool(self.tf_output_value.value) and not self.tf_output_value.disabled
-        output_value = str(self.tf_output_value.value).replace(',', '.')
-        if self.tf_input_value.disabled and (not rate_bool or not output_value_bool):
-            self.tf_input_value.value = None
-            self.tf_input_value.disabled = False
-            await self.tf_input_value.update_async()
-        if self.tf_rate.disabled and (not input_value_bool or not output_value_bool):
-            self.tf_rate.value = None
-            self.tf_rate.disabled = False
-            await self.tf_rate.update_async()
-        if self.tf_output_value.disabled and (not input_value_bool or not rate_bool):
-            self.tf_output_value.value = None
-            self.tf_output_value.disabled = False
-            await self.tf_output_value.update_async()
-        if elements.count(True) > 1:
-            return
-        for field in [self.tf_input_value, self.tf_rate, self.tf_output_value]:
-            if not field.value:
-                continue
-            if not await Error.check_field(self, field, check_float=True):
-                return
-        if input_value_bool and rate_bool:
-            if self.dd_type.value == RequisiteTypes.INPUT:
-                if float(rate) == 0:
-                    return
-                self.tf_output_value.value = round(float(input_value) / float(rate), 2)
-            elif self.dd_type.value == RequisiteTypes.OUTPUT:
-                self.tf_output_value.value = round(float(input_value) * float(rate), 2)
-            self.tf_output_value.disabled = True
-            await self.tf_output_value.update_async()
-        elif rate_bool and output_value_bool:
-            if self.dd_type.value == RequisiteTypes.INPUT:
-                self.tf_input_value.value = round(float(output_value) * float(rate), 2)
-            elif self.dd_type.value == RequisiteTypes.OUTPUT:
-                if float(rate) == 0:
-                    return
-                self.tf_input_value.value = round(float(output_value) / float(rate), 2)
-            self.tf_input_value.disabled = True
-            await self.tf_input_value.update_async()
-        elif input_value_bool and output_value_bool:
-            if self.dd_type.value == RequisiteTypes.INPUT:
-                if float(output_value) == 0:
-                    return
-                self.tf_rate.value = round(float(input_value) / float(output_value), 2)
-            elif self.dd_type.value == RequisiteTypes.OUTPUT:
-                if float(input_value) == 0:
-                    return
-                self.tf_rate.value = round(float(output_value) / float(input_value), 2)
-            self.tf_rate.disabled = True
-            await self.tf_rate.update_async()
+    # async def calculation(self, _=None):
+    #     return
+    #     await self.delete_error_texts()
+    #     if not self.dd_type.value:
+    #         return
+    #     elements = [not self.tf_input_value.value, not self.tf_rate.value, not self.tf_output_value.value]
+    #     input_value_bool = bool(self.tf_input_value.value) and not self.tf_input_value.disabled
+    #     input_value = str(self.tf_input_value.value).replace(',', '.')
+    #     rate_bool = bool(self.tf_rate.value) and not self.tf_rate.disabled
+    #     rate = str(self.tf_rate.value).replace(',', '.')
+    #     output_value_bool = bool(self.tf_output_value.value) and not self.tf_output_value.disabled
+    #     output_value = str(self.tf_output_value.value).replace(',', '.')
+    #     if self.tf_input_value.disabled and (not rate_bool or not output_value_bool):
+    #         self.tf_input_value.value = None
+    #         self.tf_input_value.disabled = False
+    #         await self.tf_input_value.update_async()
+    #     if self.tf_rate.disabled and (not input_value_bool or not output_value_bool):
+    #         self.tf_rate.value = None
+    #         self.tf_rate.disabled = False
+    #         await self.tf_rate.update_async()
+    #     if self.tf_output_value.disabled and (not input_value_bool or not rate_bool):
+    #         self.tf_output_value.value = None
+    #         self.tf_output_value.disabled = False
+    #         await self.tf_output_value.update_async()
+    #     if elements.count(True) > 1:
+    #         return
+    #     for field in [self.tf_input_value, self.tf_rate, self.tf_output_value]:
+    #         if not field.value:
+    #             continue
+    #         if not await Error.check_field(self, field, check_float=True):
+    #             return
+    #     if input_value_bool and rate_bool:
+    #         if self.dd_type.value == RequisiteTypes.INPUT:
+    #             if float(rate) == 0:
+    #                 return
+    #             self.tf_output_value.value = round(float(input_value) / float(rate), 2)
+    #         elif self.dd_type.value == RequisiteTypes.OUTPUT:
+    #             self.tf_output_value.value = round(float(input_value) * float(rate), 2)
+    #         self.tf_output_value.disabled = True
+    #         await self.tf_output_value.update_async()
+    #     elif rate_bool and output_value_bool:
+    #         if self.dd_type.value == RequisiteTypes.INPUT:
+    #             self.tf_input_value.value = round(float(output_value) * float(rate), 2)
+    #         elif self.dd_type.value == RequisiteTypes.OUTPUT:
+    #             if float(rate) == 0:
+    #                 return
+    #             self.tf_input_value.value = round(float(output_value) / float(rate), 2)
+    #         self.tf_input_value.disabled = True
+    #         await self.tf_input_value.update_async()
+    #     elif input_value_bool and output_value_bool:
+    #         if self.dd_type.value == RequisiteTypes.INPUT:
+    #             if float(output_value) == 0:
+    #                 return
+    #             self.tf_rate.value = round(float(input_value) / float(output_value), 2)
+    #         elif self.dd_type.value == RequisiteTypes.OUTPUT:
+    #             if float(input_value) == 0:
+    #                 return
+    #             self.tf_rate.value = round(float(output_value) / float(input_value), 2)
+    #         self.tf_rate.disabled = True
+    #         await self.tf_rate.update_async()
 
     async def create_output_requisite_data(self, _=None):
         self.requisite_data_model = RequisiteDataCreateModel(
@@ -571,23 +553,7 @@ class RequisiteCreateView(ClientBaseView):
             _field.error_text = await self.client.session.gtv(key='error_empty')
             await self.update_async()
             return
-        # check float
-        for _field in [self.tf_input_value, self.tf_output_value]:
-            if not await Error.check_field(self, _field, check_float=True):
-                await self.set_type(loading=False)
-                return
-        # check float or None
-        for _field in [
-            self.tf_input_currency_value_min,
-            self.tf_input_currency_value_max,
-            self.tf_output_currency_value_min,
-            self.tf_output_currency_value_max,
-        ]:
-            if not _field.value:
-                continue
-            if not await Error.check_field(self, _field, check_float=True):
-                await self.set_type(loading=False)
-                return
+
         type_ = self.dd_type.value
         wallet_id = self.dd_wallet.value
         currency = await self.client.session.api.client.currencies.get(id_str=self.dd_currency.value)
@@ -603,6 +569,18 @@ class RequisiteCreateView(ClientBaseView):
         currency_value_min, currency_value_max = None, None
         final_check_list = []
         if type_ == RequisiteTypes.INPUT:
+            # check float
+            for _field in [self.tf_input_value, self.tf_rate]:
+                if not await Error.check_field(self, _field, check_float=True):
+                    await self.set_type(loading=False)
+                    return
+            # check float or None
+            for _field in [self.tf_input_currency_value_min, self.tf_input_currency_value_max]:
+                if not _field.value:
+                    continue
+                if not await Error.check_field(self, _field, check_float=True):
+                    await self.set_type(loading=False)
+                    return
             for _field in [self.dd_input_method]:
                 if _field.value is not None:
                     continue
@@ -612,7 +590,7 @@ class RequisiteCreateView(ClientBaseView):
                 return
             currency_value = value_to_int(value=input_value, decimal=currency.decimal)
             rate = value_to_int(value=rate_value, decimal=currency.rate_decimal)
-            value = value_to_int(value=output_value)
+            # value = value_to_int(value=output_value)
             input_method_id = self.dd_input_method.value
             if self.tf_input_currency_value_min.value:
                 currency_value_min = value_to_int(
@@ -626,11 +604,21 @@ class RequisiteCreateView(ClientBaseView):
                 )
             final_check_list = [
                 (currency_value, self.tf_input_value, currency),
-                (value, self.tf_output_value, None),
+                # (value, self.tf_output_value, None),
                 (currency_value_min, self.tf_input_currency_value_min, currency),
                 (currency_value_max, self.tf_input_currency_value_max, currency),
             ]
         elif type_ == RequisiteTypes.OUTPUT:
+            for _field in [self.tf_output_value, self.tf_rate]:
+                if not await Error.check_field(self, _field, check_float=True):
+                    await self.set_type(loading=False)
+                    return
+            for _field in [self.tf_output_currency_value_min, self.tf_output_currency_value_max]:
+                if not _field.value:
+                    continue
+                if not await Error.check_field(self, _field, check_float=True):
+                    await self.set_type(loading=False)
+                    return
             for _field in [self.dd_output_method, self.dd_output_requisite_data]:
                 if _field.value is not None:
                     continue
@@ -640,7 +628,7 @@ class RequisiteCreateView(ClientBaseView):
                 return
             currency_value = value_to_int(value=output_value, decimal=currency.decimal)
             rate = value_to_int(value=rate_value, decimal=currency.rate_decimal)
-            value = value_to_int(value=input_value)
+            # value = value_to_int(value=input_value)
             output_requisite_data_id = self.dd_output_requisite_data.value
             if self.tf_output_currency_value_min.value:
                 currency_value_min = value_to_int(
@@ -654,7 +642,7 @@ class RequisiteCreateView(ClientBaseView):
                 )
             final_check_list = [
                 (currency_value, self.tf_output_value, currency),
-                (value, self.tf_input_value, None),
+                # (value, self.tf_input_value, None),
                 (currency_value_min, self.tf_output_currency_value_min, currency),
                 (currency_value_max, self.tf_output_currency_value_max, currency),
             ]
@@ -684,7 +672,7 @@ class RequisiteCreateView(ClientBaseView):
                 output_requisite_data_id=output_requisite_data_id,
                 currency_value=currency_value,
                 rate=rate,
-                value=value,
+                # value=value,
                 currency_value_min=currency_value_min,
                 currency_value_max=currency_value_max,
             )
