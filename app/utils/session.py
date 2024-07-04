@@ -165,7 +165,7 @@ class Session:
                     await func(view=last_view)
                 except:
                     logging.critical(f'Updater pass {type_}')
-            await asyncio.sleep(5)
+            await asyncio.sleep(settings.update_interval)
 
     async def on_disconnect(self, _):
         self.updater = False
