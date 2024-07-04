@@ -34,14 +34,14 @@ class FAQView(ClientBaseView):
         expansion_panels = [
             ExpansionPanel(
                 header=ListTile(
-                    title=Text(value=question, color=colors.ON_BACKGROUND),
-                    bgcolor=colors.BACKGROUND,
+                    title=Text(value=question, color=colors.ON_PRIMARY_CONTAINER),
+                    bgcolor=colors.PRIMARY_CONTAINER,
                 ),
                 content=ListTile(
-                    title=Text(value=answer, color=colors.ON_BACKGROUND),
-                    bgcolor=colors.BACKGROUND,
+                    title=Text(value=answer, color=colors.ON_PRIMARY_CONTAINER),
+                    bgcolor=colors.PRIMARY_CONTAINER,
                 ),
-                bgcolor=colors.BACKGROUND,
+                bgcolor=colors.PRIMARY_CONTAINER,
             )
             for question, answer in questions_answers.items()
         ]
