@@ -62,6 +62,11 @@ class AccountTab(BaseTab):
             Section(
                 name='my_account',
                 settings_=[
+                    # Setting(
+                    #     name='account_settings',
+                    #     icon=Icons.SETTINGS,
+                    #     on_click=self.settings,
+                    # ),
                     Setting(
                         name='account_notifications',
                         icon=Icons.NOTIFICATIONS,
