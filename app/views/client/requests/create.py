@@ -299,6 +299,7 @@ class RequestCreateView(ClientBaseView):
 
     async def change_currency(self, type_: str, _=None):
         await self.delete_error_texts()
+        self.calculate = None
         await self.set_type(loading=True)
         if type_ == 'input' and self.dd_input_currency.value:
             currency = self.dd_input_currency.value
@@ -512,11 +513,17 @@ class RequestCreateView(ClientBaseView):
             self.tf_input_value.value = None
             self.tf_input_value.disabled = False
             await self.tf_input_value.update_async()
-        for field in [self.tf_input_value, self.tf_output_value]:
-            if not field.value:
-                continue
-            if not await Error.check_field(self, field, check_float=True):
+        if self.tf_input_value.value:
+            if not await Error.check_field(self, self.tf_input_value, check_float=True):
                 return
+        elif self.tf_output_value.value:
+            if not await Error.check_field(self, self.tf_output_value, check_float=True):
+                return
+        # for field in [self.tf_input_value, self.tf_output_value]:
+        #     if not field.value:
+        #         continue
+        #     if not await Error.check_field(self, field, check_float=True):
+        #         return
         if self.tf_input_value.value and not self.tf_input_value.disabled:
             if self.dd_output_currency.value == settings.coin_name:
                 input_currency = self.calculate['input_method']['currency']
