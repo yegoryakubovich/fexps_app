@@ -16,6 +16,7 @@
 
 
 import asyncio
+import logging
 from functools import partial
 
 from flet_core import Column, colors, Row, MainAxisAlignment, Container, \
@@ -130,6 +131,7 @@ class RequestView(ClientBaseView):
         rate_str = value_to_str(value=get_fix_rate(rate=rate))
         if self.request.name:
             value_str = f'{self.request.name} ({value_str})'
+        logging.critical(value_str)
         state_row = await self.client.session.gtv(key=f'request_state_{self.request.state}')
         info_card_controls = []
         info_card_controls += [
@@ -532,9 +534,6 @@ class RequestView(ClientBaseView):
     async def edit_name_after(self):
         self.dialog.open = False
         await self.dialog.update_async()
-        await asyncio.sleep(0.01)
-        await self.construct()
-        await self.update_async()
 
     async def order_view(self, order_id: int, _):
         await self.client.change_view(view=RequestOrderView(order_id=order_id))
