@@ -17,8 +17,8 @@
 
 import asyncio
 
-from flet_core import ScrollMode, Row, Column, Container, AlertDialog, alignment, KeyboardType, Image, IconButton, \
-    icons, MainAxisAlignment, ExpansionPanel, ExpansionPanelList, colors, ExpansionTile
+from flet_core import ScrollMode, Row, Column, Container, AlertDialog, alignment, Image, IconButton, icons, \
+    MainAxisAlignment, colors, ExpansionTile
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -182,18 +182,15 @@ class RequisiteCreateView(ClientBaseView):
         )
         self.tf_input_value = TextField(
             label=await self.client.session.gtv(key='value'),
-            keyboard_type=KeyboardType.NUMBER,
             on_change=self.calculation,
         )
         self.tf_input_currency_value_min = TextField(
             label=await self.client.session.gtv(key='value_min'),
-            keyboard_type=KeyboardType.NUMBER,
             disabled=True,
             expand=1,
         )
         self.tf_input_currency_value_max = TextField(
             label=await self.client.session.gtv(key='value_max'),
-            keyboard_type=KeyboardType.NUMBER,
             disabled=True,
             expand=1,
         )
@@ -238,7 +235,6 @@ class RequisiteCreateView(ClientBaseView):
     async def update_common(self, update: bool = True) -> None:
         self.tf_rate = TextField(
             label=await self.client.session.gtv(key='rate'),
-            keyboard_type=KeyboardType.NUMBER,
             on_change=self.calculation,
         )
         self.common_column = Column(
@@ -268,18 +264,15 @@ class RequisiteCreateView(ClientBaseView):
         )
         self.tf_output_value = TextField(
             label=await self.client.session.gtv(key='value'),
-            keyboard_type=KeyboardType.NUMBER,
             on_change=self.calculation,
         )
         self.tf_output_currency_value_min = TextField(
             label=await self.client.session.gtv(key='value_min'),
-            keyboard_type=KeyboardType.NUMBER,
             disabled=True,
             expand=1,
         )
         self.tf_output_currency_value_max = TextField(
             label=await self.client.session.gtv(key='value_max'),
-            keyboard_type=KeyboardType.NUMBER,
             disabled=True,
             expand=1,
         )

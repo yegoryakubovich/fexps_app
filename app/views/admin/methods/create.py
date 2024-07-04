@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
+
 from copy import deepcopy
 
-from flet_core import Checkbox, colors, Column, Row, ScrollMode, Divider, KeyboardType
+from flet_core import Checkbox, colors, Column, Row, ScrollMode, Divider
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -84,22 +85,18 @@ class MethodCreateView(AdminBaseView):
         )
         self.tf_input_rate_default = TextField(
             label=await self.client.session.gtv(key='admin_method_input_rate_default'),
-            keyboard_type=KeyboardType.NUMBER,
             value=0,
         )
         self.tf_output_rate_default = TextField(
             label=await self.client.session.gtv(key='admin_method_output_rate_default'),
-            keyboard_type=KeyboardType.NUMBER,
             value=0,
         )
         self.tf_input_rate_percent = TextField(
             label=await self.client.session.gtv(key='admin_method_input_rate_percent'),
-            keyboard_type=KeyboardType.NUMBER,
             value=0,
         )
         self.tf_output_rate_percent = TextField(
             label=await self.client.session.gtv(key='admin_method_output_rate_percent'),
-            keyboard_type=KeyboardType.NUMBER,
             value=0,
         )
         self.tf_color = TextField(

@@ -15,7 +15,7 @@
 #
 
 
-from flet_core import Column, Container, KeyboardType, Row, alignment, ScrollMode
+from flet_core import Column, Container, Row, alignment, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.input import TextField
@@ -34,11 +34,9 @@ class TransferCreateView(ClientBaseView):
         # self.client.session.account
         self.wallet_to_id_tf = TextField(
             label=await self.client.session.gtv(key='send_money_wallet_to_id'),
-            keyboard_type=KeyboardType.NUMBER,
         )
         self.value_tf = TextField(
             label=await self.client.session.gtv(key='send_money_value'),
-            keyboard_type=KeyboardType.NUMBER,
         )
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='send_money'),

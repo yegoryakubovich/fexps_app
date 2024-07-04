@@ -18,8 +18,8 @@
 import asyncio
 from functools import partial
 
-from flet_core import Column, Container, KeyboardType, Row, alignment, AlertDialog, Image, colors, ScrollMode, \
-    IconButton, icons, MainAxisAlignment
+from flet_core import Column, Container, Row, alignment, AlertDialog, Image, colors, ScrollMode, IconButton, icons, \
+    MainAxisAlignment
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -119,7 +119,6 @@ class RequestCreateView(ClientBaseView):
     async def update_input(self, update: bool = True) -> None:
         self.tf_input_value = TextField(
             label=await self.client.session.gtv(key='value'),
-            keyboard_type=KeyboardType.NUMBER,
             on_change=self.calculation,
             expand=4,
         )
@@ -187,7 +186,6 @@ class RequestCreateView(ClientBaseView):
     async def update_output(self, update: bool = True) -> None:
         self.tf_output_value = TextField(
             label=await self.client.session.gtv(key='value'),
-            keyboard_type=KeyboardType.NUMBER,
             on_change=self.calculation,
             expand=4,
         )

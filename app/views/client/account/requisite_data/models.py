@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 from functools import partial
 
-from flet_core import Column, Control, Row, ControlEvent, KeyboardType
+from flet_core import Column, Control, Row, ControlEvent
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -153,7 +155,6 @@ class RequisiteDataCreateModel:
                 TextField(
                     label=' '.join(name_list),
                     on_change=partial(self.change_fields, field['key']),
-                    keyboard_type=KeyboardType.NUMBER if type_ == 'int' else None,
                 ),
             ]
         self.optional.controls = controls

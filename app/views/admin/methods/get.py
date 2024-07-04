@@ -17,7 +17,7 @@
 
 from copy import deepcopy
 
-from flet_core import Row, Column, colors, Checkbox, ScrollMode, Divider, KeyboardType
+from flet_core import Row, Column, colors, Checkbox, ScrollMode, Divider
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -96,22 +96,18 @@ class MethodView(AdminBaseView):
         )
         self.tf_input_rate_default = TextField(
             label=await self.client.session.gtv(key='admin_method_input_rate_default'),
-            keyboard_type=KeyboardType.NUMBER,
             value=value_to_float(value=self.method.input_rate_default, decimal=self.currency.rate_decimal),
         )
         self.tf_output_rate_default = TextField(
             label=await self.client.session.gtv(key='admin_method_output_rate_default'),
-            keyboard_type=KeyboardType.NUMBER,
             value=value_to_float(value=self.method.output_rate_default, decimal=self.currency.rate_decimal),
         )
         self.tf_input_rate_percent = TextField(
             label=await self.client.session.gtv(key='admin_method_input_rate_percent'),
-            keyboard_type=KeyboardType.NUMBER,
             value=value_to_float(value=self.method.input_rate_percent, decimal=self.currency.rate_decimal),
         )
         self.tf_output_rate_percent = TextField(
             label=await self.client.session.gtv(key='admin_method_output_rate_percent'),
-            keyboard_type=KeyboardType.NUMBER,
             value=value_to_float(value=self.method.output_rate_percent, decimal=self.currency.rate_decimal),
         )
         self.tf_color = TextField(
