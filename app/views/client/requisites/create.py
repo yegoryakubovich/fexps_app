@@ -17,8 +17,8 @@
 
 import asyncio
 
-from flet_core import ScrollMode, Row, Column, Container, AlertDialog, alignment, KeyboardType, Image, colors, \
-    IconButton, icons, MainAxisAlignment
+from flet_core import ScrollMode, Row, Column, Container, AlertDialog, alignment, KeyboardType, Image, IconButton, \
+    icons, MainAxisAlignment, ExpansionPanel, ExpansionPanelList, colors, ListTile, Text as FletText
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -70,7 +70,7 @@ class RequisiteCreateView(ClientBaseView):
     requisite_data_model: RequisiteDataCreateModel
 
     async def delete_error_texts(self, _=None) -> None:
-        fields = [
+        for field in [
             self.dd_type,
             self.dd_wallet,
             self.dd_currency,
@@ -86,21 +86,14 @@ class RequisiteCreateView(ClientBaseView):
             self.dd_output_method,
             self.dd_output_requisite_data,
             self.btn_output_requisite_data,
-        ]
-        for field in fields:
+        ]:
             field.error_text = None
             await field.update_async()
 
     async def update_subtitle(self, update: bool = True) -> None:
         if not self.dd_type.value or not self.dd_currency.value:
-            self.input_subtitle_text.value = await self.client.session.gtv(
-                key='requisite_create_input',
-                currency='',
-            )
-            self.output_subtitle_text.value = await self.client.session.gtv(
-                key='requisite_create_output',
-                currency='',
-            )
+            self.input_subtitle_text.value = await self.client.session.gtv(key='requisite_create_input', currency='')
+            self.output_subtitle_text.value = await self.client.session.gtv(key='requisite_create_output', currency='')
             if update:
                 await self.input_column.update_async()
                 await self.output_column.update_async()
@@ -216,14 +209,29 @@ class RequisiteCreateView(ClientBaseView):
                     ],
                 ),
                 self.tf_input_value,
-                Row(
-                    controls=[
-                        self.tf_input_currency_value_min,
-                        self.tf_input_currency_value_max,
-                    ],
-                    spacing=16,
-                ),
                 self.dd_input_method,
+                ExpansionPanelList(
+                    controls=[
+                        ExpansionPanel(
+                            header=Text(
+                                value=await self.client.session.gtv(key='requisite_create_extra_options'),
+                                size=24,
+                                font_family=Fonts.BOLD,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                            content=Row(
+                                controls=[
+                                    self.tf_input_currency_value_min,
+                                    self.tf_input_currency_value_max,
+                                ],
+                                spacing=16,
+                            ),
+                            bgcolor=colors.BLUE,
+                            expanded=settings.debug,
+                        ),
+                    ],
+                    expand_icon_color=colors.ON_BACKGROUND,
+                ),
             ],
         )
         if update:
@@ -307,19 +315,34 @@ class RequisiteCreateView(ClientBaseView):
                     ],
                 ),
                 self.tf_output_value,
-                Row(
-                    controls=[
-                        self.tf_output_currency_value_min,
-                        self.tf_output_currency_value_max,
-                    ],
-                    spacing=16,
-                ),
                 self.dd_output_method,
                 Row(
                     controls=[
                         self.dd_output_requisite_data,
                         self.btn_output_requisite_data,
                     ],
+                ),
+                ExpansionPanelList(
+                    controls=[
+                        ExpansionPanel(
+                            header=Text(
+                                value=await self.client.session.gtv(key='requisite_create_extra_options'),
+                                size=24,
+                                font_family=Fonts.BOLD,
+                                color=colors.ON_BACKGROUND,
+                            ),
+                            content=Row(
+                                controls=[
+                                    self.tf_output_currency_value_min,
+                                    self.tf_output_currency_value_max,
+                                ],
+                                spacing=16,
+                            ),
+                            bgcolor=colors.BLUE,
+                            expanded=settings.debug,
+                        ),
+                    ],
+                    expand_icon_color=colors.ON_BACKGROUND,
                 ),
             ],
         )
