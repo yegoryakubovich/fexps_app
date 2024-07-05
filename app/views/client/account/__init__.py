@@ -16,5 +16,5 @@
 
 
 from .about_us import AboutUsView
-from .change_password import ChangePasswordView
+from app.views.client.account.settings.change_password import AccountSettingsChangePasswordView
 from .faq import FAQView

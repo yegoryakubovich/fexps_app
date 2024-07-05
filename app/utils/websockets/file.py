@@ -59,6 +59,8 @@ class FileWebSockets(UserControl):
 
     async def update_chat(self):
         await self.connect()
+        self.file_row.controls = await self.create_file_row_controls(files=[])
+        await self.update_async()
         async for message in self.websocket:
             if not self.running:
                 return

@@ -16,20 +16,20 @@
 
 
 from app.controls.layout import ClientBaseView
-from app.views.client.account.notification.get_link_telegram import AccountNotificationLinkTelegramView
-from app.views.client.account.notification.get_setting import AccountNotificationSettingView
+from app.views.client.account.settings.notification.get_link_telegram import AccountSettingsNotificationLinkTelegramView
+from app.views.client.account.settings.notification.get_setting import AccountSettingsNotificationSettingView
 
 
-class AccountNotificationView(ClientBaseView):
+class AccountSettingsNotificationView(ClientBaseView):
 
     async def on_load(self):
         await self.set_type(loading=True)
         notification = await self.client.session.api.client.notifications.get()
         await self.set_type(loading=False)
         if not notification.telegram_id:
-            await self.client.change_view(view=AccountNotificationLinkTelegramView(), delete_current=True)
+            await self.client.change_view(view=AccountSettingsNotificationLinkTelegramView(), delete_current=True)
             return
         await self.client.change_view(
-            view=AccountNotificationSettingView(notification=notification),
+            view=AccountSettingsNotificationSettingView(notification=notification),
             delete_current=True,
         )

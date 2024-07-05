@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+from base64 import b64encode
 from functools import partial
 from typing import Any
 
@@ -62,30 +61,15 @@ class AccountTab(BaseTab):
             Section(
                 name='my_account',
                 settings_=[
-                    # Setting(
-                    #     name='account_settings',
-                    #     icon=Icons.SETTINGS,
-                    #     on_click=self.settings,
-                    # ),
                     Setting(
-                        name='account_notifications',
-                        icon=Icons.NOTIFICATIONS,
-                        on_click=self.notification,
-                    ),
-                    Setting(
-                        name='account_security',
-                        icon=Icons.SECURITY,
-                        on_click=self.change_password,
+                        name='account_settings',
+                        icon=Icons.SETTINGS,
+                        on_click=self.settings,
                     ),
                     Setting(
                         name='account_requisite_data',
                         icon=Icons.METHOD,
                         on_click=self.requisite_data,
-                    ),
-                    Setting(
-                        name='account_account_contact',
-                        icon=Icons.CONTACT,
-                        on_click=self.account_contact,
                     ),
                     Setting(
                         name='account_language',
@@ -164,6 +148,10 @@ class AccountTab(BaseTab):
         ]
 
         self.scroll = ScrollMode.AUTO
+        account_icon_src, icon_src_base64 = Icons.ACCOUNT, None
+        if self.client.session.account['file']:
+            account_icon_src = None
+            icon_src_base64 = b64encode(self.client.session.account['file']['value'].encode('ISO-8859-1')).decode()
         self.controls = [
             Container(
                 content=Column(
@@ -174,8 +162,9 @@ class AccountTab(BaseTab):
                                 controls=[
                                     CircleAvatar(
                                         content=Image(
-                                            src=Icons.ACCOUNT,
-                                            color=colors.SECONDARY,
+                                            src=account_icon_src,
+                                            src_base64=icon_src_base64,
+                                            color=colors.SECONDARY if account_icon_src else None
                                         ),
                                         bgcolor=colors.ON_PRIMARY,
                                         radius=32,
@@ -218,21 +207,13 @@ class AccountTab(BaseTab):
             )
         ]
 
-    async def notification(self, _):
-        from app.views.client.account.notification.get import AccountNotificationView
-        await self.client.change_view(view=AccountNotificationView())
-
-    async def change_password(self, _):
-        from app.views.client.account.change_password import ChangePasswordView
-        await self.client.change_view(view=ChangePasswordView())
+    async def settings(self, _):
+        from app.views.client.account.settings.get import AccountSettingsView
+        await self.client.change_view(view=AccountSettingsView())
 
     async def requisite_data(self, _):
         from app.views.client.account.requisite_data.get_list import RequisiteDataListView
         await self.client.change_view(view=RequisiteDataListView(go_back=True))
-
-    async def account_contact(self, _):
-        from app.views.client.account.account_contact.get import AccountContactView
-        await self.client.change_view(view=AccountContactView(go_back=True))
 
     async def update_language(self, _):
         from app.views.auth.language import LanguageView

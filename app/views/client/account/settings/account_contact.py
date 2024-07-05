@@ -27,7 +27,7 @@ from app.controls.layout import ClientBaseView
 from fexps_api_client.utils import ApiException
 
 
-class AccountContactView(ClientBaseView):
+class AccountSettingsAccountContactView(ClientBaseView):
     route = '/client/account/contact/get'
     contacts = list[dict]
     accounts_contacts = list[dict]
@@ -68,7 +68,7 @@ class AccountContactView(ClientBaseView):
             ),
         )
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='account_contact_title'),
+            title=await self.client.session.gtv(key='account_settings_account_contact'),
             with_expand=True,
             main_section_controls=[
                 self.snack_bar,

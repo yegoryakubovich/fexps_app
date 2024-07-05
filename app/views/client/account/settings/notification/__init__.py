@@ -15,6 +15,6 @@
 #
 
 
-from .get import AccountNotificationView
-from .get_link_telegram import AccountNotificationLinkTelegramView
-from .get_setting import AccountNotificationSettingView
+from .get import AccountSettingsNotificationView
+from .get_link_telegram import AccountSettingsNotificationLinkTelegramView
+from .get_setting import AccountSettingsNotificationSettingView

@@ -82,3 +82,4 @@ class Icons:
     COMMISSION_PACK = get_svg('commission_pack')
     CONTACT = get_svg('contact')
     REVERSE = get_svg('reverse')
+    SETTINGS = get_svg('settings')

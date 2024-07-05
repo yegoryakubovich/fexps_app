@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
-from typing import Any
+import logging
+from typing import Any, Optional
 
 from flet_core import Column, Container, CrossAxisAlignment, Image, MainAxisAlignment, Row, Text, \
     padding, BoxShadow, colors, margin
@@ -30,7 +29,9 @@ class BottomNavigationTab(Container):
     async def click(self, _):
         await self.on_click_tab(tab=self)
 
-    async def set_state(self, activated: bool):
+    async def set_state(self, activated: bool, key: str):
+        if key == 'tab_account':
+            return
         color = colors.ON_SECONDARY if activated else colors.SECONDARY
         self.text.color = color
         self.icon.color = color
@@ -43,20 +44,24 @@ class BottomNavigationTab(Container):
 
     def __init__(
             self,
+            key: str,
             name: str,
-            icon: str,
+            icon_src: Optional[str] = None,
+            icon_src_base64: Optional[str] = None,
             control=None,
     ):
         super().__init__()
         self.expand = True
 
         self.on_click = self.click
+        self.key = key
         self.name = name
         self.control = control
 
         self.icon = Image(
-            src=icon,
-            color=colors.SECONDARY,
+            src=icon_src,
+            src_base64=icon_src_base64,
+            color=None if icon_src_base64 else colors.SECONDARY,
             height=30,
         )
         self.text = Text(

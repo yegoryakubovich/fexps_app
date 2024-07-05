@@ -24,8 +24,8 @@ from app.utils import Fonts
 from fexps_api_client.utils import ApiException
 
 
-class AccountNotificationSettingView(ClientBaseView):
-    route = '/client/account/notification/get/setting'
+class AccountSettingsNotificationSettingView(ClientBaseView):
+    route = '/client/account/settings/notification/get/setting'
 
     notification = dict
     snack_bar: SnackBar
@@ -71,11 +71,16 @@ class AccountNotificationSettingView(ClientBaseView):
             label=await self.client.session.gtv(key='notification_setting_transfer'),
             value=self.notification.is_transfer,
         )
-        self.snack_bar = SnackBar(content=Text(value=await self.client.session.gtv(key='successful')))
+        self.snack_bar = SnackBar(
+            content=Text(
+                value=await self.client.session.gtv(key='successful'),
+            ),
+        )
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='notification_setting_title'),
             with_expand=True,
             main_section_controls=[
+                self.snack_bar,
                 Container(
                     content=Column(
                         controls=[

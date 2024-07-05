@@ -15,9 +15,9 @@
 #
 
 
-from flet_core import Column, Container, ScrollMode, padding, colors
+from flet_core import Column, Container, ScrollMode, Row, SnackBar
 
-from app.controls.button import FilledButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
@@ -25,52 +25,67 @@ from app.utils import Fonts
 from fexps_api_client.utils import ApiException
 
 
-class ChangePasswordView(ClientBaseView):
+class AccountSettingsChangePasswordView(ClientBaseView):
     route = '/client/account/password/change'
+
     current_password_tf: TextField
     current_password_repeat_tf: TextField
     new_password_tf: TextField
-    controls_container: Container
+
+    snack_bar: SnackBar
 
     async def construct(self):
         # self.client.session.account
         self.current_password_tf = TextField(
-            label=await self.client.session.gtv(key='change_password_enter_current_password'),
+            label=await self.client.session.gtv(key='account_settings_change_password_enter_current_password'),
             password=True,
             can_reveal_password=True,
 
         )
         self.current_password_repeat_tf = TextField(
-            label=await self.client.session.gtv(key='change_password_repeat_current_password'),
+            label=await self.client.session.gtv(key='account_settings_change_password_repeat_current_password'),
             password=True,
         )
         self.new_password_tf = TextField(
-            label=await self.client.session.gtv(key='change_password_enter_new_password'),
+            label=await self.client.session.gtv(key='account_settings_change_password_enter_new_password'),
             password=True,
             can_reveal_password=True,
         )
-        self.controls_container = Container(
-            content=Column(
-                controls=[
-                    self.current_password_tf,
-                    self.current_password_repeat_tf,
-                    self.new_password_tf,
-                    FilledButton(
-                        text=await self.client.session.gtv(key='next'),
-                        on_click=self.switch_tf,
-                    )
-                ],
-                spacing=10,
-            ),
-            padding=padding.only(bottom=15),
+        self.snack_bar = self.snack_bar = SnackBar(
+            content=Text(value=await self.client.session.gtv(key='successful')),
         )
-        controls = [
-            self.controls_container
-        ]
-        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='change_password'),
-            main_section_controls=controls,
+            title=await self.client.session.gtv(key='account_settings_change_password'),
+            with_expand=True,
+            main_section_controls=[
+                self.snack_bar,
+                Container(
+                    content=Column(
+                        controls=[
+                            self.current_password_tf,
+                            self.current_password_repeat_tf,
+                            self.new_password_tf,
+                        ],
+                        scroll=ScrollMode.AUTO
+                    ),
+                    expand=True,
+                ),
+                Container(
+                    content=Row(
+                        controls=[
+                            StandardButton(
+                                content=Text(
+                                    value=await self.client.session.gtv(key='next'),
+                                    size=15,
+                                    font_family=Fonts.REGULAR,
+                                ),
+                                on_click=self.switch_tf,
+                                expand=True,
+                            ),
+                        ],
+                    ),
+                ),
+            ],
         )
 
     async def go_back(self, _):
@@ -81,12 +96,14 @@ class ChangePasswordView(ClientBaseView):
         self.current_password_repeat_tf.error_text = None
         self.new_password_tf.error_text = None
         if self.current_password_tf.value != self.current_password_repeat_tf.value:
-            self.current_password_tf.error_text = await self.client.session.gtv(key='change_password_do_not_match')
+            self.current_password_tf.error_text = await self.client.session.gtv(
+                key='account_settings_change_password_do_not_match',
+            )
             await self.update_async()
             return
         if self.current_password_tf.value == self.new_password_tf.value:
             self.new_password_tf.error_text = await self.client.session.gtv(
-                key='change_password_new_password_match_with_current',
+                key='account_settings_change_password_new_password_match_with_current',
             )
             await self.update_async()
             return
@@ -102,24 +119,5 @@ class ChangePasswordView(ClientBaseView):
                 self.new_password_tf.error_text = e.message
             await self.update_async()
             return
-        self.controls_container = Container(
-            content=Column(
-                [
-                    Text(
-                        value=await self.client.session.gtv(key='change_password_success'),
-                        size=15,
-                        font_family=Fonts.SEMIBOLD,
-                        color=colors.ON_BACKGROUND,
-                    ),
-                    FilledButton(
-                        text=await self.client.session.gtv(key='go_back'),
-                        on_click=self.go_back,
-                    )
-                ]
-            )
-        )
-        self.controls = await self.get_controls(
-            title=await self.client.session.gtv(key='change_password'),
-            main_section_controls=[self.controls_container],
-        )
+        self.snack_bar.open = True
         await self.update_async()

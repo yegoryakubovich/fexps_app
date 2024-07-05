@@ -15,6 +15,8 @@
 #
 
 
+from base64 import b64encode
+
 from flet_core import ListView, padding
 
 from app.controls.layout.view import View
@@ -24,34 +26,11 @@ from ...utils import Icons
 
 
 class Tab:
-    def __init__(self, name: str, icon: str, control):
+    def __init__(self, name: str, control, icon_src: str = None, icon_src_base64: str = None):
         self.name = name
-        self.icon = icon
+        self.icon_src = icon_src
+        self.icon_src_base64 = icon_src_base64
         self.control = control
-
-
-TABS = [
-    Tab(
-        name='tab_home',
-        icon=Icons.HOME,
-        control=HomeTab,
-    ),
-    Tab(
-        name='tab_request',
-        icon=Icons.EXCHANGE,
-        control=RequestTab,
-    ),
-    Tab(
-        name='tab_requisite',
-        icon=Icons.REQUISITE,
-        control=RequisiteTab,
-    ),
-    Tab(
-        name='tab_account',
-        icon=Icons.ACCOUNT,
-        control=AccountTab,
-    ),
-]
 
 
 class MainView(View):
@@ -63,9 +42,9 @@ class MainView(View):
     async def change_tab(self, tab: BottomNavigationTab):
         if not tab.name != self.tab_selected.name:
             return
-        await self.tab_selected.set_state(activated=False)
+        await self.tab_selected.set_state(activated=False, key=self.tab_selected.key)
         self.tab_selected = tab
-        await self.tab_selected.set_state(activated=True)
+        await self.tab_selected.set_state(activated=True, key=self.tab_selected.key)
         await self.set_body(controls=self.tab_selected.controls)
 
     async def set_body(self, controls):
@@ -74,10 +53,39 @@ class MainView(View):
 
     async def construct(self):
         self.body = ListView(expand=True, padding=padding.only(bottom=36))
+        account_icon_src, icon_src_base64 = Icons.ACCOUNT, None
+        if self.client.session.account['file']:
+            account_icon_src = None
+            icon_src_base64 = b64encode(self.client.session.account['file']['value'].encode('ISO-8859-1')).decode()
+        TABS = [
+            Tab(
+                name='tab_home',
+                icon_src=Icons.HOME,
+                control=HomeTab,
+            ),
+            Tab(
+                name='tab_request',
+                icon_src=Icons.EXCHANGE,
+                control=RequestTab,
+            ),
+            Tab(
+                name='tab_requisite',
+                icon_src=Icons.REQUISITE,
+                control=RequisiteTab,
+            ),
+            Tab(
+                name='tab_account',
+                icon_src=account_icon_src,
+                icon_src_base64=icon_src_base64,
+                control=AccountTab,
+            ),
+        ]
         self.tabs = [
             BottomNavigationTab(
+                key=tab.name,
                 name=await self.client.session.gtv(key=tab.name),
-                icon=tab.icon,
+                icon_src=tab.icon_src,
+                icon_src_base64=tab.icon_src_base64,
                 control=tab.control,
             )
             for tab in TABS
@@ -107,5 +115,5 @@ class MainView(View):
             tab.controls = [await control.get()]
 
         self.tab_selected = self.tab_default
-        await self.tab_default.set_state(activated=True)
+        await self.tab_default.set_state(activated=True, key=self.tab_selected.key)
         await self.set_body(controls=self.tab_selected.controls)
