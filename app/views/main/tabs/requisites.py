@@ -362,6 +362,9 @@ class RequisiteTab(BaseTab):
         await self.update_history_requisites_column(update=False)
         await self.update_orders_column(update=False)
         self.scroll = ScrollMode.AUTO
+        create_disable = False
+        if 'requisite_no' in self.client.session.account.permissions:
+            create_disable = True
         self.controls = [
             Container(
                 content=Column(
@@ -370,6 +373,7 @@ class RequisiteTab(BaseTab):
                             value=await self.client.session.gtv(key='requisite_tab_title'),
                             create_name_text=await self.client.session.gtv(key='create'),
                             on_create=self.requisite_create,
+                            disabled_create=create_disable,
                         ),
                         self.current_orders_column,
                         self.history_requisites_column,

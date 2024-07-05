@@ -1,11 +1,19 @@
 from flet_core import colors, Row, Container, Image, MainAxisAlignment
 
 from .text import Text
+from ..button import StandardButton
 from ...utils import Fonts, Icons
 
 
 class Title(Row):
-    def __init__(self, value: str, on_create: callable = None, create_name_text: str = None, **kwargs):
+    def __init__(
+            self,
+            value: str,
+            on_create: callable = None,
+            create_name_text: str = None,
+            disabled_create: bool = False,
+            **kwargs,
+    ):
         super().__init__(**kwargs)
         self.controls = [
             Text(
@@ -17,7 +25,7 @@ class Title(Row):
         ]
         if on_create:
             self.controls += [
-                Container(
+                StandardButton(
                     content=Row(
                         controls=[
                             Image(
@@ -35,10 +43,10 @@ class Title(Row):
                         spacing=4,
                         wrap=True,
                     ),
-                    padding=7,
-                    border_radius=24,
-                    bgcolor=colors.PRIMARY,
+                    vertical=8,
                     on_click=on_create,
+                    disabled=disabled_create,
+                    bgcolor=colors.PRIMARY_CONTAINER if disabled_create else colors.PRIMARY,
                 ),
             ]
         self.alignment = MainAxisAlignment.SPACE_BETWEEN
