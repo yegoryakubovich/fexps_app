@@ -108,6 +108,16 @@ class RequestTab(BaseTab):
                                     Row(
                                         controls=[
                                             Text(
+                                                value=f'#{request.id:08}',
+                                                size=14,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY,
+                                            ),
+                                        ],
+                                    ),
+                                    Row(
+                                        controls=[
+                                            Text(
                                                 value=value_str,
                                                 size=14,
                                                 font_family=Fonts.SEMIBOLD,
@@ -239,6 +249,18 @@ class RequestTab(BaseTab):
                                 controls=[
                                     Row(
                                         controls=[
+                                            Text(
+                                                value=f'#{request.id:08}',
+                                                size=10,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY_CONTAINER,
+                                            ),
+                                            Text(
+                                                value='|',
+                                                size=10,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY_CONTAINER,
+                                            ),
                                             Text(
                                                 value=date_str,
                                                 size=10,

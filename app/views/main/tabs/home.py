@@ -255,6 +255,16 @@ class HomeTab(BaseTab):
                                     Row(
                                         controls=[
                                             Text(
+                                                value=f'#{request.id:08}',
+                                                size=14,
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=colors.ON_PRIMARY,
+                                            ),
+                                        ],
+                                    ),
+                                    Row(
+                                        controls=[
+                                            Text(
                                                 value=value_str,
                                                 size=14,
                                                 font_family=Fonts.SEMIBOLD,

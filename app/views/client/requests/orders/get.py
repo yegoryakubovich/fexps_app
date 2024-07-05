@@ -345,7 +345,7 @@ class RequestOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_order_order_request_update_value_button'),
-                        size=20,
+                        size=12,
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -354,7 +354,7 @@ class RequestOrderView(ClientBaseView):
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
             on_click=self.order_request_update_value_open,
-            expand=1,
+            expand=2,
         )
         if update:
             await self.order_request_create_update_value_button.update_async()
@@ -365,7 +365,7 @@ class RequestOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_order_order_request_cancel_button'),
-                        size=20,
+                        size=12,
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -385,7 +385,7 @@ class RequestOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_order_order_request_recreate_button'),
-                        size=20,
+                        size=12,
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -468,12 +468,13 @@ class RequestOrderView(ClientBaseView):
                             self.order_request_create_update_value_button,
                             self.order_request_create_cancel_button,
                             self.order_request_create_recreate_button,
-                        ]
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
                     ),
                     Row(
                         controls=[
                             self.payment_payment_button,
-                        ]
+                        ],
                     ),
                 ]
             elif self.order.state == 'confirmation':
@@ -493,7 +494,8 @@ class RequestOrderView(ClientBaseView):
                             self.order_request_create_update_value_button,
                             self.order_request_create_cancel_button,
                             self.order_request_create_recreate_button,
-                        ]
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
                     ),
                 ]
             elif self.order.state == 'confirmation':

@@ -126,9 +126,8 @@ class RequestCreateView(ClientBaseView):
             label=await self.client.session.gtv(key='currency'),
             options=await self.get_currency_options(),
             on_change=partial(self.change_currency, 'input'),
-            expand=1,
+            expand=2,
         )
-
         self.dd_input_method = Dropdown(
             label=await self.client.session.gtv(key='request_create_input_method'),
             on_change=self.change_method,
@@ -142,7 +141,7 @@ class RequestCreateView(ClientBaseView):
                         self.tf_input_value,
                         self.dd_input_currency,
                     ],
-                    spacing=16,
+                    spacing=10,
                 ),
                 self.dd_input_method,
             ],
@@ -172,7 +171,7 @@ class RequestCreateView(ClientBaseView):
                         ),
                     ],
                     alignment=MainAxisAlignment.CENTER,
-                    spacing=16,
+                    spacing=10,
                 ),
             ],
         )
@@ -193,7 +192,7 @@ class RequestCreateView(ClientBaseView):
             label=await self.client.session.gtv(key='currency'),
             options=await self.get_currency_options(),
             on_change=partial(self.change_currency, 'output'),
-            expand=1,
+            expand=2,
         )
         self.dd_output_method = Dropdown(
             label=await self.client.session.gtv(key='request_create_output_method'),
@@ -226,7 +225,7 @@ class RequestCreateView(ClientBaseView):
                         self.tf_output_value,
                         self.dd_output_currency,
                     ],
-                    spacing=16,
+                    spacing=10,
                 ),
                 self.dd_output_method,
                 Row(

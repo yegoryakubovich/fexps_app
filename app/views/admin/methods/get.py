@@ -22,7 +22,6 @@ from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
-from app.controls.information.snack_bar import SnackBar
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts, Error, value_to_int, value_to_float
@@ -51,8 +50,6 @@ class MethodView(AdminBaseView):
     tf_bgcolor: TextField
     cb_is_rate_default: Checkbox
 
-    snack_bar: SnackBar
-
     def __init__(self, method_id: int):
         super().__init__()
         self.method_id = method_id
@@ -66,7 +63,6 @@ class MethodView(AdminBaseView):
             for currency in await self.client.session.api.client.currencies.get_list()
         ]
         await self.set_type(loading=False)
-        self.snack_bar = SnackBar(content=Text(value=await self.client.session.gtv(key='successful')))
         self.schema_type_options = [
             Option(key='int', text=await self.client.session.gtv(key='int')),
             Option(key='str', text=await self.client.session.gtv(key='str')),
@@ -286,14 +282,10 @@ class MethodView(AdminBaseView):
                 if model_value == field_value:
                     continue
                 updates[field_key] = field_value
-            await self.client.session.api.admin.methods.update(
-                id_=self.method_id,
-                **updates,
-            )
+            await self.client.session.api.admin.methods.update(id_=self.method_id, **updates)
             await self.client.session.get_text_pack()
             await self.set_type(loading=False)
-            self.snack_bar.open = True
-            await self.update_async()
+            await self.client.change_view(go_back=True, delete_current=True, with_restart=True)
         except ApiException as exception:
             await self.set_type(loading=False)
             return await self.client.session.error(exception=exception)

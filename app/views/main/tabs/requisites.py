@@ -87,6 +87,12 @@ class RequisiteTab(BaseTab):
                         controls=[
                             Column(
                                 controls=[
+                                    Text(
+                                        value=f'#{order.id:08}',
+                                        size=10,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_PRIMARY,
+                                    ),
                                     Row(
                                         controls=[
                                             Text(
@@ -255,6 +261,12 @@ class RequisiteTab(BaseTab):
                         controls=[
                             Column(
                                 controls=[
+                                    Text(
+                                        value=f'#{requisite.id:08}',
+                                        size=10,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=colors.ON_PRIMARY_CONTAINER,
+                                    ),
                                     Row(
                                         controls=[
                                             Text(

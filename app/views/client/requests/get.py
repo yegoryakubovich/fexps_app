@@ -379,6 +379,12 @@ class RequestView(ClientBaseView):
                         controls=[
                             Column(
                                 controls=[
+                                    Text(
+                                        value=f'#{order.id:08}',
+                                        size=10,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=color,
+                                    ),
                                     Row(
                                         controls=[
                                             Text(
