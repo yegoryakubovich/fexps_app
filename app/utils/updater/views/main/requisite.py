@@ -59,7 +59,7 @@ async def check_update_main_requisite_view(view: RequisiteTab, update: bool = Tr
     check_list += [
         update_check(
             scheme=get_requisite_list_scheme,
-            obj_1=view.history_requisites,
+            obj_1=view.history_requisites_column,
             obj_2=history_requisites.requisites,
         ),
     ]

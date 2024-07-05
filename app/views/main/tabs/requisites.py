@@ -42,12 +42,9 @@ class StateChips:
 
 
 class RequisiteTab(BaseTab):
-    requisites = list[dict]
-    control_dict: dict
-
-    history_requisites = dict
-    currency_orders = dict
-    column: Column
+    history_requisites_column: Column
+    current_orders_column: Column
+    orders_column: Column
 
     # History
     selected_type_chip: str
@@ -64,19 +61,14 @@ class RequisiteTab(BaseTab):
             'history_requisites': None,
         }
 
-    """
-    CURRENCY ORDERS
-    """
-
-    async def get_currently_orders_cards(self) -> list[StandardButton]:
-        self.currency_orders = await self.client.session.api.client.orders.list_get.main(
-            by_request=False,
-            by_requisite=True,
-            is_active=True,
-            is_finished=False,
-        )
+    async def get_orders_cards(
+            self,
+            orders: list,
+            bgcolor: str = colors.PRIMARY_CONTAINER,
+            color: str = colors.ON_PRIMARY_CONTAINER,
+    ) -> list[StandardButton]:
         cards: list[StandardButton] = []
-        for order in self.currency_orders:
+        for order in orders:
             currency = order.currency
             state_str = await self.client.session.gtv(key=f'requisite_order_{order.type}_{order.state}')
             value = value_to_float(value=order.currency_value, decimal=currency.decimal)
@@ -91,7 +83,7 @@ class RequisiteTab(BaseTab):
                                         value=f'#{order.id:08}',
                                         size=10,
                                         font_family=Fonts.SEMIBOLD,
-                                        color=colors.ON_PRIMARY,
+                                        color=color,
                                     ),
                                     Row(
                                         controls=[
@@ -99,7 +91,7 @@ class RequisiteTab(BaseTab):
                                                 value=value_str,
                                                 size=14,
                                                 font_family=Fonts.SEMIBOLD,
-                                                color=colors.ON_PRIMARY,
+                                                color=color,
                                             ),
                                         ],
                                     ),
@@ -109,7 +101,7 @@ class RequisiteTab(BaseTab):
                                                 value=state_str,
                                                 size=12,
                                                 font_family=Fonts.SEMIBOLD,
-                                                color=colors.ON_PRIMARY,
+                                                color=color,
                                             ),
                                         ],
                                     ),
@@ -119,33 +111,43 @@ class RequisiteTab(BaseTab):
                             Image(
                                 src=Icons.OPEN,
                                 height=24,
-                                color=colors.ON_PRIMARY,
+                                color=color,
                             ),
                         ],
                         alignment=MainAxisAlignment.SPACE_BETWEEN,
                         spacing=2,
                     ),
                     on_click=partial(self.order_view, order.id),
-                    bgcolor=colors.PRIMARY,
+                    bgcolor=bgcolor,
                     horizontal=16,
                     vertical=12,
                 ),
             )
         return cards
 
-    async def update_currently_orders(self, update: bool = True):
-        cards = await self.get_currently_orders_cards()
-        self.control_dict['currently_orders'] = Row()
+    """
+    CURRENCY ORDERS
+    """
+
+    async def update_current_orders_column(self, update: bool = True):
+        cards = await self.get_orders_cards(
+            orders=await self.client.session.api.client.orders.list_get.main(
+                by_request=False,
+                by_requisite=True,
+                is_active=True,
+                is_finished=False,
+            ),
+            bgcolor=colors.PRIMARY,
+            color=colors.ON_PRIMARY,
+        )
+        self.current_orders_column = Column()
         if cards:
-            self.control_dict['currently_orders'] = Row(
-                controls=[
-                    SubTitle(value=await self.client.session.gtv(key='requisite_currently_orders_title')),
-                    *cards,
-                ],
-                wrap=True,
-            )
+            self.current_orders_column.controls = [
+                SubTitle(value=await self.client.session.gtv(key='requisite_currently_orders_title')),
+                *cards,
+            ]
         if update:
-            await self.update_async()
+            await self.current_orders_column.update_async()
 
     """
     REQUISITE HISTORY
@@ -231,26 +233,14 @@ class RequisiteTab(BaseTab):
             ),
         ]
 
-    async def get_requisite_history_cards(self) -> list[StandardButton]:
-        response = await self.client.session.api.client.requisites.search(
-            is_type_input=self.selected_type_chip in [TypeChips.INPUT, TypeChips.ALL],
-            is_type_output=self.selected_type_chip in [TypeChips.OUTPUT, TypeChips.ALL],
-            is_state_enable=self.selected_state_chip in [StateChips.ENABLE, StateChips.ALL],
-            is_state_stop=self.selected_state_chip in [StateChips.STOP, StateChips.ALL],
-            is_state_disable=self.selected_state_chip in [StateChips.DISABLE, StateChips.ALL],
-            page=self.page_requisites,
-        )
-        self.history_requisites = response.requisites
+    async def get_requisite_history_cards(self, requisites: list) -> list[StandardButton]:
         cards: list[StandardButton] = []
-        for requisite in self.history_requisites:
+        for requisite in requisites:
             currency = requisite.currency
-            if requisite.type == 'input':
-                method = requisite.input_method
-            else:
-                method = requisite.output_method
+            method = requisite.input_method if requisite.type == 'input' else requisite.output_method
             type_ = await self.client.session.gtv(key=f'requisite_type_{requisite.type}')
-            method = await self.client.session.gtv(key=method.name_text)
-            type_str = f'{type_} ({method})'
+            method_str = await self.client.session.gtv(key=method.name_text)
+            type_str = f'{type_} ({method_str})'
             state_str = await self.client.session.gtv(key=f'requisite_state_{requisite.state}')
             currency_value = value_to_float(value=requisite.currency_value, decimal=currency.decimal)
             total_currency_value = value_to_float(value=requisite.total_currency_value, decimal=currency.decimal)
@@ -318,12 +308,20 @@ class RequisiteTab(BaseTab):
             )
         return cards
 
-    async def update_history_requisites(self, update: bool = True):
-        self.control_dict['history_requisites'] = Row(
+    async def update_history_requisites_column(self, update: bool = True):
+        history_requisites = await self.client.session.api.client.requisites.search(
+            is_type_input=self.selected_type_chip in [TypeChips.INPUT, TypeChips.ALL],
+            is_type_output=self.selected_type_chip in [TypeChips.OUTPUT, TypeChips.ALL],
+            is_state_enable=self.selected_state_chip in [StateChips.ENABLE, StateChips.ALL],
+            is_state_stop=self.selected_state_chip in [StateChips.STOP, StateChips.ALL],
+            is_state_disable=self.selected_state_chip in [StateChips.DISABLE, StateChips.ALL],
+            page=self.page_requisites,
+        )
+        self.history_requisites_column = Column(
             controls=[
                 SubTitle(value=await self.client.session.gtv(key='requisite_history_title')),
                 *await self.get_requisite_history_chips(),
-                *await self.get_requisite_history_cards(),
+                *await self.get_requisite_history_cards(requisites=history_requisites.requisites),
                 PaginationWidget(
                     current_page=self.page_requisites,
                     total_pages=self.total_pages,
@@ -333,14 +331,36 @@ class RequisiteTab(BaseTab):
                     text_back=await self.client.session.gtv(key='back'),
                 ),
             ],
-            wrap=True,
         )
         if update:
-            await self.update_async()
+            await self.history_requisites_column.update_async()
+
+    """
+    ORDERS
+    """
+
+    async def update_orders_column(self, update: bool = True):
+        cards = await self.get_orders_cards(
+            orders=await self.client.session.api.client.orders.list_get.main(
+                by_request=False,
+                by_requisite=True,
+                is_active=False,
+                is_finished=True,
+            ),
+        )
+        self.orders_column = Column()
+        if cards:
+            self.orders_column.controls = [
+                SubTitle(value=await self.client.session.gtv(key='requisite_orders_title')),
+                *cards,
+            ]
+        if update:
+            await self.orders_column.update_async()
 
     async def construct(self):
-        await self.update_currently_orders(update=False)
-        await self.update_history_requisites(update=False)
+        await self.update_current_orders_column(update=False)
+        await self.update_history_requisites_column(update=False)
+        await self.update_orders_column(update=False)
         self.scroll = ScrollMode.AUTO
         self.controls = [
             Container(
@@ -351,8 +371,9 @@ class RequisiteTab(BaseTab):
                             create_name_text=await self.client.session.gtv(key='create'),
                             on_create=self.requisite_create,
                         ),
-                        self.control_dict['currently_orders'],
-                        self.control_dict['history_requisites'],
+                        self.current_orders_column,
+                        self.history_requisites_column,
+                        self.orders_column,
                     ]
                 ),
                 padding=10,
