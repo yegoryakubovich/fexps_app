@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 from app.utils.updater import update_check
 from app.utils.updater.schemes import get_order_list_scheme, get_requisite_list_scheme
 from app.views.main.tabs import RequisiteTab
@@ -43,7 +45,7 @@ async def check_update_main_requisite_view(view: RequisiteTab, update: bool = Tr
     check_list += [
         update_check(
             scheme=get_order_list_scheme,
-            obj_1=view.currency_orders,
+            obj_1=view.current_orders,
             obj_2=currency_orders,
         ),
     ]
@@ -59,8 +61,22 @@ async def check_update_main_requisite_view(view: RequisiteTab, update: bool = Tr
     check_list += [
         update_check(
             scheme=get_requisite_list_scheme,
-            obj_1=view.history_requisites_column,
+            obj_1=view.history_requisites,
             obj_2=history_requisites.requisites,
+        ),
+    ]
+    # currency_orders
+    orders = await view.client.session.api.client.orders.list_get.main(
+        by_request=False,
+        by_requisite=True,
+        is_active=False,
+        is_finished=True,
+    )
+    check_list += [
+        update_check(
+            scheme=get_order_list_scheme,
+            obj_1=view.orders,
+            obj_2=orders,
         ),
     ]
     if True not in check_list:

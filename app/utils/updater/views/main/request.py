@@ -41,6 +41,7 @@ async def check_update_main_request_view(view: RequestTab, update: bool = True):
     history_requests = await view.client.session.api.client.requests.search(
         is_completed=view.selected_chip in [Chips.COMPLETED, Chips.ALL],
         is_canceled=view.selected_chip in [Chips.CANCELED, Chips.ALL],
+        is_partner=view.partner_chip,
         page=view.page_request,
     )
     check_list += [

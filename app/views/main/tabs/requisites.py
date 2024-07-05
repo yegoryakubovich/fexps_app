@@ -42,8 +42,11 @@ class StateChips:
 
 
 class RequisiteTab(BaseTab):
+    history_requisites = list[dict]
     history_requisites_column: Column
+    current_orders = list[dict]
     current_orders_column: Column
+    orders = list[dict]
     orders_column: Column
 
     # History
@@ -130,16 +133,13 @@ class RequisiteTab(BaseTab):
     """
 
     async def update_current_orders_column(self, update: bool = True):
-        cards = await self.get_orders_cards(
-            orders=await self.client.session.api.client.orders.list_get.main(
-                by_request=False,
-                by_requisite=True,
-                is_active=True,
-                is_finished=False,
-            ),
-            bgcolor=colors.PRIMARY,
-            color=colors.ON_PRIMARY,
+        self.current_orders = await self.client.session.api.client.orders.list_get.main(
+            by_request=False,
+            by_requisite=True,
+            is_active=True,
+            is_finished=False,
         )
+        cards = await self.get_orders_cards(orders=self.current_orders, bgcolor=colors.PRIMARY, color=colors.ON_PRIMARY)
         self.current_orders_column = Column()
         if cards:
             self.current_orders_column.controls = [
@@ -309,7 +309,7 @@ class RequisiteTab(BaseTab):
         return cards
 
     async def update_history_requisites_column(self, update: bool = True):
-        history_requisites = await self.client.session.api.client.requisites.search(
+        response = await self.client.session.api.client.requisites.search(
             is_type_input=self.selected_type_chip in [TypeChips.INPUT, TypeChips.ALL],
             is_type_output=self.selected_type_chip in [TypeChips.OUTPUT, TypeChips.ALL],
             is_state_enable=self.selected_state_chip in [StateChips.ENABLE, StateChips.ALL],
@@ -317,11 +317,12 @@ class RequisiteTab(BaseTab):
             is_state_disable=self.selected_state_chip in [StateChips.DISABLE, StateChips.ALL],
             page=self.page_requisites,
         )
+        self.history_requisites = response.requisites
         self.history_requisites_column = Column(
             controls=[
                 SubTitle(value=await self.client.session.gtv(key='requisite_history_title')),
                 *await self.get_requisite_history_chips(),
-                *await self.get_requisite_history_cards(requisites=history_requisites.requisites),
+                *await self.get_requisite_history_cards(requisites=self.history_requisites),
                 PaginationWidget(
                     current_page=self.page_requisites,
                     total_pages=self.total_pages,
@@ -340,14 +341,13 @@ class RequisiteTab(BaseTab):
     """
 
     async def update_orders_column(self, update: bool = True):
-        cards = await self.get_orders_cards(
-            orders=await self.client.session.api.client.orders.list_get.main(
-                by_request=False,
-                by_requisite=True,
-                is_active=False,
-                is_finished=True,
-            ),
+        self.orders = await self.client.session.api.client.orders.list_get.main(
+            by_request=False,
+            by_requisite=True,
+            is_active=False,
+            is_finished=True,
         )
+        cards = await self.get_orders_cards(orders=self.orders)
         self.orders_column = Column()
         if cards:
             self.orders_column.controls = [

@@ -33,32 +33,32 @@ class Chips:
     COMPLETED = 'completed'
     CANCELED = 'canceled'
     ALL = 'all'
+    PARTNERS = 'partners'
 
 
 class RequestTab(BaseTab):
     scopes: list[ActionItem]
-    control_dict: dict
 
     current_requests = list[dict]
+    current_requests_column: Column
     history_requests = list[dict]
+    history_requests_column: Column
 
     page_request: int = 1
     total_pages: int = 1
     selected_chip: str
+    partner_chip: bool
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.selected_chip = Chips.COMPLETED
-        self.control_dict = {
-            'currently_request': None,
-            'history_request': None,
-        }
+        self.partner_chip = False
 
     """
     CURRENTLY REQUESTS
     """
 
-    async def get_currently_request_cards(self) -> list[StandardButton]:
+    async def get_current_request_cards(self) -> list[StandardButton]:
         response = await self.client.session.api.client.requests.search()
         self.current_requests = response.requests
         cards: list[StandardButton] = []
@@ -154,26 +154,23 @@ class RequestTab(BaseTab):
             )
         return cards
 
-    async def update_currently_request(self, update: bool = True):
-        cards = await self.get_currently_request_cards()
-        self.control_dict['currently_request'] = Row()
+    async def update_current_request_column(self, update: bool = True):
+        cards = await self.get_current_request_cards()
+        self.current_requests_column = Column()
         if cards:
-            self.control_dict['currently_request'] = Row(
-                controls=[
-                    SubTitle(value=await self.client.session.gtv(key='requests_currently_title')),
-                    *cards,
-                ],
-                wrap=True,
-            )
+            self.current_requests_column.controls = [
+                SubTitle(value=await self.client.session.gtv(key='requests_currently_title')),
+                *cards,
+            ]
         if update:
-            await self.update_async()
+            await self.current_requests_column.update_async()
 
     """
     HISTORY REQUESTS
     """
 
     async def get_history_request_chips(self) -> list[Chip]:
-        return [
+        chips = [
             Chip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.COMPLETED}'),
                 key=Chips.COMPLETED,
@@ -193,11 +190,22 @@ class RequestTab(BaseTab):
                 selected=True if self.selected_chip == Chips.ALL else False,
             ),
         ]
+        if 'partner_requests' in self.client.session.account.permissions:
+            chips += [
+                Chip(
+                    name=await self.client.session.gtv(key=f'chip_{Chips.PARTNERS}'),
+                    key=Chips.PARTNERS,
+                    on_select=self.chip_partner_select,
+                    selected=True if self.partner_chip else False,
+                ),
+            ]
+        return chips
 
     async def get_history_request_cards(self) -> list[StandardButton]:
         response = await self.client.session.api.client.requests.search(
             is_completed=self.selected_chip in [Chips.COMPLETED, Chips.ALL],
             is_canceled=self.selected_chip in [Chips.CANCELED, Chips.ALL],
+            is_partner=self.partner_chip,
             page=self.page_request,
         )
         self.history_requests = response.requests
@@ -308,11 +316,14 @@ class RequestTab(BaseTab):
             )
         return cards
 
-    async def update_history_request(self, update: bool = True):
-        self.control_dict['history_request'] = Row(
+    async def update_history_request_column(self, update: bool = True):
+        self.history_requests_column = Column(
             controls=[
                 SubTitle(value=await self.client.session.gtv(key='request_history_title')),
-                *await self.get_history_request_chips(),
+                Row(
+                    controls=await self.get_history_request_chips(),
+                    wrap=True,
+                ),
                 *await self.get_history_request_cards(),
                 PaginationWidget(
                     current_page=self.page_request,
@@ -323,14 +334,13 @@ class RequestTab(BaseTab):
                     text_back=await self.client.session.gtv(key='back'),
                 ),
             ],
-            wrap=True,
         )
         if update:
-            await self.update_async()
+            await self.history_requests_column.update_async()
 
     async def construct(self):
-        await self.update_currently_request(update=False)
-        await self.update_history_request(update=False)
+        await self.update_current_request_column(update=False)
+        await self.update_history_request_column(update=False)
         self.scroll = ScrollMode.AUTO
         self.controls = [
             Container(
@@ -341,8 +351,8 @@ class RequestTab(BaseTab):
                             create_name_text=await self.client.session.gtv(key='create'),
                             on_create=self.request_create,
                         ),
-                        self.control_dict['currently_request'],
-                        self.control_dict['history_request'],
+                        self.current_requests_column,
+                        self.history_requests_column,
                     ]
                 ),
                 padding=10,
@@ -358,6 +368,11 @@ class RequestTab(BaseTab):
 
     async def chip_select(self, event: ControlEvent):
         self.selected_chip = event.control.key
+        await self.construct()
+        await self.update_async()
+
+    async def chip_partner_select(self, _: ControlEvent):
+        self.partner_chip = False if self.partner_chip else True
         await self.construct()
         await self.update_async()
 
