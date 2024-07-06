@@ -21,15 +21,17 @@ from app.views.main.tabs import RequestTab
 
 
 class Chips:
+    ACTIVE = 'active'
     COMPLETED = 'completed'
     CANCELED = 'canceled'
     ALL = 'all'
+    PARTNERS = 'partners'
 
 
 async def check_update_main_request_view(view: RequestTab, update: bool = True):
     check_list = []
     # current_requests
-    current_requests = await view.client.session.api.client.requests.search()
+    current_requests = await view.client.session.api.client.requests.search(is_active=True)
     check_list += [
         update_check(
             scheme=get_request_list_scheme,
@@ -39,6 +41,8 @@ async def check_update_main_request_view(view: RequestTab, update: bool = True):
     ]
     # history_requests
     history_requests = await view.client.session.api.client.requests.search(
+        id_=view.tf_history_requests_search.value,
+        is_active=view.selected_chip in [Chips.ACTIVE, Chips.ALL],
         is_completed=view.selected_chip in [Chips.COMPLETED, Chips.ALL],
         is_canceled=view.selected_chip in [Chips.CANCELED, Chips.ALL],
         is_partner=view.partner_chip,

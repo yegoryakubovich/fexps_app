@@ -198,9 +198,9 @@ class RequestOrderView(ClientBaseView):
                 ),
                 size=20,
                 font_family=Fonts.SEMIBOLD,
-                color=colors.ON_PRIMARY,
+                color=colors.WHITE,
             ),
-            bgcolor=colors.PRIMARY,
+            bgcolor=colors.GREEN,
             on_click=self.payment,
             expand=2,
         )
@@ -359,26 +359,6 @@ class RequestOrderView(ClientBaseView):
         if update:
             await self.order_request_create_update_value_button.update_async()
 
-    async def update_order_request_create_cancel_button(self, update: bool = True) -> None:
-        self.order_request_create_cancel_button = StandardButton(
-            content=Row(
-                controls=[
-                    Text(
-                        value=await self.client.session.gtv(key='request_order_order_request_cancel_button'),
-                        size=12,
-                        font_family=Fonts.SEMIBOLD,
-                        color=colors.ON_PRIMARY_CONTAINER,
-                    ),
-                ],
-                alignment=MainAxisAlignment.CENTER,
-            ),
-            bgcolor=colors.PRIMARY_CONTAINER,
-            on_click=self.order_request_cancel,
-            expand=1,
-        )
-        if update:
-            await self.chat_button.update_async()
-
     async def update_order_request_create_recreate_button(self, update: bool = True) -> None:
         self.order_request_create_recreate_button = StandardButton(
             content=Row(
@@ -398,6 +378,26 @@ class RequestOrderView(ClientBaseView):
         )
         if update:
             await self.order_request_create_recreate_button.update_async()
+
+    async def update_order_request_create_cancel_button(self, update: bool = True) -> None:
+        self.order_request_create_cancel_button = StandardButton(
+            content=Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='request_order_order_request_cancel_button'),
+                        size=12,
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.WHITE,
+                    ),
+                ],
+                alignment=MainAxisAlignment.CENTER,
+            ),
+            bgcolor=colors.RED,
+            on_click=self.order_request_cancel,
+            expand=1,
+        )
+        if update:
+            await self.chat_button.update_async()
 
     async def update_back_button(self, update: bool = True) -> None:
         self.back_button = StandardButton(
@@ -459,17 +459,17 @@ class RequestOrderView(ClientBaseView):
                 pass
             elif self.order.state == 'payment':
                 await self.update_order_request_create_update_value_button(update=False)
-                await self.update_order_request_create_cancel_button(update=False)
                 await self.update_order_request_create_recreate_button(update=False)
+                await self.update_order_request_create_cancel_button(update=False)
                 await self.update_payment_payment_button(update=False)
                 buttons += [
                     Row(
                         controls=[
                             self.order_request_create_update_value_button,
-                            self.order_request_create_cancel_button,
                             self.order_request_create_recreate_button,
+                            self.order_request_create_cancel_button,
                         ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                        spacing=8,
                     ),
                     Row(
                         controls=[
@@ -486,16 +486,16 @@ class RequestOrderView(ClientBaseView):
                 pass
             elif self.order.state == 'payment':
                 await self.update_order_request_create_update_value_button(update=False)
-                await self.update_order_request_create_cancel_button(update=False)
                 await self.update_order_request_create_recreate_button(update=False)
+                await self.update_order_request_create_cancel_button(update=False)
                 buttons += [
                     Row(
                         controls=[
                             self.order_request_create_update_value_button,
-                            self.order_request_create_cancel_button,
                             self.order_request_create_recreate_button,
+                            self.order_request_create_cancel_button,
                         ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                        spacing=8,
                     ),
                 ]
             elif self.order.state == 'confirmation':

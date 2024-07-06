@@ -206,7 +206,7 @@ class HomeTab(BaseTab):
     """
 
     async def get_currently_request_cards(self) -> list[StandardButton]:
-        response = await self.client.session.api.client.requests.search()
+        response = await self.client.session.api.client.requests.search(is_active=True)
         self.current_requests = response.requests
         cards: list[StandardButton] = []
         for request in self.current_requests:

@@ -235,9 +235,9 @@ class RequisiteOrderView(ClientBaseView):
                 ),
                 size=20,
                 font_family=Fonts.SEMIBOLD,
-                color=colors.ON_PRIMARY,
+                color=colors.WHITE,
             ),
-            bgcolor=colors.PRIMARY,
+            bgcolor=colors.GREEN,
             on_click=self.payment,
             expand=2,
         )

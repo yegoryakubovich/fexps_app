@@ -20,7 +20,6 @@ from functools import partial
 from flet_core import Row, Text, ScrollMode, colors
 
 from app.controls.information.card import Card
-from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts
@@ -33,17 +32,13 @@ class AccountListView(AdminBaseView):
     page_account: int = 1
     total_pages: int = 1
     items_per_page: int = 6
-    tf_search = TextField
 
     async def construct(self):
         await self.set_type(loading=True)
-        response = await self.client.session.api.admin.accounts.search(
-            page=self.page_account,
-        )
+        response = await self.client.session.api.admin.accounts.search(page=self.page_account)
         self.accounts = response.accounts
         self.total_pages = response.pages
         await self.set_type(loading=False)
-
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_account_get_list_view_title'),
@@ -93,11 +88,6 @@ class AccountListView(AdminBaseView):
 
     async def account_view(self, account_id, _):
         await self.client.change_view(view=AccountView(account_id=account_id))
-
-    async def search(self, _):
-        await self.client.session.api.account.search(
-            username=self.tf_search.value,
-        )
 
     async def next_page(self, _):
         if self.page_account < self.total_pages:

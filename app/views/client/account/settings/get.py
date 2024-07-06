@@ -39,12 +39,6 @@ class AccountSettingsView(ClientBaseView):
                             on_click=self.edit_profile,
                         ),
                         ListItemButton(
-                            icon=Icons.NOTIFICATIONS,
-                            name=await self.client.session.gtv(key='account_settings_notifications'),
-                            font_size=24,
-                            on_click=self.notification,
-                        ),
-                        ListItemButton(
                             icon=Icons.SECURITY,
                             name=await self.client.session.gtv(key='account_settings_change_password'),
                             font_size=24,
@@ -66,10 +60,6 @@ class AccountSettingsView(ClientBaseView):
     async def edit_profile(self, _):
         from app.views.client.account.settings.edit_profile import AccountSettingsEdtProfileView
         await self.client.change_view(view=AccountSettingsEdtProfileView())
-
-    async def notification(self, _):
-        from app.views.client.account.settings.notification import AccountSettingsNotificationView
-        await self.client.change_view(view=AccountSettingsNotificationView())
 
     async def change_password(self, _):
         from app.views.client.account.settings.change_password import AccountSettingsChangePasswordView

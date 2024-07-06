@@ -24,7 +24,7 @@ from app.utils import Fonts
 from fexps_api_client.utils import ApiException
 
 
-class AccountSettingsNotificationSettingView(ClientBaseView):
+class AccountNotificationSettingView(ClientBaseView):
     route = '/client/account/settings/notification/get/setting'
 
     notification = dict

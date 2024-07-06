@@ -23,7 +23,7 @@ from app.controls.layout import ClientBaseView
 from app.utils import Fonts
 
 
-class AccountSettingsNotificationLinkTelegramView(ClientBaseView):
+class AccountNotificationLinkTelegramView(ClientBaseView):
     route = '/client/account/settings/notification/get/link/telegram'
 
     async def construct(self):

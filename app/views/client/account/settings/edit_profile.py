@@ -13,13 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
+
 from base64 import b64encode
 
-from flet_core import Column, Container, ScrollMode, Row, MainAxisAlignment, Image, ImageFit, alignment, Control
+from flet_core import Column, Container, ScrollMode, Row, Image, ImageFit, alignment, Control
 
 from app.controls.button import StandardButton
-from app.controls.information import Text, SnackBar
+from app.controls.information import Text, SnackBar, SubTitle
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts
@@ -35,7 +36,7 @@ class AccountSettingsEdtProfileView(ClientBaseView):
 
     tf_firstname: TextField
     tf_lastname: TextField
-    attach_file_btn: StandardButton
+    photo_container: Container
     file_row: [Row, FileWebSockets]
 
     snack_bar: SnackBar
@@ -57,23 +58,16 @@ class AccountSettingsEdtProfileView(ClientBaseView):
             label=await self.client.session.gtv(key='account_settings_edit_profile_lastname'),
             value=self.account.lastname,
         )
-        self.attach_file_btn = StandardButton(
-            content=Row(
-                controls=[
-                    Text(
-                        value=await self.client.session.gtv(key='account_settings_edit_profile_photo'),
-                    ),
-                ],
-                alignment=MainAxisAlignment.CENTER,
-            ),
-            url=self.file_keys.url,
-            # color=colors.ON_BACKGROUND,
-            # bgcolor=colors.BACKGROUND,
-        )
         self.file_row = FileWebSockets(
             get_key=self.get_key,
             update_file_keys=self.update_file_keys,
             create_file_row_controls=self.create_file_row_controls,
+        )
+        self.photo_container = Container(
+            content=self.file_row,
+            url=self.file_keys.url,
+            ink=True,
+            alignment=alignment.center,
         )
         self.snack_bar = SnackBar(
             content=Text(
@@ -90,8 +84,8 @@ class AccountSettingsEdtProfileView(ClientBaseView):
                         controls=[
                             self.tf_firstname,
                             self.tf_lastname,
-                            self.attach_file_btn,
-                            self.file_row
+                            SubTitle(value=await self.client.session.gtv(key='account_settings_edit_profile_photo')),
+                            self.photo_container,
                         ],
                         scroll=ScrollMode.AUTO
                     ),
@@ -121,8 +115,8 @@ class AccountSettingsEdtProfileView(ClientBaseView):
     async def update_file_keys(self, key: str):
         self.file_key = key
         self.file_keys = await self.client.session.api.client.files.keys.create()
-        self.attach_file_btn.url = self.file_keys.url
-        self.attach_file_btn.update()
+        self.photo_container.url = self.file_keys.url
+        await self.photo_container.update_async()
 
     async def create_file_row_controls(self, files: list) -> list[Control]:
         if not files and self.account['file']:

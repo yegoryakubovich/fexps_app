@@ -67,6 +67,11 @@ class AccountTab(BaseTab):
                         on_click=self.settings,
                     ),
                     Setting(
+                        name='account_notifications',
+                        icon=Icons.NOTIFICATIONS,
+                        on_click=self.notification,
+                    ),
+                    Setting(
                         name='account_requisite_data',
                         icon=Icons.METHOD,
                         on_click=self.requisite_data,
@@ -210,6 +215,10 @@ class AccountTab(BaseTab):
     async def settings(self, _):
         from app.views.client.account.settings.get import AccountSettingsView
         await self.client.change_view(view=AccountSettingsView())
+
+    async def notification(self, _):
+        from app.views.client.account.notification import AccountNotificationView
+        await self.client.change_view(view=AccountNotificationView())
 
     async def requisite_data(self, _):
         from app.views.client.account.requisite_data.get_list import RequisiteDataListView
