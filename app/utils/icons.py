@@ -83,3 +83,4 @@ class Icons:
     CONTACT = get_svg('contact')
     REVERSE = get_svg('reverse')
     SETTINGS = get_svg('settings')
+    SEARCH = get_svg('search')

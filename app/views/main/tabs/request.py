@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 from functools import partial
+from typing import Optional
 
 from flet_core import Column, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, Container
 
@@ -50,11 +50,13 @@ class RequestTab(BaseTab):
     total_pages: int = 1
     selected_chip: str
     partner_chip: bool
+    search_value: Optional[str]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.selected_chip = Chips.COMPLETED
         self.partner_chip = False
+        self.search_value = None
 
     async def get_request_cards(self, requests: list) -> list[StandardButton]:
         cards: list[StandardButton] = []
@@ -227,7 +229,7 @@ class RequestTab(BaseTab):
 
     async def update_history_request_column(self, update: bool = True):
         response = await self.client.session.api.client.requests.search(
-            id_=self.tf_history_requests_search.value,
+            id_=self.search_value,
             is_active=self.selected_chip in [Chips.ACTIVE, Chips.ALL],
             is_completed=self.selected_chip in [Chips.COMPLETED, Chips.ALL],
             is_canceled=self.selected_chip in [Chips.CANCELED, Chips.ALL],
@@ -236,6 +238,11 @@ class RequestTab(BaseTab):
         )
         self.history_requests = response.requests
         self.total_pages = response.pages
+        self.tf_history_requests_search = TextField(
+            label=await self.client.session.gtv(key='request_history_search'),
+            value=self.search_value,
+            width=250,
+        )
         self.history_requests_column = Column(
             controls=[
                 Row(
@@ -246,7 +253,21 @@ class RequestTab(BaseTab):
                             font_family=Fonts.BOLD,
                             color=colors.ON_BACKGROUND,
                         ),
-                        self.tf_history_requests_search,
+                        Row(
+                            controls=[
+                                self.tf_history_requests_search,
+                                StandardButton(
+                                    content=Image(
+                                        src=Icons.SEARCH,
+                                        height=14,
+                                        color=colors.ON_PRIMARY_CONTAINER,
+                                    ),
+                                    on_click=self.change_request_search,
+                                    bgcolor=colors.PRIMARY_CONTAINER
+                                ),
+                            ],
+                            spacing=8,
+                        ),
                     ],
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
                 ),
@@ -266,13 +287,9 @@ class RequestTab(BaseTab):
             ],
         )
         if update:
-            await self.history_requests_column.update_async()
+            await self.update_async()
 
     async def construct(self):
-        self.tf_history_requests_search = TextField(
-            label=await self.client.session.gtv(key='request_history_search'),
-            on_change=self.change_request_search,
-        )
         await self.update_current_request_column(update=False)
         await self.update_history_request_column(update=False)
         self.scroll = ScrollMode.AUTO
@@ -294,7 +311,9 @@ class RequestTab(BaseTab):
         ]
 
     async def change_request_search(self, _=None):
-        await self.update_history_request_column(update=True)
+        self.search_value = self.tf_history_requests_search.value
+        await self.construct()
+        await self.update_async()
 
     async def request_create(self, _):
         from app.views.client.requests import RequestCreateView
