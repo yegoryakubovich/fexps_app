@@ -17,10 +17,10 @@
 
 from base64 import b64encode
 
-from flet_core import Column, Container, ScrollMode, Row, Image, ImageFit, alignment, Control
+from flet_core import Column, Container, ScrollMode, Row, Image, ImageFit, alignment, Control, colors, MainAxisAlignment
 
 from app.controls.button import StandardButton
-from app.controls.information import Text, SnackBar, SubTitle
+from app.controls.information import Text, SnackBar
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts
@@ -36,8 +36,8 @@ class AccountSettingsEdtProfileView(ClientBaseView):
 
     tf_firstname: TextField
     tf_lastname: TextField
-    photo_container: Container
     file_row: [Row, FileWebSockets]
+    btn_edit_photo: StandardButton
 
     snack_bar: SnackBar
 
@@ -63,11 +63,12 @@ class AccountSettingsEdtProfileView(ClientBaseView):
             update_file_keys=self.update_file_keys,
             create_file_row_controls=self.create_file_row_controls,
         )
-        self.photo_container = Container(
-            content=self.file_row,
+        self.btn_edit_photo = StandardButton(
+            content=Text(
+                value=await self.client.session.gtv(
+                    key='account_settings_edit_profile_edit_photo'),
+            ),
             url=self.file_keys.url,
-            ink=True,
-            alignment=alignment.center,
         )
         self.snack_bar = SnackBar(
             content=Text(
@@ -84,8 +85,19 @@ class AccountSettingsEdtProfileView(ClientBaseView):
                         controls=[
                             self.tf_firstname,
                             self.tf_lastname,
-                            SubTitle(value=await self.client.session.gtv(key='account_settings_edit_profile_photo')),
-                            self.photo_container,
+                            Row(
+                                controls=[
+                                    Text(
+                                        value=await self.client.session.gtv(key='account_settings_edit_profile_photo'),
+                                        size=24,
+                                        font_family=Fonts.BOLD,
+                                        color=colors.ON_BACKGROUND,
+                                    ),
+                                    self.btn_edit_photo,
+                                ],
+                                alignment=MainAxisAlignment.SPACE_BETWEEN,
+                            ),
+                            self.file_row,
                         ],
                         scroll=ScrollMode.AUTO
                     ),
@@ -115,8 +127,8 @@ class AccountSettingsEdtProfileView(ClientBaseView):
     async def update_file_keys(self, key: str):
         self.file_key = key
         self.file_keys = await self.client.session.api.client.files.keys.create()
-        self.photo_container.url = self.file_keys.url
-        await self.photo_container.update_async()
+        self.btn_edit_photo.url = self.file_keys.url
+        await self.btn_edit_photo.update_async()
 
     async def create_file_row_controls(self, files: list) -> list[Control]:
         if not files and self.account['file']:

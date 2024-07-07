@@ -37,7 +37,7 @@ class ChatView(ClientBaseView):
     order_id: int
 
     tf_message: TextField
-    attach_file_btn: StandardButton
+    btn_attach_file: StandardButton
 
     def __init__(self, order_id: int):
         super().__init__()
@@ -73,7 +73,7 @@ class ChatView(ClientBaseView):
             update_file_keys=self.update_file_keys,
             create_file_row_controls=self.create_file_row_controls,
         )
-        self.attach_file_btn = StandardButton(
+        self.btn_attach_file = StandardButton(
             content=Image(
                 src=Icons.CLIP,
                 width=48,
@@ -106,7 +106,7 @@ class ChatView(ClientBaseView):
                         controls=[
                             Row(
                                 controls=[
-                                    self.attach_file_btn,
+                                    self.btn_attach_file,
                                     self.tf_message,
                                     StandardButton(
                                         content=Image(
@@ -139,8 +139,8 @@ class ChatView(ClientBaseView):
     async def update_file_keys(self, key: str):
         self.send_key = key
         self.file_keys = await self.client.session.api.client.files.keys.create()
-        self.attach_file_btn.url = self.file_keys.url
-        self.attach_file_btn.update()
+        self.btn_attach_file.url = self.file_keys.url
+        self.btn_attach_file.update()
 
     @staticmethod
     async def create_file_row_controls(files: list) -> list[Control]:
