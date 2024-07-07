@@ -28,7 +28,7 @@ from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, value_to_str
 from app.utils.constants.order import OrderStates
-from app.utils.constants.request import RequestStates
+from app.utils.constants.request import RequestStates, RequestTypes
 from app.utils.value import requisite_value_to_str, get_fix_rate
 from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView

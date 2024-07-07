@@ -19,6 +19,7 @@ import asyncio
 import datetime
 import json
 from base64 import b64encode
+from functools import partial
 
 import aiohttp
 from flet_core import Column, UserControl, Control, colors, ScrollMode, Container, Row, padding, \
@@ -40,6 +41,7 @@ class ChatWebSockets(UserControl):
     @staticmethod
     async def create_message_card(
             gtv: callable,
+            open_link: callable,
             account_id: int,
             message: dict,
             deviation: int = 0,
@@ -127,7 +129,8 @@ class ChatWebSockets(UserControl):
                             ],
                             tight=True,
                         ),
-                        url=file['url'],
+                        url=file['open_url'],
+                        on_long_press=partial(open_link, file['download_url']),
                         bgcolor=colors.PRIMARY_CONTAINER,
                         color=color,
                     ),
@@ -171,15 +174,14 @@ class ChatWebSockets(UserControl):
                 ),
                 bgcolor=bgcolor,
                 padding=padding.symmetric(vertical=16, horizontal=16),
-
             ),
             alignment=custom_alignment,
-
         )
 
     def __init__(
             self,
             gtv: callable,
+            open_link: callable,
             account_id: int,
             token: str,
             order_id: int,
@@ -188,6 +190,7 @@ class ChatWebSockets(UserControl):
     ):
         super().__init__()
         self.gtv = gtv
+        self.open_link = open_link
         self.token = token
         self.account_id = account_id
         self.order_id = order_id
@@ -223,6 +226,7 @@ class ChatWebSockets(UserControl):
             self.control_list.append(
                 await self.create_message_card(
                     gtv=self.gtv,
+                    open_link=self.open_link,
                     account_id=self.account_id,
                     message=json.loads(message.data),
                     deviation=self.deviation,

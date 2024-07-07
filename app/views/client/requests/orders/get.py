@@ -19,7 +19,7 @@ from functools import partial
 from typing import Optional
 
 from flet_core import Column, Container, Row, Divider, MainAxisAlignment, \
-    padding, Image, colors, ScrollMode, AlertDialog, IconButton, icons
+    padding, Image, colors, ScrollMode, AlertDialog, IconButton, icons, SelectionArea
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, InformationContainer
@@ -111,11 +111,13 @@ class RequestOrderView(ClientBaseView):
                         ),
                         Row(
                             controls=[
-                                Text(
-                                    value=field_info_str,
-                                    size=14,
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=self.method.color,
+                                SelectionArea(
+                                    content=Text(
+                                        value=field_info_str,
+                                        size=14,
+                                        font_family=Fonts.SEMIBOLD,
+                                        color=self.method.color,
+                                    ),
                                 ),
                                 StandardButton(
                                     content=Image(
@@ -150,8 +152,16 @@ class RequestOrderView(ClientBaseView):
                     ),
                     Row(
                         controls=[
+                            SelectionArea(
+                                content=Text(
+                                    value=value_to_str(currency_value),
+                                    size=14,
+                                    font_family=Fonts.SEMIBOLD,
+                                    color=self.method.color,
+                                ),
+                            ),
                             Text(
-                                value=currency_value_str,
+                                value=self.currency.id_str.upper(),
                                 size=14,
                                 font_family=Fonts.SEMIBOLD,
                                 color=self.method.color,

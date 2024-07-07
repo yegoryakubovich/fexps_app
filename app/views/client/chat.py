@@ -53,6 +53,7 @@ class ChatView(ClientBaseView):
         old_messages_controls = [
             await ChatWebSockets.create_message_card(
                 gtv=self.client.session.gtv,
+                open_link=self.open_link,
                 account_id=account.id,
                 message=message,
             )
@@ -60,6 +61,7 @@ class ChatView(ClientBaseView):
         ]
         self.chat = ChatWebSockets(
             account_id=account.id,
+            open_link=self.open_link,
             gtv=self.client.session.gtv,
             token=self.client.session.token,
             order_id=self.order_id,
@@ -203,3 +205,6 @@ class ChatView(ClientBaseView):
         self.tf_message.value = None
         await self.file_row.rebuild()
         await self.tf_message.update_async()
+
+    async def open_link(self, url: str, _=None):
+        self.client.page.launch_url(url=url)

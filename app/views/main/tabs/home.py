@@ -25,6 +25,7 @@ from app.controls.button import Chip, StandardButton
 from app.controls.information import Card, Text, InformationContainer, SubTitle
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts, Icons, value_to_float, value_to_str
+from app.utils.constants.request import RequestTypes
 from app.views.client.requests import RequestView
 from app.views.main.tabs.base import BaseTab
 
