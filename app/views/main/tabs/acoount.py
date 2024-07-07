@@ -172,7 +172,7 @@ class AccountTab(BaseTab):
                                             color=colors.SECONDARY if account_icon_src else None
                                         ),
                                         bgcolor=colors.ON_PRIMARY,
-                                        radius=32,
+                                        radius=64,
                                     ),
                                     Text(
                                         value=f'{firstname} {lastname}',
