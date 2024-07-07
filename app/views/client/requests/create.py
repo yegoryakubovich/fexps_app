@@ -26,7 +26,7 @@ from app.controls.button import StandardButton
 from app.controls.information import SubTitle, Text
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import ClientBaseView
-from app.utils import Icons, Fonts, Error
+from app.utils import Icons, Fonts, Error, value_to_float
 from app.utils.calculations.requests.rate import calculate_request_rate_all_by_input_currency_value, \
     calculate_request_rate_all_by_output_currency_value, calculate_request_rate_input_by_input_currency_value, \
     calculate_request_rate_input_by_input_value, calculate_request_rate_output_by_output_value, \
@@ -62,6 +62,7 @@ class RequestCreateView(ClientBaseView):
     # input
     input_column: Column
     tf_input_value: TextField
+    t_input_available_sum: Text
     dd_input_currency: Dropdown
     dd_input_method: Dropdown
     # common
@@ -69,6 +70,7 @@ class RequestCreateView(ClientBaseView):
     # output
     output_column: Column
     tf_output_value: TextField
+    t_output_available_sum: Text
     dd_output_currency: Dropdown
     dd_output_method: Dropdown
     dd_output_requisite_data: Dropdown
@@ -128,6 +130,7 @@ class RequestCreateView(ClientBaseView):
             on_change=partial(self.change_currency, 'input'),
             expand=2,
         )
+        self.t_input_available_sum = Text(            value=0        )
         self.dd_input_method = Dropdown(
             label=await self.client.session.gtv(key='request_create_input_method'),
             on_change=self.change_method,
@@ -142,6 +145,15 @@ class RequestCreateView(ClientBaseView):
                         self.dd_input_currency,
                     ],
                     spacing=10,
+                ),
+                Row(
+                    controls=[
+                        Text(
+                            value=await self.client.session.gtv(key='request_create_available_sum'),
+                        ),
+                        self.t_input_available_sum,
+                    ],
+                    spacing=10
                 ),
                 self.dd_input_method,
             ],
@@ -188,6 +200,7 @@ class RequestCreateView(ClientBaseView):
             on_change=self.calculation,
             expand=4,
         )
+        self.t_output_available_sum = Text(            value=0        )
         self.dd_output_currency = Dropdown(
             label=await self.client.session.gtv(key='currency'),
             options=await self.get_currency_options(),
@@ -226,6 +239,15 @@ class RequestCreateView(ClientBaseView):
                         self.dd_output_currency,
                     ],
                     spacing=10,
+                ),
+                Row(
+                    controls=[
+                        Text(
+                            value=await self.client.session.gtv(key='request_create_available_sum'),
+                        ),
+                        self.t_output_available_sum,
+                    ],
+                    spacing=10
                 ),
                 self.dd_output_method,
                 Row(
@@ -331,20 +353,38 @@ class RequestCreateView(ClientBaseView):
         if [self.dd_input_currency.value, self.dd_output_currency.value].count(None) == 2:
             return
         input_method_id, output_method_id = None, None
+        if self.dd_input_method.value and self.dd_input_method.value != settings.coin_name:
+            input_method_id = self.dd_input_method.value
+            try:
+                input_method = await self.client.session.api.client.methods.get(id_=input_method_id)
+                self.t_input_available_sum.value = value_to_float(
+                    value=input_method['input_requisites_sum'],
+                    decimal=input_method['currency']['decimal'],
+                )
+                await self.t_input_available_sum.update_async()
+            except:
+                pass
+        if self.dd_output_method.value and self.dd_output_method.value != settings.coin_name:
+            output_method_id = self.dd_output_method.value
+            try:
+                output_method = await self.client.session.api.client.methods.get(id_=output_method_id)
+                self.t_output_available_sum.value = value_to_float(
+                    value=output_method['output_requisites_sum'],
+                    decimal=output_method['currency']['decimal'],
+                )
+                await self.t_output_available_sum.update_async()
+            except:
+                pass
         if self.dd_input_currency.value == settings.coin_name:
             request_type = 'output'
-            output_method_id = self.dd_output_method.value
             if not output_method_id:
                 return
         elif self.dd_output_currency.value == settings.coin_name:
             request_type = 'input'
-            input_method_id = self.dd_input_method.value
             if not input_method_id:
                 return
         else:
             request_type = 'all'
-            input_method_id = self.dd_input_method.value
-            output_method_id = self.dd_output_method.value
             if not input_method_id or not output_method_id:
                 return
         try:
