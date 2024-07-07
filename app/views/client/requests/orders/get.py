@@ -16,6 +16,7 @@
 
 
 from functools import partial
+from typing import Optional
 
 from flet_core import Column, Container, Row, Divider, MainAxisAlignment, \
     padding, Image, colors, ScrollMode, AlertDialog, IconButton, icons
@@ -25,12 +26,14 @@ from app.controls.information import Text, InformationContainer
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, Error, value_to_int
+from app.utils.constants.order import OrderStates, OrderTypes
 from app.utils.value import value_to_str, requisite_value_to_str
 from fexps_api_client.utils import ApiException
 
 
 class RequestOrderView(ClientBaseView):
     route = '/client/request/order/get'
+
     order = dict
     order_request = dict
     request = dict
@@ -38,6 +41,7 @@ class RequestOrderView(ClientBaseView):
     currency = dict
 
     info_card: InformationContainer
+    inactive: Optional[bool]
 
     chat_button: StandardButton
     back_button: StandardButton
@@ -59,6 +63,7 @@ class RequestOrderView(ClientBaseView):
         self.order_id = order_id
         self.dialog = AlertDialog()
         self.tf_value = TextField()
+        self.inactive = None
 
     async def update_info_card(self, update: bool = True) -> None:
         currency_value = value_to_float(value=self.order.currency_value, decimal=self.currency.decimal)
@@ -423,6 +428,11 @@ class RequestOrderView(ClientBaseView):
         self.dialog = AlertDialog(modal=True)
         await self.set_type(loading=True)
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
+        if self.inactive is not None:
+            if not self.inactive and self.order.state in [OrderStates.COMPLETED, OrderStates.CANCELED]:
+                await self.set_type(loading=False)
+                await self.client.change_view(go_back=True, delete_current=True)
+                return
         self.order_request = self.order.order_request
         self.currency = self.order.currency
         self.request = self.order.request
@@ -441,7 +451,7 @@ class RequestOrderView(ClientBaseView):
             ),
         ]
         await self.update_chat_button(update=False)
-        await self.update_chat_button(update=False)
+        self.inactive = False
         if self.order_request:
             if self.client.session.current_wallet.id != self.order_request.wallet.id:
                 await self.update_order_request_canceled_button(update=False)
@@ -454,10 +464,10 @@ class RequestOrderView(ClientBaseView):
                         ]
                     ),
                 ]
-        elif self.order.type == 'input':
-            if self.order.state == 'waiting':
+        elif self.order.type == OrderTypes.INPUT:
+            if self.order.state == OrderStates.WAITING:
                 pass
-            elif self.order.state == 'payment':
+            elif self.order.state == OrderStates.PAYMENT:
                 await self.update_order_request_create_update_value_button(update=False)
                 await self.update_order_request_create_recreate_button(update=False)
                 await self.update_order_request_create_cancel_button(update=False)
@@ -477,14 +487,14 @@ class RequestOrderView(ClientBaseView):
                         ],
                     ),
                 ]
-            elif self.order.state == 'confirmation':
+            elif self.order.state == OrderStates.CONFIRMATION:
                 pass
-            else:  # completed, canceled
+            elif self.order.state in [OrderStates.COMPLETED, OrderStates.CANCELED]:
+                self.inactive = True
+        elif self.order.type == OrderTypes.OUTPUT:
+            if self.order.state == OrderStates.WAITING:
                 pass
-        elif self.order.type == 'output':
-            if self.order.state == 'waiting':
-                pass
-            elif self.order.state == 'payment':
+            elif self.order.state == OrderStates.PAYMENT:
                 await self.update_order_request_create_update_value_button(update=False)
                 await self.update_order_request_create_recreate_button(update=False)
                 await self.update_order_request_create_cancel_button(update=False)
@@ -498,7 +508,7 @@ class RequestOrderView(ClientBaseView):
                         spacing=8,
                     ),
                 ]
-            elif self.order.state == 'confirmation':
+            elif self.order.state == OrderStates.CONFIRMATION:
                 await self.update_payment_confirmation_cancel_button(update=False)
                 await self.update_payment_confirmation_confirm_button(update=False)
                 buttons += [
@@ -509,8 +519,8 @@ class RequestOrderView(ClientBaseView):
                         ]
                     ),
                 ]
-            else:  # completed, canceled
-                pass
+            elif self.order.state in [OrderStates.COMPLETED, OrderStates.CANCELED]:
+                self.inactive = True
         buttons += [
             Row(
                 controls=[

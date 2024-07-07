@@ -24,6 +24,7 @@ from app.controls.information import SubTitle, Text
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Icons, Fonts, value_to_float, Error, value_to_int
+from app.utils.constants.order import OrderStates
 from app.utils.value import requisite_value_to_str
 from app.views.client.requisites.orders.get import RequisiteOrderView
 from fexps_api_client.utils import ApiException
@@ -60,7 +61,7 @@ class RequisiteView(ClientBaseView):
             value = value_to_float(value=order.currency_value, decimal=currency.decimal)
             value_str = f'{value} {currency.id_str.upper()}'
             color, bgcolor = colors.ON_PRIMARY, colors.PRIMARY
-            if order.state in ['completed', 'canceled']:
+            if order.state in [OrderStates.COMPLETED, OrderStates.CANCELED]:
                 color, bgcolor = colors.ON_PRIMARY_CONTAINER, colors.PRIMARY_CONTAINER
             order_info_str = ''
             if order.requisite_scheme_fields:

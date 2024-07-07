@@ -27,6 +27,8 @@ from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, value_to_str
+from app.utils.constants.order import OrderStates
+from app.utils.constants.request import RequestStates
 from app.utils.value import requisite_value_to_str, get_fix_rate
 from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView
@@ -97,7 +99,7 @@ class RequestView(ClientBaseView):
     async def update_info_card(self, update: bool = True) -> None:
         rate = value_to_float(value=self.request.rate, decimal=self.request.rate_decimal)
         input_currency_id_str, output_currency_id_str = '', ''
-        if self.request.type == 'input':
+        if self.request.type == RequestTypes.INPUT:
             input_currency = self.request.input_method.currency
             input_currency_id_str = input_currency.id_str.upper()
             input_value = value_to_float(
@@ -105,7 +107,7 @@ class RequestView(ClientBaseView):
                 decimal=input_currency.decimal,
             )
             output_value = value_to_float(value=self.request.input_value)
-        elif self.request.type == 'output':
+        elif self.request.type == RequestTypes.OUTPUT:
             input_value = value_to_float(value=self.request.output_value)
             output_currency = self.request.output_method.currency
             output_currency_id_str = output_currency.id_str.upper()
@@ -372,7 +374,7 @@ class RequestView(ClientBaseView):
             value = value_to_float(value=order.currency_value, decimal=currency.decimal)
             value_str = f'{value} {currency.id_str.upper()}'
             color, bgcolor = colors.ON_PRIMARY, colors.PRIMARY
-            if order.state in ['completed', 'canceled']:
+            if order.state in [OrderStates.COMPLETED, OrderStates.CANCELED]:
                 color, bgcolor = colors.ON_PRIMARY_CONTAINER, colors.PRIMARY_CONTAINER
             order_info_str = ''
             if order.requisite_scheme_fields:
@@ -486,7 +488,7 @@ class RequestView(ClientBaseView):
                     ]
                 ),
             ]
-        elif self.request.state in ['completed', 'canceled']:
+        elif self.request.state in [RequestStates.COMPLETED, RequestStates.CANCELED]:
             await self.update_orders_row(update=False)
             controls += [
                 self.orders_row,

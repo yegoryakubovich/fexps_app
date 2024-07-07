@@ -212,7 +212,7 @@ class HomeTab(BaseTab):
         for request in self.current_requests:
             state_str = await self.client.session.gtv(key=f'request_state_{request.state}')
             input_currency_id_str, output_currency_id_str, rate_currency_id_str = '', '', ''
-            if request.type == 'input':
+            if request.type == RequestTypes.INPUT:
                 input_currency = request.input_method.currency
                 input_currency_id_str = input_currency.id_str.upper()
                 input_value = value_to_float(
@@ -220,7 +220,7 @@ class HomeTab(BaseTab):
                     decimal=input_currency.decimal,
                 )
                 output_value = value_to_float(value=request.input_value)
-            elif request.type == 'output':
+            elif request.type == RequestTypes.OUTPUT:
                 input_value = value_to_float(value=request.output_value)
                 output_currency = request.output_method.currency
                 output_currency_id_str = output_currency.id_str.upper()
