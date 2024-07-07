@@ -18,6 +18,7 @@
 from flet_core import TextField as FletTextField, colors, TextStyle
 
 from app.utils import Fonts
+from config import settings
 
 
 class TextField(FletTextField):
@@ -27,9 +28,11 @@ class TextField(FletTextField):
         self.text_style = TextStyle(
             font_family=Fonts.REGULAR,
             color=colors.ON_BACKGROUND,
+            size=settings.get_font_size(multiple=1.5),
         )
         self.label_style = TextStyle(
             font_family=Fonts.REGULAR,
             color=colors.ON_BACKGROUND,
+            size=settings.get_font_size(multiple=1.5),
         )
         self.key_question = key_question

@@ -58,5 +58,9 @@ class Settings(BaseSettings):
             return self.test_file_url
         return self.file_url
 
+    @staticmethod
+    def get_font_size(multiple: float) -> int:
+        return round(8 * multiple)
+
 
 settings = Settings()

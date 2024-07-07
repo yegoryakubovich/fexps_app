@@ -15,9 +15,10 @@
 #
 
 
-from app.controls.button import StandardButton, StandardButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.layout import AdminBaseView
+from config import settings
 
 
 class TimezoneView(AdminBaseView):
@@ -41,12 +42,13 @@ class TimezoneView(AdminBaseView):
                 StandardButton(
                     content=Text(
                         value=await self.client.session.gtv(key='delete'),
+                        size=settings.get_font_size(multiple=1.5),
                     ),
                     on_click=self.delete_timezone,
                     expand=True,
                 ),
             ],
-         )
+        )
 
     async def delete_timezone(self, _):
         await self.client.session.api.admin.timezones.delete(

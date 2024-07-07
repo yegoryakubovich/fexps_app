@@ -60,13 +60,13 @@ class WalletSelectView(ClientBaseView):
                                 controls=[
                                     Text(
                                         value=f'{wallet.name}',
-                                        size=28,
+                                        size=settings.get_font_size(multiple=2),
                                         font_family=Fonts.SEMIBOLD,
                                         color=color,
                                     ),
                                     Text(
                                         value=f'{value}',
-                                        size=28,
+                                        size=settings.get_font_size(multiple=2),
                                         font_family=Fonts.SEMIBOLD,
                                         color=color,
                                     ),
@@ -106,7 +106,10 @@ class WalletSelectView(ClientBaseView):
                     content=Row(
                         controls=[
                             StandardButton(
-                                text=await self.client.session.gtv(key='wallet_create'),
+                                content=Text(
+                                    value=await self.client.session.gtv(key='wallet_create'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                ),
                                 on_click=self.wallet_create_open,
                                 color=colors.ON_PRIMARY_CONTAINER,
                                 bgcolor=colors.PRIMARY_CONTAINER,
@@ -119,14 +122,20 @@ class WalletSelectView(ClientBaseView):
                     content=Row(
                         controls=[
                             StandardButton(
-                                text=await self.client.session.gtv(key='wallet_edit_name'),
+                                content=Text(
+                                    value=await self.client.session.gtv(key='wallet_edit_name'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                ),
                                 on_click=self.wallet_edit_name_open,
                                 color=colors.ON_PRIMARY_CONTAINER,
                                 bgcolor=colors.PRIMARY_CONTAINER,
                                 expand=True,
                             ),
                             StandardButton(
-                                text=await self.client.session.gtv(key='wallet_permissions'),
+                                content=Text(
+                                    value=await self.client.session.gtv(key='wallet_permissions'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                ),
                                 on_click=None,
                                 color=colors.ON_PRIMARY_CONTAINER,
                                 bgcolor=colors.PRIMARY_CONTAINER,
@@ -140,7 +149,10 @@ class WalletSelectView(ClientBaseView):
                     content=Row(
                         controls=[
                             StandardButton(
-                                text=await self.client.session.gtv(key='wallet_select'),
+                                content=Text(
+                                    value=await self.client.session.gtv(key='wallet_select'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                ),
                                 on_click=self.switch_wallet,
                                 expand=True,
                             ),
@@ -171,7 +183,7 @@ class WalletSelectView(ClientBaseView):
                         controls=[
                             Text(
                                 value=await self.client.session.gtv(key='wallet_create'),
-                                size=12,
+                                size=settings.get_font_size(multiple=1.5),
                                 font_family=Fonts.BOLD,
                                 color=colors.ON_BACKGROUND,
                             ),
@@ -193,7 +205,10 @@ class WalletSelectView(ClientBaseView):
             Row(
                 controls=[
                     StandardButton(
-                        text=await self.client.session.gtv(key='create'),
+                        content=Text(
+                            value=await self.client.session.gtv(key='create'),
+                            size=settings.get_font_size(multiple=1.5),
+                        ),
                         on_click=self.wallet_create,
                         expand=True,
                     ),
@@ -222,7 +237,7 @@ class WalletSelectView(ClientBaseView):
                         controls=[
                             Text(
                                 value=await self.client.session.gtv(key='wallet_edit_name'),
-                                size=12,
+                                size=settings.get_font_size(multiple=1.5),
                                 font_family=Fonts.BOLD,
                                 color=colors.ON_BACKGROUND,
                             ),
@@ -244,7 +259,10 @@ class WalletSelectView(ClientBaseView):
             Row(
                 controls=[
                     StandardButton(
-                        text=await self.client.session.gtv(key='wallet_edit_name'),
+                        content=Text(
+                            value=await self.client.session.gtv(key='wallet_edit_name'),
+                            size=settings.get_font_size(multiple=1.5),
+                        ),
                         on_click=partial(self.wallet_edit_name, self.selected_wallet_id),
                         expand=True,
                     ),

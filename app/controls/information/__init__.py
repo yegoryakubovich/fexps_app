@@ -19,7 +19,6 @@ from .bottom_sheet import BottomSheet
 from .card import Card
 from .information_container import InformationContainer
 from .loading import Loading
-from .request_info import RequestInfo
 from .snack_bar import SnackBar
 from .subtitle import SubTitle
 from .text import Text

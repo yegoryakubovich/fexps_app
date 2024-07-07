@@ -21,6 +21,7 @@ from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts, value_to_float
+from config import settings
 
 
 class CommissionPackValueView(AdminBaseView):
@@ -61,7 +62,10 @@ class CommissionPackValueView(AdminBaseView):
                         ),
                         Row(controls=[
                             StandardButton(
-                                content=Text(value=await self.client.session.gtv(key='delete')),
+                                content=Text(
+                                    value=await self.client.session.gtv(key='delete'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                ),
                                 on_click=self.commission_pack_value_delete,
                                 expand=True,
                             ),

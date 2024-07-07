@@ -25,6 +25,7 @@ from app.controls.layout import ClientBaseView
 from app.utils import Fonts
 from app.views.client.account.requisite_data.create import RequisiteDataCreateView
 from app.views.client.account.requisite_data.get import RequisiteDataView
+from config import settings
 
 
 class RequisiteDataListView(ClientBaseView):
@@ -47,13 +48,13 @@ class RequisiteDataListView(ClientBaseView):
                             controls=[
                                 Text(
                                     value=requisite_data.name,
-                                    size=18,
+                                    size=settings.get_font_size(multiple=1.9),
                                     font_family=Fonts.SEMIBOLD,
                                     color=colors.ON_PRIMARY_CONTAINER,
                                 ),
                                 Text(
                                     value=requisite_data.currency.id_str.upper(),
-                                    size=18,
+                                    size=settings.get_font_size(multiple=1.9),
                                     font_family=Fonts.SEMIBOLD,
                                     color=colors.ON_PRIMARY_CONTAINER,
                                 ),

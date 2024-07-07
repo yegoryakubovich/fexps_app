@@ -16,6 +16,8 @@
 
 
 from flet_core import Row
+
+from config import settings
 from fexps_api_client.utils import ApiException
 
 from app.controls.button import StandardButton
@@ -56,6 +58,7 @@ class TextTranslationView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='save'),
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.update_translation,
                             expand=True,
@@ -63,6 +66,7 @@ class TextTranslationView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='delete'),
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.delete_translation,
                             expand=True,

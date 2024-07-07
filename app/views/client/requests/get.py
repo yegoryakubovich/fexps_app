@@ -32,6 +32,7 @@ from app.utils.constants.request import RequestStates, RequestTypes
 from app.utils.value import requisite_value_to_str, get_fix_rate
 from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -144,7 +145,7 @@ class RequestView(ClientBaseView):
                 controls=[
                     Text(
                         value=value_str,
-                        size=28,
+                        size=settings.get_font_size(multiple=3),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -168,13 +169,13 @@ class RequestView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_id'),
-                        size=14,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
                     Text(
                         value=f'{self.request.id:08}',
-                        size=14,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -185,13 +186,13 @@ class RequestView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='state'),
-                        size=14,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
                     Text(
                         value=state_row,
-                        size=14,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -202,7 +203,7 @@ class RequestView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='rate'),
-                        size=14,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -210,13 +211,13 @@ class RequestView(ClientBaseView):
                         controls=[
                             Text(
                                 value=rate_str,
-                                size=14,
+                                size=settings.get_font_size(multiple=1.5),
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
                             ),
                             DynamicTimer(
                                 seconds=self.request.rate_fixed_delta,
-                                font_size=14,
+                                font_size=settings.get_font_size(multiple=1.5),
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
                             ),
@@ -232,13 +233,13 @@ class RequestView(ClientBaseView):
                     controls=[
                         Text(
                             value=await self.client.session.gtv(key='request_input_method'),
-                            size=14,
+                            size=settings.get_font_size(multiple=1.5),
                             font_family=Fonts.SEMIBOLD,
                             color=colors.ON_PRIMARY_CONTAINER,
                         ),
                         Text(
                             value=await self.client.session.gtv(key=self.request.input_method.name_text),
-                            size=14,
+                            size=settings.get_font_size(multiple=1.5),
                             font_family=Fonts.SEMIBOLD,
                             color=colors.ON_PRIMARY_CONTAINER,
                         ),
@@ -252,13 +253,13 @@ class RequestView(ClientBaseView):
                     controls=[
                         Text(
                             value=await self.client.session.gtv(key='request_output_method'),
-                            size=14,
+                            size=settings.get_font_size(multiple=1.5),
                             font_family=Fonts.SEMIBOLD,
                             color=colors.ON_PRIMARY_CONTAINER,
                         ),
                         Text(
                             value=await self.client.session.gtv(key=self.request.output_method.name_text),
-                            size=14,
+                            size=settings.get_font_size(multiple=1.5),
                             font_family=Fonts.SEMIBOLD,
                             color=colors.ON_PRIMARY_CONTAINER,
                         ),
@@ -271,13 +272,13 @@ class RequestView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='date'),
-                        size=14,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
                     Text(
                         value=self.request.date.strftime('%Y-%m-%d, %H:%M:%S'),
-                        size=14,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -308,7 +309,7 @@ class RequestView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_confirm_true'),
-                        size=16,
+                        size=settings.get_font_size(multiple=1.7),
                         font_family=Fonts.BOLD,
                     ),
                     self.confirmation_timer,
@@ -328,7 +329,7 @@ class RequestView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_confirm_false'),
-                        size=16,
+                        size=settings.get_font_size(multiple=1.7),
                         font_family=Fonts.BOLD,
                     ),
                     self.confirmation_timer,
@@ -348,7 +349,7 @@ class RequestView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_cancellation_title'),
-                        size=16,
+                        size=settings.get_font_size(multiple=1.7),
                         font_family=Fonts.BOLD,
                     ),
                 ],
@@ -391,7 +392,7 @@ class RequestView(ClientBaseView):
                                 controls=[
                                     Text(
                                         value=f'#{order.id:08}',
-                                        size=10,
+                                        size=settings.get_font_size(multiple=1.2),
                                         font_family=Fonts.SEMIBOLD,
                                         color=color,
                                     ),
@@ -399,7 +400,7 @@ class RequestView(ClientBaseView):
                                         controls=[
                                             Text(
                                                 value=state_str,
-                                                size=12,
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
@@ -409,7 +410,7 @@ class RequestView(ClientBaseView):
                                         controls=[
                                             Text(
                                                 value=order_info_str,
-                                                size=28,
+                                                size=settings.get_font_size(multiple=3),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
@@ -419,7 +420,7 @@ class RequestView(ClientBaseView):
                                         controls=[
                                             Text(
                                                 value=value_str,
-                                                size=16,
+                                                size=settings.get_font_size(multiple=1.7),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),

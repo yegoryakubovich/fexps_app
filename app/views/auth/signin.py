@@ -21,6 +21,7 @@ from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AuthView
 from app.utils import Fonts, Error
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -50,7 +51,7 @@ class AuthenticationView(AuthView):
                                 StandardButton(
                                     content=Text(
                                         value=await self.client.session.gtv(key='sign_in'),
-                                        size=16,
+                                        size=settings.get_font_size(multiple=1.5),
                                     ),
                                     on_click=self.authenticate,
                                     horizontal=54,

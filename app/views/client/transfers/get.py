@@ -55,7 +55,7 @@ class TransferView(ClientBaseView):
                             controls=[
                                 Text(
                                     value=self.transfer.date.strftime(settings.datetime_format),
-                                    size=18,
+                                    size=settings.get_font_size(multiple=2),
                                     font_family=Fonts.SEMIBOLD,
                                     color=colors.ON_PRIMARY,
                                 ),
@@ -77,7 +77,7 @@ class TransferView(ClientBaseView):
                                         Text(
                                             value=short_name.upper(),
                                             font_family=Fonts.SEMIBOLD,
-                                            size=30,
+                                            size=settings.get_font_size(multiple=3),
                                             color=colors.ON_BACKGROUND,
                                         ),
                                     ],
@@ -89,7 +89,7 @@ class TransferView(ClientBaseView):
                             controls=[
                                 Text(
                                     value=value,
-                                    size=64,
+                                    size=settings.get_font_size(multiple=7),
                                     font_family=Fonts.BOLD,
                                     color=colors.ON_PRIMARY,
                                 ),

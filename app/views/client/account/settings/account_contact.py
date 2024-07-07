@@ -24,6 +24,7 @@ from app.controls.button import StandardButton
 from app.controls.information import Text, SnackBar
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -85,6 +86,7 @@ class AccountSettingsAccountContactView(ClientBaseView):
                             StandardButton(
                                 content=Text(
                                     value=await self.client.session.gtv(key='save'),
+                                    size=settings.get_font_size(multiple=1.5),
                                 ),
                                 on_click=self.update_account_contact,
                                 expand=True,

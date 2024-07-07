@@ -78,7 +78,7 @@ class RequisiteDataCreateModel:
                 method_options += [
                     Option(text=method_str, key=method.id),
                 ]
-        self.error_field = Text(value='', size=15, font_family=Fonts.REGULAR)
+        self.error_field = Text(value='', size=settings.get_font_size(multiple=1.5), font_family=Fonts.REGULAR)
         self.tf_name = TextField(label=await self.session.gtv(key='name'))
         self.dd_currency = Dropdown(
             label=await self.session.gtv(key='currency'),
@@ -107,7 +107,7 @@ class RequisiteDataCreateModel:
                     StandardButton(
                         content=Text(
                             value=await self.session.gtv(key='create'),
-                            size=15,
+                            size=settings.get_font_size(multiple=1.5),
                             font_family=Fonts.REGULAR,
                         ),
                         on_click=self.create_requisite_data,

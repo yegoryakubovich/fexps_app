@@ -69,7 +69,7 @@ class RequisiteDataView(ClientBaseView):
                                     f'{await self.client.session.gtv(key="currency")}: {self.method.currency.id_str.upper()}',
                                     f'{await self.client.session.gtv(key="method")}: {method_str}',
                                 ]),
-                                size=24,
+                                size=settings.get_font_size(multiple=2),
                                 font_family=Fonts.MEDIUM,
                                 color=colors.ON_BACKGROUND,
                             ),
@@ -85,12 +85,16 @@ class RequisiteDataView(ClientBaseView):
                             StandardButton(
                                 content=Text(
                                     value=await self.client.session.gtv(key='save'),
+                                    size=settings.get_font_size(multiple=1.5),
                                 ),
                                 on_click=self.update_requisite_data,
                                 expand=True,
                             ),
                             StandardButton(
-                                content=Text(value=await self.client.session.gtv(key='delete')),
+                                content=Text(
+                                    value=await self.client.session.gtv(key='delete'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                ),
                                 on_click=self.delete_requisite_data,
                                 expand=True,
                             ),

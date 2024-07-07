@@ -19,6 +19,7 @@ from flet_core import Row, ScrollMode
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
+from app.controls.information import Text
 from app.controls.input import Dropdown
 from app.controls.layout import AuthView
 from config import settings
@@ -61,7 +62,10 @@ class LanguageView(AuthView):
                 Row(
                     controls=[
                         StandardButton(
-                            text=await self.client.session.gtv(key='next'),
+                            content=Text(
+                                value=await self.client.session.gtv(key='next'),
+                                size=settings.get_font_size(multiple=1.5),
+                            ),
                             on_click=self.select,
                             horizontal=54,
                             expand=True,

@@ -21,6 +21,7 @@ from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField
 from app.utils import Session, Fonts
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -59,7 +60,7 @@ class RequestUpdateNameModel:
                 controls=[
                     Text(
                         value=await self.session.gtv(key='request_change_name_title'),
-                        size=12,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.BOLD,
                         color=colors.ON_BACKGROUND,
                     ),
@@ -79,7 +80,7 @@ class RequestUpdateNameModel:
                     StandardButton(
                         content=Text(
                             value=await self.session.gtv(key='request_edit_name'),
-                            size=15,
+                            size=settings.get_font_size(multiple=1.5),
                             font_family=Fonts.REGULAR,
                         ),
                         on_click=self.edit_name,

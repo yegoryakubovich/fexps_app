@@ -20,6 +20,7 @@ from flet_core import colors
 
 from app.controls.information.text import Text
 from app.utils import Fonts
+from config import settings
 
 
 class Chip(ElevatedButton):
@@ -27,7 +28,7 @@ class Chip(ElevatedButton):
         super().__init__(**kwargs)
         self.content = Text(
             value=name,
-            size=12,
+            size=settings.get_font_size(multiple=1.5),
             font_family=Fonts.BOLD,
             color=colors.ON_PRIMARY,
         )

@@ -20,6 +20,7 @@ from flet_core import Row, ScrollMode
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.layout import AdminBaseView
+from config import settings
 
 
 class ContactView(AdminBaseView):
@@ -43,6 +44,7 @@ class ContactView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='delete'),
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.contact_delete,
                             expand=True,

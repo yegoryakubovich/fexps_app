@@ -23,6 +23,7 @@ from flet_manager.utils import get_svg
 from app.controls.information import Text
 from app.controls.layout.view import View
 from app.utils import Fonts, Icons
+from config import settings
 
 
 class AuthView(View):
@@ -63,7 +64,7 @@ class AuthView(View):
                     controls=[
                         Text(
                             value=title,
-                            size=36,
+                            size=settings.get_font_size(multiple=3.5),
                             font_family=Fonts.SEMIBOLD,
                             color=colors.ON_BACKGROUND,
                             width=None,

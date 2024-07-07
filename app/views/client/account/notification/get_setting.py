@@ -21,6 +21,7 @@ from app.controls.button import StandardButton
 from app.controls.information import Text, SnackBar
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -103,7 +104,7 @@ class AccountNotificationSettingView(ClientBaseView):
                             StandardButton(
                                 content=Text(
                                     value=await self.client.session.gtv(key='confirm'),
-                                    size=20,
+                                    size=settings.get_font_size(multiple=2),
                                     font_family=Fonts.SEMIBOLD,
                                     color=colors.ON_PRIMARY,
                                 ),

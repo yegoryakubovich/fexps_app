@@ -28,6 +28,7 @@ from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, Error, value_to_int
 from app.utils.constants.order import OrderStates, OrderTypes
 from app.utils.value import value_to_str, requisite_value_to_str
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -73,7 +74,7 @@ class RequestOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key=self.method.name_text),
-                        size=28,
+                        size=settings.get_font_size(multiple=3),
                         font_family=Fonts.SEMIBOLD,
                         color=self.method.color,
                     ),
@@ -83,13 +84,13 @@ class RequestOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='state'),
-                        size=14,
+                        size=settings.get_font_size(multiple=1.6),
                         font_family=Fonts.SEMIBOLD,
                         color=self.method.color,
                     ),
                     Text(
                         value=state_str,
-                        size=14,
+                        size=settings.get_font_size(multiple=1.6),
                         font_family=Fonts.SEMIBOLD,
                         color=self.method.color,
                     ),
@@ -105,7 +106,7 @@ class RequestOrderView(ClientBaseView):
                     controls=[
                         Text(
                             value=await self.client.session.gtv(key=scheme_field.get('name_text_key')),
-                            size=14,
+                            size=settings.get_font_size(multiple=1.6),
                             font_family=Fonts.SEMIBOLD,
                             color=self.method.color,
                         ),
@@ -114,7 +115,7 @@ class RequestOrderView(ClientBaseView):
                                 SelectionArea(
                                     content=Text(
                                         value=field_info_str,
-                                        size=14,
+                                        size=settings.get_font_size(multiple=1.6),
                                         font_family=Fonts.SEMIBOLD,
                                         color=self.method.color,
                                     ),
@@ -140,13 +141,12 @@ class RequestOrderView(ClientBaseView):
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
                 ),
             ]
-        currency_value_str = f'{value_to_str(currency_value)} {self.currency.id_str.upper()}'
         info_controls += [
             Row(
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='sum'),
-                        size=14,
+                        size=settings.get_font_size(multiple=1.6),
                         font_family=Fonts.SEMIBOLD,
                         color=self.method.color,
                     ),
@@ -155,14 +155,14 @@ class RequestOrderView(ClientBaseView):
                             SelectionArea(
                                 content=Text(
                                     value=value_to_str(currency_value),
-                                    size=14,
+                                    size=settings.get_font_size(multiple=1.6),
                                     font_family=Fonts.SEMIBOLD,
                                     color=self.method.color,
                                 ),
                             ),
                             Text(
                                 value=self.currency.id_str.upper(),
-                                size=14,
+                                size=settings.get_font_size(multiple=1.6),
                                 font_family=Fonts.SEMIBOLD,
                                 color=self.method.color,
                             ),
@@ -211,13 +211,13 @@ class RequestOrderView(ClientBaseView):
                     value=value_to_str(currency_value),
                     currency=self.currency.id_str.upper(),
                 ),
-                size=20,
+                size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.WHITE,
             ),
             bgcolor=colors.GREEN,
             on_click=self.payment,
-            expand=2,
+            expand=1,
         )
         if update:
             await self.payment_payment_button.update_async()
@@ -235,7 +235,7 @@ class RequestOrderView(ClientBaseView):
                     value=value_to_str(currency_value),
                     currency=self.currency.id_str.upper(),
                 ),
-                size=20,
+                size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.BLACK,
             ),
@@ -250,7 +250,7 @@ class RequestOrderView(ClientBaseView):
         self.payment_confirmation_cancel_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(key='request_order_payment_confirmation_cancel_button'),
-                size=20,
+                size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.BLACK,
             ),
@@ -276,7 +276,7 @@ class RequestOrderView(ClientBaseView):
                     ),
                     Text(
                         value=await self.client.session.gtv(key='chat_button'),
-                        size=20,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -306,7 +306,7 @@ class RequestOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=text_str,
-                        size=20,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.BLACK,
                     ),
@@ -336,7 +336,7 @@ class RequestOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=text_str,
-                        size=20,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.BLACK,
                     ),
@@ -360,7 +360,7 @@ class RequestOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_order_order_request_update_value_button'),
-                        size=12,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -369,7 +369,9 @@ class RequestOrderView(ClientBaseView):
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
             on_click=self.order_request_update_value_open,
-            expand=2,
+            horizontal=12,
+            vertical=8,
+            expand=1,
         )
         if update:
             await self.order_request_create_update_value_button.update_async()
@@ -380,7 +382,7 @@ class RequestOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_order_order_request_recreate_button'),
-                        size=12,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -389,6 +391,8 @@ class RequestOrderView(ClientBaseView):
             ),
             bgcolor=colors.PRIMARY_CONTAINER,
             on_click=self.order_request_recreate,
+            horizontal=12,
+            vertical=8,
             expand=1,
         )
         if update:
@@ -400,7 +404,7 @@ class RequestOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_order_order_request_cancel_button'),
-                        size=12,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.WHITE,
                     ),
@@ -409,6 +413,8 @@ class RequestOrderView(ClientBaseView):
             ),
             bgcolor=colors.RED,
             on_click=self.order_request_cancel,
+            horizontal=12,
+            vertical=8,
             expand=1,
         )
         if update:
@@ -420,7 +426,7 @@ class RequestOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_order_back_button'),
-                        size=20,
+                        size=settings.get_font_size(multiple=2),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -489,7 +495,7 @@ class RequestOrderView(ClientBaseView):
                             self.order_request_create_recreate_button,
                             self.order_request_create_cancel_button,
                         ],
-                        spacing=8,
+                        spacing=6,
                     ),
                     Row(
                         controls=[
@@ -515,7 +521,7 @@ class RequestOrderView(ClientBaseView):
                             self.order_request_create_recreate_button,
                             self.order_request_create_cancel_button,
                         ],
-                        spacing=8,
+                        spacing=6,
                     ),
                 ]
             elif self.order.state == OrderStates.CONFIRMATION:
@@ -612,7 +618,7 @@ class RequestOrderView(ClientBaseView):
                         controls=[
                             Text(
                                 value=await self.client.session.gtv(key='request_order_update_value_button'),
-                                size=12,
+                                size=settings.get_font_size(multiple=1.5),
                                 font_family=Fonts.BOLD,
                                 color=colors.ON_BACKGROUND,
                             ),

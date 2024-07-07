@@ -26,6 +26,7 @@ from app.controls.information.title import Title
 from app.controls.navigation import PaginationWidget
 from app.utils import value_to_float, Fonts, Icons
 from app.views.main.tabs.base import BaseTab
+from config import settings
 
 
 class TypeChips:
@@ -84,7 +85,7 @@ class RequisiteTab(BaseTab):
                                 controls=[
                                     Text(
                                         value=f'#{order.id:08}',
-                                        size=10,
+                                        size=settings.get_font_size(multiple=1.2),
                                         font_family=Fonts.SEMIBOLD,
                                         color=color,
                                     ),
@@ -92,7 +93,7 @@ class RequisiteTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=value_str,
-                                                size=14,
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
@@ -102,7 +103,7 @@ class RequisiteTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=state_str,
-                                                size=12,
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
@@ -253,7 +254,7 @@ class RequisiteTab(BaseTab):
                                 controls=[
                                     Text(
                                         value=f'#{requisite.id:08}',
-                                        size=10,
+                                        size=settings.get_font_size(multiple=1.2),
                                         font_family=Fonts.SEMIBOLD,
                                         color=colors.ON_PRIMARY_CONTAINER,
                                     ),
@@ -261,19 +262,19 @@ class RequisiteTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=type_str,
-                                                size=12,
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY_CONTAINER,
                                             ),
                                             Text(
                                                 value='|',
-                                                size=12,
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY_CONTAINER,
                                             ),
                                             Text(
                                                 value=state_str,
-                                                size=12,
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY_CONTAINER,
                                             ),
@@ -283,7 +284,7 @@ class RequisiteTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=currency_value_str,
-                                                size=14,
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY_CONTAINER,
                                             ),

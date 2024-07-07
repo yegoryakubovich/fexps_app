@@ -23,6 +23,7 @@ from flet_manager.utils import get_svg
 from app.controls.information import Text
 from app.controls.layout.view import View
 from app.utils import Fonts
+from config import settings
 
 
 class ClientSection:
@@ -40,7 +41,7 @@ class ClientSection:
         controls = [
             Text(
                 value=title,
-                size=36,
+                size=settings.get_font_size(multiple=3.5),
                 font_family=Fonts.SEMIBOLD,
             ),
         ]
@@ -57,7 +58,7 @@ class ClientSection:
                             ),
                             Text(
                                 value='Create',
-                                size=13,
+                                size=settings.get_font_size(multiple=1.5),
                                 font_family=Fonts.SEMIBOLD,
                                 color='#FFFFFF',
                             ),

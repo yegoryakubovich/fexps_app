@@ -22,6 +22,7 @@ from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import AdminBaseView
 from app.utils import Error
+from config import settings
 from fexps_api_client.utils import ApiException
 from .get import ContactView
 
@@ -44,7 +45,7 @@ class ContactCreateView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='create'),
-                                size=16,
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.create_currency,
                             expand=True,

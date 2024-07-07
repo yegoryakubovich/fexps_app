@@ -18,7 +18,7 @@
 from flet_core import ScrollMode, Row
 from flet_core.dropdown import Option
 
-from fexps_api_client import FexpsApiClient
+from config import settings
 from fexps_api_client.utils import ApiException
 
 from app.controls.button import StandardButton
@@ -101,7 +101,7 @@ class CountryCreateView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='create'),
-                                size=16,
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.create_country,
                             expand=True,

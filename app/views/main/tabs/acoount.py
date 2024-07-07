@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 from base64 import b64encode
 from functools import partial
 from typing import Any
@@ -129,7 +131,7 @@ class AccountTab(BaseTab):
                             content=Text(
                                 value=await self.client.session.gtv(section.name),
                                 font_family=Fonts.SEMIBOLD,
-                                size=24,
+                                size=settings.get_font_size(multiple=2.5),
                                 color=colors.ON_BACKGROUND,
                             ),
                         ),
@@ -172,18 +174,18 @@ class AccountTab(BaseTab):
                                             color=colors.SECONDARY if account_icon_src else None
                                         ),
                                         bgcolor=colors.ON_PRIMARY,
-                                        radius=64,
+                                        radius=48,
                                     ),
                                     Text(
                                         value=f'{firstname} {lastname}',
                                         font_family=Fonts.SEMIBOLD,
-                                        size=24,
+                                        size=settings.get_font_size(multiple=2.5),
                                         color=colors.ON_BACKGROUND,
                                     ),
                                     Text(
                                         value=f'@{username}',
                                         font_family=Fonts.SEMIBOLD,
-                                        size=12,
+                                        size=settings.get_font_size(multiple=1),
                                         color=colors.ON_BACKGROUND,
                                     ),
                                 ],
@@ -198,7 +200,7 @@ class AccountTab(BaseTab):
                             content=Text(
                                 value=f'{await self.client.session.gtv(key="version")} {settings.version}',
                                 font_family=Fonts.REGULAR,
-                                size=16,
+                                size=settings.get_font_size(multiple=2),
                                 color=colors.ON_BACKGROUND,
                             ),
                             alignment=alignment.center,

@@ -26,6 +26,7 @@ from app.controls.layout import AdminBaseView, Section
 from app.utils import Fonts
 from app.views.admin.roles.permissions import RolePermissionView
 from app.views.admin.roles.permissions.create import RolePermissionCreateView
+from config import settings
 
 
 class RoleView(AdminBaseView):
@@ -54,6 +55,7 @@ class RoleView(AdminBaseView):
                 StandardButton(
                     content=Text(
                         value=await self.client.session.gtv(key='delete'),
+                        size=settings.get_font_size(multiple=1.5),
                     ),
                     on_click=self.delete_role,
                     expand=True,

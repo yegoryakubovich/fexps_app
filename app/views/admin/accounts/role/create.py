@@ -13,14 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 from flet_core import Row, ScrollMode
 from flet_core.dropdown import Option
-from fexps_api_client.utils import ApiException
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import AdminBaseView
+from config import settings
+from fexps_api_client.utils import ApiException
 
 
 class AccountRoleCreateView(AdminBaseView):
@@ -60,7 +63,7 @@ class AccountRoleCreateView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='create'),
-                                size=16,
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.create_article,
                             expand=True,

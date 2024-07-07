@@ -22,6 +22,7 @@ from flet_core import Container, Row, colors
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.utils import Fonts
+from config import settings
 
 
 class PaginationWidget(Container):
@@ -46,21 +47,21 @@ class PaginationWidget(Container):
                 StandardButton(
                     content=Text(
                         value=text_back,
-                        size=12,
+                        size=settings.get_font_size(multiple=1.5),
                     ),
                     on_click=self.on_previous,
                     disabled=self.current_page <= 1,
                 ),
                 Text(
                     value=f'{self.current_page}/{self.total_pages}',
-                    size=16,
+                    size=settings.get_font_size(multiple=1.6),
                     font_family=Fonts.SEMIBOLD,
                     color=colors.ON_BACKGROUND,
                 ),
                 StandardButton(
                     content=Text(
                         value=text_next,
-                        size=12,
+                        size=settings.get_font_size(multiple=1.5),
                     ),
                     on_click=self.on_next,
                     disabled=self.disable_next_button and self.current_page >= self.total_pages,

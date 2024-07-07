@@ -440,7 +440,7 @@ class RequestCreateView(ClientBaseView):
                         controls=[
                             Text(
                                 value=self.requisite_data_model.title,
-                                size=12,
+                                size=settings.get_font_size(multiple=1.5),
                                 font_family=Fonts.BOLD,
                                 color=colors.ON_BACKGROUND,
                             ),

@@ -13,11 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 from flet_core import Row, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.layout import AdminBaseView
+from config import settings
 
 
 class LanguageView(AdminBaseView):
@@ -44,6 +47,7 @@ class LanguageView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='delete'),
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.delete_language,
                             expand=True,

@@ -25,6 +25,7 @@ from app.controls.information.loading import Loading
 from app.controls.information.text import Text
 from app.controls.navigation.icon_text_button import IconTextButton
 from app.utils import Fonts, Icons
+from config import settings
 
 
 class View(BaseView):
@@ -87,7 +88,7 @@ class View(BaseView):
                         ),
                         Text(
                             value=title,
-                            size=36,
+                            size=settings.get_font_size(multiple=3.5),
                             font_family=Fonts.SEMIBOLD,
                             color=colors.ON_BACKGROUND,
                             width=None,

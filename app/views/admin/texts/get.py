@@ -18,15 +18,16 @@
 from functools import partial
 
 from flet_core import Row, Column, ScrollMode, colors
-from fexps_api_client.utils import ApiException
 
-from app.controls.button import StandardButton, StandardButton
+from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.information.card import Card
 from app.controls.information.snack_bar import SnackBar
 from app.controls.input import TextField
 from app.controls.layout import Section, AdminBaseView
 from app.utils import Fonts
+from config import settings
+from fexps_api_client.utils import ApiException
 from .translations.create import TextTranslationCreateView
 from .translations.get import TextTranslationView
 
@@ -77,6 +78,7 @@ class TextView(AdminBaseView):
                                 StandardButton(
                                     content=Text(
                                         value=await self.client.session.gtv(key='save'),
+                                        size=settings.get_font_size(multiple=1.5),
                                         color=colors.ON_PRIMARY_CONTAINER,
                                     ),
                                     on_click=self.update_text,
@@ -85,6 +87,7 @@ class TextView(AdminBaseView):
                                 StandardButton(
                                     content=Text(
                                         value=await self.client.session.gtv(key='delete'),
+                                        size=settings.get_font_size(multiple=1.5),
                                         color=colors.ON_PRIMARY_CONTAINER,
                                     ),
                                     on_click=self.delete_text,
@@ -119,7 +122,7 @@ class TextView(AdminBaseView):
                     ],
                 ),
             ],
-         )
+        )
 
     async def delete_text(self, _):
         await self.client.session.api.admin.texts.delete(

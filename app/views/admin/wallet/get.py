@@ -23,6 +23,7 @@ from app.controls.information import Text
 from app.controls.input import Dropdown, TextField
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts, value_to_float
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -81,6 +82,7 @@ class WalletView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='save'),
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.update_wallet,
                             expand=True,

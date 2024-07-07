@@ -27,6 +27,7 @@ from app.utils import Icons, Fonts, value_to_float, Error, value_to_int
 from app.utils.constants.order import OrderStates
 from app.utils.value import requisite_value_to_str
 from app.views.client.requisites.orders.get import RequisiteOrderView
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -78,7 +79,7 @@ class RequisiteView(ClientBaseView):
                                 controls=[
                                     Text(
                                         value=f'#{order.id:08}',
-                                        size=10,
+                                        size=settings.get_font_size(multiple=1.5),
                                         font_family=Fonts.SEMIBOLD,
                                         color=color,
                                     ),
@@ -86,7 +87,7 @@ class RequisiteView(ClientBaseView):
                                         controls=[
                                             Text(
                                                 value=state_str,
-                                                size=8,
+                                                size=settings.get_font_size(multiple=1),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
@@ -96,7 +97,7 @@ class RequisiteView(ClientBaseView):
                                         controls=[
                                             Text(
                                                 value=order_info_str,
-                                                size=28,
+                                                size=settings.get_font_size(multiple=2),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
@@ -106,7 +107,7 @@ class RequisiteView(ClientBaseView):
                                         controls=[
                                             Text(
                                                 value=value_str,
-                                                size=16,
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
@@ -149,7 +150,7 @@ class RequisiteView(ClientBaseView):
         self.enable_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(key='requisite_enable_button'),
-                size=20,
+                size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.ON_PRIMARY,
             ),
@@ -164,7 +165,7 @@ class RequisiteView(ClientBaseView):
         self.update_value_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(key='requisite_update_value_button'),
-                size=20,
+                size=settings.get_font_size(multiple=2),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.ON_PRIMARY,
             ),
@@ -179,7 +180,7 @@ class RequisiteView(ClientBaseView):
         self.stop_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(key='requisite_stop_button'),
-                size=20,
+                size=settings.get_font_size(multiple=2),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.ON_PRIMARY,
             ),
@@ -194,7 +195,7 @@ class RequisiteView(ClientBaseView):
         self.disable_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(key='requisite_disable_button'),
-                size=20,
+                size=settings.get_font_size(multiple=2),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.ON_PRIMARY,
             ),
@@ -281,7 +282,7 @@ class RequisiteView(ClientBaseView):
                     StandardButton(
                         content=Text(
                             value=await self.client.session.gtv(key='confirm'),
-                            size=15,
+                            size=settings.get_font_size(multiple=1.6),
                             font_family=Fonts.REGULAR,
                         ),
                         on_click=self.requisite_update_value,

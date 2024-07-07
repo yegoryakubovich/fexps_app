@@ -28,6 +28,7 @@ from app.utils import Fonts, Icons, value_to_float, value_to_str
 from app.utils.constants.request import RequestTypes
 from app.views.client.requests import RequestView
 from app.views.main.tabs.base import BaseTab
+from config import settings
 
 
 class Chips:
@@ -75,13 +76,13 @@ class HomeTab(BaseTab):
             controls=[
                 Text(
                     value=hello_text_str,
-                    size=20,
+                    size=settings.get_font_size(multiple=2),
                     font_family=Fonts.MEDIUM,
                     color=colors.ON_BACKGROUND,
                 ),
                 Text(
                     value=f'{self.client.session.account.firstname}.',
-                    size=24,
+                    size=settings.get_font_size(multiple=2.5),
                     font_family=Fonts.SEMIBOLD,
                     color=colors.ON_BACKGROUND,
                 ),
@@ -120,7 +121,7 @@ class HomeTab(BaseTab):
                                     ),
                                     Text(
                                         value=f'{value_str}',
-                                        size=32,
+                                        size=settings.get_font_size(multiple=3),
                                         font_family=Fonts.BOLD,
                                         color=colors.ON_PRIMARY,
                                     ),
@@ -165,7 +166,7 @@ class HomeTab(BaseTab):
                             ),
                             Text(
                                 value=await self.client.session.gtv(key=f'action_make_exchange'),
-                                size=12,
+                                size=settings.get_font_size(multiple=1.5),
                                 font_family=Fonts.BOLD,
                                 color=colors.ON_PRIMARY,
                             ),
@@ -186,7 +187,7 @@ class HomeTab(BaseTab):
                             ),
                             Text(
                                 value=await self.client.session.gtv(key=f'action_send'),
-                                size=12,
+                                size=settings.get_font_size(multiple=1.5),
                                 font_family=Fonts.BOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
                             ),
@@ -257,7 +258,7 @@ class HomeTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=f'#{request.id:08}',
-                                                size=14,
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
                                             ),
@@ -267,7 +268,7 @@ class HomeTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=value_str,
-                                                size=14,
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
                                             ),
@@ -277,7 +278,7 @@ class HomeTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=state_str,
-                                                size=12,
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=colors.ON_PRIMARY,
                                             ),
@@ -380,13 +381,13 @@ class HomeTab(BaseTab):
                                     controls=[
                                         Text(
                                             value=value_str,
-                                            size=18,
+                                            size=settings.get_font_size(multiple=2),
                                             font_family=Fonts.BOLD,
                                             color=colors.ON_PRIMARY_CONTAINER,
                                         ),
                                         Text(
                                             value=date,
-                                            size=12,
+                                            size=settings.get_font_size(multiple=1.5),
                                             font_family=Fonts.REGULAR,
                                             color=colors.ON_PRIMARY_CONTAINER,
                                             text_align=TextAlign.RIGHT,

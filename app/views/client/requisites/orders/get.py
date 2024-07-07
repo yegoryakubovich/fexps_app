@@ -27,6 +27,7 @@ from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons
 from app.utils.constants.order import OrderStates, OrderTypes
 from app.utils.value import value_to_str, requisite_value_to_str
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -68,7 +69,7 @@ class RequisiteOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key=self.method.name_text),
-                        size=28,
+                        size=settings.get_font_size(multiple=3),
                         font_family=Fonts.SEMIBOLD,
                         color=self.method.color,
                     ),
@@ -78,13 +79,13 @@ class RequisiteOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='state'),
-                        size=14,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=self.method.color,
                     ),
                     Text(
                         value=state_str,
-                        size=14,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=self.method.color,
                     ),
@@ -100,7 +101,7 @@ class RequisiteOrderView(ClientBaseView):
                     controls=[
                         Text(
                             value=await self.client.session.gtv(key=scheme_field.get('name_text_key')),
-                            size=14,
+                            size=settings.get_font_size(multiple=1.5),
                             font_family=Fonts.SEMIBOLD,
                             color=self.method.color,
                         ),
@@ -108,7 +109,7 @@ class RequisiteOrderView(ClientBaseView):
                             controls=[
                                 Text(
                                     value=field_info_str,
-                                    size=14,
+                                    size=settings.get_font_size(multiple=1.5),
                                     font_family=Fonts.SEMIBOLD,
                                     color=self.method.color,
                                 ),
@@ -139,7 +140,7 @@ class RequisiteOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='sum'),
-                        size=14,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=self.method.color,
                     ),
@@ -147,7 +148,7 @@ class RequisiteOrderView(ClientBaseView):
                         controls=[
                             Text(
                                 value=currency_value_str,
-                                size=14,
+                                size=settings.get_font_size(multiple=1.5),
                                 font_family=Fonts.SEMIBOLD,
                                 color=self.method.color,
                             ),
@@ -199,7 +200,7 @@ class RequisiteOrderView(ClientBaseView):
                     value=value_to_str(currency_value),
                     currency=self.currency.id_str.upper(),
                 ),
-                size=20,
+                size=settings.get_font_size(multiple=2),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.BLACK,
             ),
@@ -214,7 +215,7 @@ class RequisiteOrderView(ClientBaseView):
         self.payment_confirmation_cancel_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(key='requisite_order_payment_confirmation_cancel_button'),
-                size=20,
+                size=settings.get_font_size(multiple=2),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.BLACK,
             ),
@@ -238,7 +239,7 @@ class RequisiteOrderView(ClientBaseView):
                     value=value_to_str(currency_value),
                     currency=self.currency.id_str.upper(),
                 ),
-                size=20,
+                size=settings.get_font_size(multiple=2),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.WHITE,
             ),
@@ -264,7 +265,7 @@ class RequisiteOrderView(ClientBaseView):
                     ),
                     Text(
                         value=await self.client.session.gtv(key='chat_button'),
-                        size=20,
+                        size=settings.get_font_size(multiple=2),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -288,7 +289,7 @@ class RequisiteOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='requisite_order_back_button'),
-                        size=20,
+                        size=settings.get_font_size(multiple=2),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -322,7 +323,7 @@ class RequisiteOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=text_str,
-                        size=20,
+                        size=settings.get_font_size(multiple=2),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.BLACK,
                     ),
@@ -352,7 +353,7 @@ class RequisiteOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=text_str,
-                        size=20,
+                        size=settings.get_font_size(multiple=2),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.BLACK,
                     ),

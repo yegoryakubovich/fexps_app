@@ -25,6 +25,7 @@ from app.controls.information import Text
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts, Error, value_to_int, value_to_float
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -168,11 +169,17 @@ class MethodView(AdminBaseView):
                                 color=colors.ON_BACKGROUND,
                             ),
                             StandardButton(
-                                content=Text(value=await self.client.session.gtv(key='add_line')),
+                                content=Text(
+                                    value=await self.client.session.gtv(key='add_line'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                ),
                                 on_click=self.schema_fields_add_line,
                             ),
                             StandardButton(
-                                content=Text(value=await self.client.session.gtv(key='remove_line')),
+                                content=Text(
+                                    value=await self.client.session.gtv(key='remove_line'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                ),
                                 on_click=self.schema_fields_remove_line,
                             ),
                         ]),
@@ -185,23 +192,35 @@ class MethodView(AdminBaseView):
                                 color=colors.ON_BACKGROUND,
                             ),
                             StandardButton(
-                                content=Text(value=await self.client.session.gtv(key='add_line')),
+                                content=Text(
+                                    value=await self.client.session.gtv(key='add_line'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                ),
                                 on_click=self.schema_input_fields_add_line,
                             ),
                             StandardButton(
-                                content=Text(value=await self.client.session.gtv(key='remove_line')),
+                                content=Text(
+                                    value=await self.client.session.gtv(key='remove_line'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                ),
                                 on_click=self.schema_input_fields_remove_line,
                             ),
                         ]),
                         Column(controls=self.schema_input_fields),
                         Row(controls=[
                             StandardButton(
-                                content=Text(value=await self.client.session.gtv(key='save')),
+                                content=Text(
+                                    value=await self.client.session.gtv(key='save'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                ),
                                 on_click=self.update_method,
                                 expand=True,
                             ),
                             StandardButton(
-                                content=Text(value=await self.client.session.gtv(key='delete')),
+                                content=Text(
+                                    value=await self.client.session.gtv(key='delete'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                ),
                                 on_click=self.delete_method,
                                 expand=True,
                             ),

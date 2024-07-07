@@ -24,6 +24,7 @@ from app.controls.layout import AuthView
 from app.utils import Fonts, Error
 from app.utils.registration import Registration
 from app.views.auth.signup.second import RegistrationSecondView
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -54,7 +55,7 @@ class RegistrationFirstView(AuthView):
                                 StandardButton(
                                     content=Text(
                                         value=await self.client.session.gtv(key='next_step'),
-                                        size=16,
+                                        size=settings.get_font_size(multiple=1.5),
                                     ),
                                     on_click=self.change_view,
                                     expand=True,

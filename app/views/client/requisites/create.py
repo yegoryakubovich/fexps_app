@@ -177,7 +177,7 @@ class RequisiteCreateView(ClientBaseView):
     async def update_input(self, update: bool = True) -> None:
         self.input_subtitle_text = Text(
             value=None,
-            size=24,
+            size=settings.get_font_size(multiple=2.5),
             font_family=Fonts.BOLD,
             color=colors.ON_BACKGROUND,
         )
@@ -212,7 +212,7 @@ class RequisiteCreateView(ClientBaseView):
                     content=ExpansionTile(
                         title=Text(
                             value=await self.client.session.gtv(key='requisite_create_extra_options'),
-                            size=18,
+                            size=settings.get_font_size(multiple=2),
                             font_family=Fonts.BOLD,
                             color=colors.ON_BACKGROUND,
                         ),
@@ -243,7 +243,7 @@ class RequisiteCreateView(ClientBaseView):
     async def update_output(self, update: bool = True) -> None:
         self.output_subtitle_text = Text(
             value=None,
-            size=24,
+            size=settings.get_font_size(multiple=2.5),
             font_family=Fonts.BOLD,
             color=colors.ON_BACKGROUND,
         )
@@ -302,7 +302,7 @@ class RequisiteCreateView(ClientBaseView):
                     content=ExpansionTile(
                         title=Text(
                             value=await self.client.session.gtv(key='requisite_create_extra_options'),
-                            size=18,
+                            size=settings.get_font_size(multiple=2.5),
                             font_family=Fonts.BOLD,
                             color=colors.ON_BACKGROUND,
                         ),
@@ -507,7 +507,7 @@ class RequisiteCreateView(ClientBaseView):
                         controls=[
                             Text(
                                 value=self.requisite_data_model.title,
-                                size=12,
+                                size=settings.get_font_size(multiple=1.5),
                                 font_family=Fonts.BOLD,
                                 color=colors.ON_BACKGROUND,
                             ),

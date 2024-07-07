@@ -17,6 +17,7 @@
 
 from flet_core import colors, Row
 
+from config import settings
 from .text import Text
 from app.utils import Fonts
 
@@ -27,7 +28,7 @@ class SubTitle(Row):
         self.controls = [
             Text(
                 value=value,
-                size=24,
+                size=settings.get_font_size(multiple=3),
                 font_family=Fonts.BOLD,
                 color=colors.ON_BACKGROUND,
             )

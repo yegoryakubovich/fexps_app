@@ -25,6 +25,7 @@ from app.controls.information import Text
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts, value_to_int, Error
+from config import settings
 from fexps_api_client.utils import ApiException
 from .get import MethodView
 
@@ -138,11 +139,17 @@ class MethodCreateView(AdminBaseView):
                         color=colors.ON_BACKGROUND,
                     ),
                     StandardButton(
-                        content=Text(value=await self.client.session.gtv(key='add_line')),
+                        content=Text(
+                            value=await self.client.session.gtv(key='add_line'),
+                            size=settings.get_font_size(multiple=1.5),
+                        ),
                         on_click=self.schema_fields_add_line,
                     ),
                     StandardButton(
-                        content=Text(value=await self.client.session.gtv(key='delete_line')),
+                        content=Text(
+                            value=await self.client.session.gtv(key='delete_line'),
+                            size=settings.get_font_size(multiple=1.5),
+                        ),
                         on_click=self.schema_fields_delete_line,
                     ),
                 ]),
@@ -150,16 +157,22 @@ class MethodCreateView(AdminBaseView):
                 Row(controls=[
                     Text(
                         value=await self.client.session.gtv(key="admin_method_input_schema_fields"),
-                        size=24,
+                        size=settings.get_font_size(multiple=2),
                         font_family=Fonts.MEDIUM,
                         color=colors.ON_BACKGROUND,
                     ),
                     StandardButton(
-                        content=Text(value=await self.client.session.gtv(key='add_line')),
+                        content=Text(
+                            value=await self.client.session.gtv(key='add_line'),
+                            size=settings.get_font_size(multiple=1.5),
+                        ),
                         on_click=self.schema_input_fields_add_line,
                     ),
                     StandardButton(
-                        content=Text(value=await self.client.session.gtv(key='delete_line')),
+                        content=Text(
+                            value=await self.client.session.gtv(key='delete_line'),
+                            size=settings.get_font_size(multiple=1.5),
+                        ),
                         on_click=self.schema_input_fields_delete_line,
                     ),
                 ]),
@@ -167,7 +180,7 @@ class MethodCreateView(AdminBaseView):
                 StandardButton(
                     content=Text(
                         value=await self.client.session.gtv(key='create'),
-                        size=15,
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.REGULAR,
                     ),
                     on_click=self.create_method,

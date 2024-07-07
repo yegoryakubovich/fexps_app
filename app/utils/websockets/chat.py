@@ -77,13 +77,13 @@ class ChatWebSockets(UserControl):
                     controls=[
                         Text(
                             value=position_str,
-                            size=14,
+                            size=settings.get_font_size(multiple=1.5),
                             font_family=Fonts.SEMIBOLD,
                             color=color,
                         ),
                         Text(
                             value=date.strftime(settings.datetime_format),
-                            size=14,
+                            size=settings.get_font_size(multiple=1.5),
                             font_family=Fonts.SEMIBOLD,
                             color=color,
                         ),
@@ -145,7 +145,7 @@ class ChatWebSockets(UserControl):
                         controls=[
                             Text(
                                 value=text_str,
-                                size=16,
+                                size=settings.get_font_size(multiple=1.6),
                                 font_family=Fonts.SEMIBOLD,
                                 color=color,
                             ),
@@ -159,7 +159,7 @@ class ChatWebSockets(UserControl):
                         controls=[
                             Text(
                                 value=text_str,
-                                size=16,
+                                size=settings.get_font_size(multiple=1.6),
                                 font_family=Fonts.SEMIBOLD,
                                 color=color,
                             ),

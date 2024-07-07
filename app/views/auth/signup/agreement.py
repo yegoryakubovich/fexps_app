@@ -54,6 +54,7 @@ class AgreementRegistrationView(AuthView):
                                 StandardButton(
                                     content=Text(
                                         value=await self.client.session.gtv(key='create_account'),
+                                        size=settings.get_font_size(multiple=1.5),
                                     ),
                                     on_click=self.change_view,
                                     horizontal=54,

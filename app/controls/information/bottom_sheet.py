@@ -79,8 +79,7 @@ class BottomSheet(BottomSheetFlet):
                                                  ],
                                                  alignment=MainAxisAlignment.CENTER
                                              ),
-                                         ]
-                                         if button_title and button_on_click else []
+                                         ] if button_title and button_on_click else []
                             ),
                             spacing=10,
                             tight=True,

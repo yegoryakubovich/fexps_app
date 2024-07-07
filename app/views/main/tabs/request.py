@@ -13,13 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
 from functools import partial
 from typing import Optional
 
 from flet_core import Column, ControlEvent, colors, ScrollMode, Row, MainAxisAlignment, Image, Container
 
 from app.controls.button import Chip, StandardButton
-from app.controls.button.actions import ActionItem
 from app.controls.information import Text, SubTitle, Title
 from app.controls.input import TextField
 from app.controls.navigation import PaginationWidget
@@ -28,6 +29,7 @@ from app.utils.constants.request import RequestTypes
 from app.utils.value import value_to_str
 from app.views.client.requests import RequestView
 from app.views.main.tabs.base import BaseTab
+from config import settings
 
 
 class Chips:
@@ -36,6 +38,15 @@ class Chips:
     CANCELED = 'canceled'
     ALL = 'all'
     PARTNERS = 'partners'
+
+
+class ActionItem:
+    name: str
+    on_click: callable
+
+    def __init__(self, name: str, on_click: callable = None):
+        self.name = name
+        self.on_click = on_click
 
 
 class RequestTab(BaseTab):
@@ -112,19 +123,19 @@ class RequestTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=f'#{request.id:08}',
-                                                size=10,
+                                                size=settings.get_font_size(multiple=1.2),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
                                             Text(
                                                 value='|',
-                                                size=10,
+                                                size=settings.get_font_size(multiple=1.2),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
                                             Text(
                                                 value=date_str,
-                                                size=10,
+                                                size=settings.get_font_size(multiple=1.2),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
@@ -134,7 +145,7 @@ class RequestTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=value_str,
-                                                size=14,
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
@@ -144,7 +155,7 @@ class RequestTab(BaseTab):
                                         controls=[
                                             Text(
                                                 value=state_str,
-                                                size=12,
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
@@ -242,7 +253,7 @@ class RequestTab(BaseTab):
         self.tf_history_requests_search = TextField(
             label=await self.client.session.gtv(key='request_history_search'),
             value=self.search_value,
-            width=250,
+            expand=True,
         )
         self.history_requests_column = Column(
             controls=[
@@ -250,27 +261,22 @@ class RequestTab(BaseTab):
                     controls=[
                         Text(
                             value=await self.client.session.gtv(key='request_history_title'),
-                            size=24,
+                            size=settings.get_font_size(multiple=2),
                             font_family=Fonts.BOLD,
                             color=colors.ON_BACKGROUND,
                         ),
-                        Row(
-                            controls=[
-                                self.tf_history_requests_search,
-                                StandardButton(
-                                    content=Image(
-                                        src=Icons.SEARCH,
-                                        height=14,
-                                        color=colors.ON_PRIMARY_CONTAINER,
-                                    ),
-                                    on_click=self.change_request_search,
-                                    bgcolor=colors.PRIMARY_CONTAINER
-                                ),
-                            ],
-                            spacing=8,
+                        self.tf_history_requests_search,
+                        StandardButton(
+                            content=Image(
+                                src=Icons.SEARCH,
+                                height=14,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                            on_click=self.change_request_search,
+                            bgcolor=colors.PRIMARY_CONTAINER,
                         ),
                     ],
-                    alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    spacing=8,
                 ),
                 Row(
                     controls=await self.get_history_request_chips(),

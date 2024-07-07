@@ -20,6 +20,7 @@ from flet_core import Column
 from app.controls.button import ListItemButton
 from app.controls.layout import ClientBaseView
 from app.utils import Icons
+from config import settings
 
 
 class AccountSettingsView(ClientBaseView):
@@ -35,19 +36,19 @@ class AccountSettingsView(ClientBaseView):
                         ListItemButton(
                             icon=Icons.NOTIFICATIONS,
                             name=await self.client.session.gtv(key='account_settings_edit_profile'),
-                            font_size=24,
+                            font_size=settings.get_font_size(multiple=2),
                             on_click=self.edit_profile,
                         ),
                         ListItemButton(
                             icon=Icons.SECURITY,
                             name=await self.client.session.gtv(key='account_settings_change_password'),
-                            font_size=24,
+                            font_size=settings.get_font_size(multiple=2),
                             on_click=self.change_password,
                         ),
                         ListItemButton(
                             icon=Icons.CONTACT,
                             name=await self.client.session.gtv(key='account_settings_account_contact'),
-                            font_size=24,
+                            font_size=settings.get_font_size(multiple=2),
                             on_click=self.account_contact,
                         ),
 

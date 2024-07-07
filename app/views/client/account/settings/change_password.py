@@ -22,6 +22,7 @@ from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -76,7 +77,7 @@ class AccountSettingsChangePasswordView(ClientBaseView):
                             StandardButton(
                                 content=Text(
                                     value=await self.client.session.gtv(key='next'),
-                                    size=15,
+                                    size=settings.get_font_size(multiple=1.5),
                                     font_family=Fonts.REGULAR,
                                 ),
                                 on_click=self.switch_tf,

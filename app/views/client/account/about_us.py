@@ -29,7 +29,7 @@ class AboutUsView(ClientBaseView):
             title=await self.client.session.gtv(key='about'),
             main_section_controls=[
                 Text(
-                    value='text'
+                    value='text',
                 )
             ],
         )

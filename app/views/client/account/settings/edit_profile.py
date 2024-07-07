@@ -25,6 +25,7 @@ from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts
 from app.utils.websockets.file import FileWebSockets
+from config import settings
 from fexps_api_client.utils import ApiException
 
 
@@ -89,7 +90,7 @@ class AccountSettingsEdtProfileView(ClientBaseView):
                                 controls=[
                                     Text(
                                         value=await self.client.session.gtv(key='account_settings_edit_profile_photo'),
-                                        size=24,
+                                        size=settings.get_font_size(multiple=2),
                                         font_family=Fonts.BOLD,
                                         color=colors.ON_BACKGROUND,
                                     ),

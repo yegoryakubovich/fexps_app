@@ -19,6 +19,7 @@ from flet_core import Row, ScrollMode
 from flet_core.dropdown import Option
 
 from app.controls.input import Dropdown, TextField
+from config import settings
 from fexps_api_client.utils import ApiException
 
 from app.controls.button import StandardButton
@@ -110,6 +111,7 @@ class CountryView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='save'),
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.update_country,
                             expand=True,
@@ -117,6 +119,7 @@ class CountryView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='delete'),
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.delete_country,
                             expand=True,

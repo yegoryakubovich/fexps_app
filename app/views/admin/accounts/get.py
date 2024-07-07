@@ -26,6 +26,7 @@ from app.utils import Fonts, Icons
 from app.views.admin.accounts.contacts import AccountContactView
 from app.views.admin.accounts.role import AccountRoleListView
 from app.views.admin.wallet import WalletListView
+from config import settings
 
 
 class AccountView(AdminBaseView):
@@ -118,6 +119,7 @@ class AccountView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='admin_account_roles'),
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.roles_view,
                             expand=True,
@@ -125,6 +127,7 @@ class AccountView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='admin_account_wallets'),
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.wallets_view,
                             expand=True,
@@ -132,6 +135,7 @@ class AccountView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='admin_account_contacts'),
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.contacts_view,
                             expand=True,
@@ -139,6 +143,7 @@ class AccountView(AdminBaseView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='admin_account_reset_user_password'),
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.reset_password,
                             data=0,

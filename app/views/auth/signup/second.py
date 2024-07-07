@@ -23,6 +23,7 @@ from app.controls.information import Text
 from app.controls.input import Dropdown, TextField
 from app.controls.layout import AuthView
 from app.utils import Error
+from config import settings
 from .contacts import ContactRegistrationView
 
 
@@ -70,7 +71,7 @@ class RegistrationSecondView(AuthView):
                         StandardButton(
                             content=Text(
                                 value=await self.client.session.gtv(key='next_step'),
-                                size=16,
+                                size=settings.get_font_size(multiple=1.5),
                             ),
                             on_click=self.change_view,
                             expand=True,

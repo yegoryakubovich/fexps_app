@@ -22,7 +22,7 @@ from app.controls.information import Text
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts
 from app.views.admin.commissions_packs.values.get_list import CommissionPackValueListView
-from fexps_api_client import FexpsApiClient
+from config import settings
 
 
 class CommissionPackView(AdminBaseView):
@@ -61,6 +61,7 @@ class CommissionPackView(AdminBaseView):
                             StandardButton(
                                 content=Text(
                                     value=await self.client.session.gtv(key='commissions_packs_values_title'),
+                                    size=settings.get_font_size(multiple=1.5),
                                 ),
                                 on_click=self.values_get_list_view,
                                 expand=True,
@@ -68,6 +69,7 @@ class CommissionPackView(AdminBaseView):
                             StandardButton(
                                 content=Text(
                                     value=await self.client.session.gtv(key='delete'),
+                                    size=settings.get_font_size(multiple=1.5),
                                 ),
                                 on_click=self.commission_pack_delete,
                                 expand=True,

@@ -64,7 +64,10 @@ class RequisiteOrderPaymentView(ClientBaseView):
                     create_file_row_controls=self.create_file_row_controls,
                 )
                 self.attach_file_btn = StandardButton(
-                    text=await self.client.session.gtv(key='add_image'),
+                    content=Text(
+                        value=await self.client.session.gtv(key='add_image'),
+                        size=settings.get_font_size(multiple=1.5),
+                    ),
                     url=self.file_keys.url,
                 )
                 result += [
@@ -110,7 +113,7 @@ class RequisiteOrderPaymentView(ClientBaseView):
                             StandardButton(
                                 content=Text(
                                     value=await self.client.session.gtv(key="confirm"),
-                                    size=16,
+                                    size=settings.get_font_size(multiple=1.5),
                                 ),
                                 on_click=self.order_confirm,
                                 expand=True

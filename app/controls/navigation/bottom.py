@@ -13,13 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
+
 from typing import Any, Optional
 
 from flet_core import Column, Container, CrossAxisAlignment, Image, MainAxisAlignment, Row, Text, \
     padding, BoxShadow, colors, margin
 
 from app.utils import Fonts
+from config import settings
 
 
 class BottomNavigationTab(Container):
@@ -67,7 +69,7 @@ class BottomNavigationTab(Container):
         self.text = Text(
             font_family=Fonts.MEDIUM,
             value=self.name,
-            size=12,
+            size=settings.get_font_size(multiple=1.5),
             color=colors.SECONDARY,
         )
 
