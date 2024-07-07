@@ -18,6 +18,7 @@
 import asyncio
 import logging
 from functools import partial
+from typing import Optional
 
 from flet_core import Column, colors, Row, MainAxisAlignment, Container, \
     padding, Image, Divider, UserControl, AlertDialog, ScrollMode
@@ -81,6 +82,7 @@ class RequestView(ClientBaseView):
     orders = list[dict]
 
     info_card: InformationContainer
+    confirmation_timer: Optional[DynamicTimer]
     confirmation_false_button: StandardButton
     confirmation_true_button: StandardButton
     cancellation_button: StandardButton
@@ -90,6 +92,7 @@ class RequestView(ClientBaseView):
         super().__init__()
         self.request_id = request_id
         self.dialog = AlertDialog(modal=True)
+        self.confirmation_timer = None
 
     async def update_info_card(self, update: bool = True) -> None:
         rate = value_to_float(value=self.request.rate, decimal=self.request.rate_decimal)
@@ -292,6 +295,11 @@ class RequestView(ClientBaseView):
         if update:
             await self.info_card.update_async()
 
+    async def update_confirmation_timer(self, update: bool = True):
+        self.confirmation_timer = DynamicTimer(seconds=self.request.confirmation_delta)
+        if update:
+            await self.confirmation_timer.update_async()
+
     async def update_confirmation_true_button(self, update: bool = True) -> None:
         self.confirmation_true_button = StandardButton(
             content=Row(
@@ -301,7 +309,7 @@ class RequestView(ClientBaseView):
                         size=16,
                         font_family=Fonts.BOLD,
                     ),
-                    DynamicTimer(seconds=self.request.confirmation_delta),
+                    self.confirmation_timer,
                 ],
                 alignment=MainAxisAlignment.CENTER,
             ),
@@ -321,7 +329,7 @@ class RequestView(ClientBaseView):
                         size=16,
                         font_family=Fonts.BOLD,
                     ),
-                    DynamicTimer(seconds=self.request.confirmation_delta),
+                    self.confirmation_timer,
                 ],
                 alignment=MainAxisAlignment.CENTER,
             ),
@@ -464,7 +472,10 @@ class RequestView(ClientBaseView):
         controls += [
             self.info_card,
         ]
+        if self.confirmation_timer:
+            self.confirmation_timer.running = False
         if self.request.state == 'confirmation':
+            await self.update_confirmation_timer(update=False)
             await self.update_confirmation_false_button(update=False)
             await self.update_confirmation_true_button(update=False)
             buttons += [
