@@ -30,7 +30,7 @@ from fexps_api_client.utils import ApiException
 
 
 class AccountSettingsEdtProfileView(ClientBaseView):
-    route = '/client/account/settings/edit/profile'
+    route = '/client/account/settings/profile/edit'
 
     account = dict
     file_keys = dict

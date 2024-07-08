@@ -25,6 +25,7 @@ from flet_core import Column, colors, Row, MainAxisAlignment, Container, \
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, SubTitle, InformationContainer
+from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, value_to_str
 from app.utils.constants.order import OrderStates
@@ -83,6 +84,7 @@ class RequestView(ClientBaseView):
     request_edit_name_model: RequestUpdateNameModel
     request = dict
     orders = list[dict]
+    account_client_text = dict
 
     info_card: InformationContainer
     confirmation_timer: Optional[DynamicTimer]
@@ -470,6 +472,10 @@ class RequestView(ClientBaseView):
         await self.set_type(loading=True)
         self.request = await self.client.session.api.client.requests.get(id_=self.request_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_request(request_id=self.request_id)
+        self.account_client_text = await self.client.session.api.client.accounts.clients_texts.get(
+            key=f'request_{self.request.type}_{self.request.state}',
+        )
+        logging.critical(self.account_client_text)
         await self.set_type(loading=False)
         await self.update_info_card(update=False)
         controls += [
@@ -486,7 +492,7 @@ class RequestView(ClientBaseView):
                     controls=[
                         self.confirmation_false_button,
                         self.confirmation_true_button,
-                    ]
+                    ],
                 ),
             ]
         elif self.request.state in [RequestStates.COMPLETED, RequestStates.CANCELED]:
@@ -504,7 +510,33 @@ class RequestView(ClientBaseView):
                 Row(
                     controls=[
                         self.cancellation_button,
-                    ]
+                    ],
+                ),
+            ]
+        if self.account_client_text:
+            controls += [
+                TextField(
+                    label=await self.client.session.gtv(key='request_get_client_text'),
+                    multiline=True,
+                    value=self.account_client_text.value.format(
+                        name=self.request.name,
+                        type=self.request.type,
+                        state=self.request.state,
+                        rate_decimal=self.request.rate_decimal,
+                        difference=self.request.difference,
+                        difference_rate=self.request.difference_rate,
+                        commission=self.request.commission,
+                        rate=self.request.rate,
+                        input_currency_value=self.request.input_currency_value,
+                        input_rate=self.request.input_rate,
+                        input_value=self.request.input_value,
+                        output_value=self.request.output_value,
+                        output_rate=self.request.output_rate,
+                        output_currency_value=self.request.output_currency_value,
+                        date=self.request.date,
+                        confirmation_delta=self.request.confirmation_delta,
+                        rate_fixed_delta=self.request.rate_fixed_delta,
+                    ),
                 ),
             ]
         title_str = await self.client.session.gtv(key='request_get_title')

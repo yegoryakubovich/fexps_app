@@ -24,7 +24,7 @@ from config import settings
 
 
 class AccountSettingsView(ClientBaseView):
-    route = '/client/account/settings'
+    route = '/client/account/settings/get'
 
     async def construct(self):
         self.controls = await self.get_controls(
@@ -46,6 +46,12 @@ class AccountSettingsView(ClientBaseView):
                             on_click=self.change_password,
                         ),
                         ListItemButton(
+                            icon=Icons.ADMIN_TEXTS,
+                            name=await self.client.session.gtv(key='account_settings_account_client_text'),
+                            font_size=settings.get_font_size(multiple=2),
+                            on_click=self.account_client_text,
+                        ),
+                        ListItemButton(
                             icon=Icons.CONTACT,
                             name=await self.client.session.gtv(key='account_settings_account_contact'),
                             font_size=settings.get_font_size(multiple=2),
@@ -65,6 +71,10 @@ class AccountSettingsView(ClientBaseView):
     async def change_password(self, _):
         from app.views.client.account.settings.change_password import AccountSettingsChangePasswordView
         await self.client.change_view(view=AccountSettingsChangePasswordView())
+
+    async def account_client_text(self, _):
+        from app.views.client.account.settings.account_client_text import AccountSettingsAccountClientTextView
+        await self.client.change_view(view=AccountSettingsAccountClientTextView(go_back=True))
 
     async def account_contact(self, _):
         from app.views.client.account.settings.account_contact import AccountSettingsAccountContactView

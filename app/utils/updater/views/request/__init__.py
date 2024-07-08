@@ -40,16 +40,8 @@ async def check_update_request_view(view: RequestView, update: bool = True):
             obj_2=orders,
         ),
     ]
-    logging.critical(check_list)
     if True not in check_list:
         return
-    logging.critical(f'request: {update_check(scheme=get_request_scheme, obj_1=view.request, obj_2=request)}')
-    logging.critical(f'request obj_1: {view.request}')
-    logging.critical(f'request obj_2: {request}')
-    logging.critical(f'orders: {update_check(scheme=get_order_list_scheme, obj_1=view.orders, obj_2=orders)}')
-    logging.critical(f'orders obj_1: {view.orders}')
-    logging.critical(f'orders obj_2: {orders}')
-    logging.critical('ОБНОВИЛОСЬ')
     await view.construct()
     if update:
         await view.update_async()

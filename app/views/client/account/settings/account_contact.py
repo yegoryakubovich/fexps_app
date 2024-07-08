@@ -29,7 +29,7 @@ from fexps_api_client.utils import ApiException
 
 
 class AccountSettingsAccountContactView(ClientBaseView):
-    route = '/client/account/contact/get'
+    route = '/client/account/contact'
     contacts = list[dict]
     accounts_contacts = list[dict]
     result_dict: dict
