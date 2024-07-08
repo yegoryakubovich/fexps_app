@@ -18,8 +18,8 @@
 from functools import partial
 from typing import Optional
 
-from flet_core import Column, Container, Row, Divider, MainAxisAlignment, \
-    padding, Image, colors, ScrollMode, AlertDialog, IconButton, icons, SelectionArea
+from flet_core import Column, Container, Row, Divider, MainAxisAlignment, padding, Image, colors, ScrollMode, \
+    AlertDialog, IconButton, icons
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, InformationContainer
@@ -27,7 +27,7 @@ from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, Error, value_to_int
 from app.utils.constants.order import OrderStates, OrderTypes
-from app.utils.value import value_to_str, requisite_value_to_str
+from app.utils.value import value_to_str
 from config import settings
 from fexps_api_client.utils import ApiException
 
@@ -100,91 +100,54 @@ class RequestOrderView(ClientBaseView):
             Divider(color=self.method.color),
         ]
         for scheme_field in self.order.requisite_scheme_fields:
-            field_info_str = requisite_value_to_str(value=self.order.requisite_fields.get(scheme_field.get('key')))
             info_controls += [
-                Row(
-                    controls=[
-                        Text(
-                            value=await self.client.session.gtv(key=scheme_field.get('name_text_key')),
-                            size=settings.get_font_size(multiple=1.6),
-                            font_family=Fonts.SEMIBOLD,
-                            color=self.method.color,
-                        ),
-                        Row(
-                            controls=[
-                                SelectionArea(
-                                    content=Text(
-                                        value=field_info_str,
-                                        size=settings.get_font_size(multiple=1.6),
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=self.method.color,
-                                    ),
+                Container(
+                    content=Row(
+                        controls=[
+                            TextField(
+                                label=await self.client.session.gtv(key=scheme_field.get('name_text_key')),
+                                value=self.order.requisite_fields.get(scheme_field.get('key')),
+                                expand=True,
+                            ),
+                            StandardButton(
+                                content=Image(src=Icons.COPY, width=18, color=self.method.color),
+                                on_click=partial(
+                                    self.copy_to_clipboard,
+                                    self.order.requisite_fields.get(scheme_field.get('key')),
                                 ),
-                                StandardButton(
-                                    content=Image(
-                                        src=Icons.COPY,
-                                        width=18,
-                                        color=self.method.color,
-                                    ),
-                                    on_click=partial(
-                                        self.copy_to_clipboard,
-                                        self.order.requisite_fields.get(scheme_field.get('key')),
-                                    ),
-                                    bgcolor=self.method.bgcolor,
-                                    horizontal=0,
-                                    vertical=0,
-                                ),
-                            ],
-                            spacing=0,
-                        ),
-                    ],
-                    alignment=MainAxisAlignment.SPACE_BETWEEN,
+                                bgcolor=self.method.bgcolor,
+                                horizontal=4,
+                                vertical=4,
+                            ),
+                        ],
+                        spacing=8,
+                    ),
+                    bgcolor=colors.BACKGROUND,
+                    padding=8,
                 ),
             ]
         info_controls += [
-            Row(
-                controls=[
-                    Text(
-                        value=await self.client.session.gtv(key='sum'),
-                        size=settings.get_font_size(multiple=1.6),
-                        font_family=Fonts.SEMIBOLD,
-                        color=self.method.color,
-                    ),
-                    Row(
-                        controls=[
-                            SelectionArea(
-                                content=Text(
-                                    value=value_to_str(currency_value),
-                                    size=settings.get_font_size(multiple=1.6),
-                                    font_family=Fonts.SEMIBOLD,
-                                    color=self.method.color,
-                                ),
-                            ),
-                            Text(
-                                value=self.currency.id_str.upper(),
-                                size=settings.get_font_size(multiple=1.6),
-                                font_family=Fonts.SEMIBOLD,
-                                color=self.method.color,
-                            ),
-                            StandardButton(
-                                content=Image(
-                                    src=Icons.COPY,
-                                    width=18,
-                                    color=self.method.color,
-                                ),
-                                on_click=partial(
-                                    self.copy_to_clipboard,
-                                    currency_value,
-                                ),
-                                bgcolor=self.method.bgcolor,
-                                horizontal=0,
-                                vertical=0,
-                            ),
-                        ],
-                        spacing=0,
-                    ),
-                ],
-                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            Container(
+                content=Row(
+                    controls=[
+                        TextField(
+                            label=await self.client.session.gtv(key='sum'),
+                            value=currency_value,
+                            suffix_text=self.currency.id_str.upper(),
+                            expand=True,
+                        ),
+                        StandardButton(
+                            content=Image(src=Icons.COPY, width=18, color=self.method.color),
+                            on_click=partial(self.copy_to_clipboard, currency_value),
+                            bgcolor=self.method.bgcolor,
+                            horizontal=0,
+                            vertical=0,
+                        ),
+                    ],
+                    spacing=8,
+                ),
+                bgcolor=colors.BACKGROUND,
+                padding=8,
             ),
         ]
         self.info_card = InformationContainer(
