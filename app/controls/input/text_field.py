@@ -22,17 +22,25 @@ from config import settings
 
 
 class TextField(FletTextField):
-    def __init__(self, key_question=None, **kwargs):
+    def __init__(
+            self,
+            color: str = colors.ON_BACKGROUND,
+            bgcolor: str = colors.BACKGROUND,
+            key_question=None,
+            **kwargs,
+    ):
         super().__init__(**kwargs)
         self.border_color = colors.SECONDARY
         self.text_style = TextStyle(
             font_family=Fonts.REGULAR,
-            color=colors.ON_BACKGROUND,
+            color=color,
             size=settings.get_font_size(multiple=1.5),
         )
         self.label_style = TextStyle(
             font_family=Fonts.REGULAR,
-            color=colors.ON_BACKGROUND,
+            color=color,
             size=settings.get_font_size(multiple=1.5),
         )
+        self.bgcolor = bgcolor
+        self.selection_color = color
         self.key_question = key_question

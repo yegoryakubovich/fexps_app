@@ -228,7 +228,7 @@ class RequestTab(BaseTab):
                 selected=True if self.selected_chip == Chips.ALL else False,
             ),
         ]
-        if 'partner_requests' in self.client.session.account.permissions:
+        if 'requests_partner' in self.client.session.account.permissions:
             chips += [
                 Chip(
                     name=await self.client.session.gtv(key=f'chip_{Chips.PARTNERS}'),

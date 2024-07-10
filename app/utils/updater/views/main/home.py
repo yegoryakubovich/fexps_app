@@ -48,7 +48,7 @@ async def check_update_main_home_view(view: HomeTab, update: bool = True):
         ),
     ]
     # current_requests
-    current_requests = await view.client.session.api.client.requests.search()
+    current_requests = await view.client.session.api.client.requests.search(is_active=True)
     check_list += [
         update_check(
             scheme=get_request_list_scheme,

@@ -299,7 +299,10 @@ class RequestCreateView(ClientBaseView):
                     content=Row(
                         controls=[
                             StandardButton(
-                                text=await self.client.session.gtv(key='request_create_button'),
+                                content=Text(
+                                    value=await self.client.session.gtv(key='request_create_button'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                ),
                                 on_click=self.request_create,
                                 expand=True,
                             ),

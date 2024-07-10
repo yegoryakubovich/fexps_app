@@ -311,7 +311,7 @@ class RequestView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_confirm_true'),
-                        size=settings.get_font_size(multiple=1.7),
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.BOLD,
                     ),
                     self.confirmation_timer,
@@ -331,7 +331,7 @@ class RequestView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_confirm_false'),
-                        size=settings.get_font_size(multiple=1.7),
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.BOLD,
                     ),
                     self.confirmation_timer,
@@ -351,7 +351,7 @@ class RequestView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_cancellation_title'),
-                        size=settings.get_font_size(multiple=1.7),
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.BOLD,
                     ),
                 ],
@@ -412,7 +412,7 @@ class RequestView(ClientBaseView):
                                         controls=[
                                             Text(
                                                 value=order_info_str,
-                                                size=settings.get_font_size(multiple=3),
+                                                size=settings.get_font_size(multiple=2),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
@@ -422,7 +422,7 @@ class RequestView(ClientBaseView):
                                         controls=[
                                             Text(
                                                 value=value_str,
-                                                size=settings.get_font_size(multiple=1.7),
+                                                size=settings.get_font_size(multiple=1.5),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),

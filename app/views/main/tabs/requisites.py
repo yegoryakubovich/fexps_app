@@ -362,10 +362,10 @@ class RequisiteTab(BaseTab):
         await self.update_current_orders_column(update=False)
         await self.update_history_requisites_column(update=False)
         await self.update_orders_column(update=False)
-        self.scroll = ScrollMode.AUTO
         create_disable = False
         if 'requisite_no' in self.client.session.account.permissions:
             create_disable = True
+        self.scroll = ScrollMode.AUTO
         self.controls = [
             Container(
                 content=Column(
@@ -379,10 +379,10 @@ class RequisiteTab(BaseTab):
                         self.current_orders_column,
                         self.history_requisites_column,
                         self.orders_column,
-                    ]
+                    ],
                 ),
                 padding=10,
-            )
+            ),
         ]
 
     async def requisite_create(self, _: ControlEvent):

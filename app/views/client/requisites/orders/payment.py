@@ -24,7 +24,7 @@ from flet_core import Control, Row, TextField, ControlEvent, Image, ScrollMode, 
 from app.controls.button import StandardButton
 from app.controls.information import Text
 from app.controls.layout import ClientBaseView
-from app.utils import Icons, Error
+from app.utils import Icons, Error, value_to_int
 from app.utils.websockets.file import FileWebSockets
 from config import settings
 from fexps_api_client.utils import ApiException
@@ -32,10 +32,13 @@ from fexps_api_client.utils import ApiException
 
 class RequisiteOrderPaymentView(ClientBaseView):
     route = '/client/requisite/order/payment'
+
     order = dict
     file_keys = dict
+
     file_row: [Row, FileWebSockets]
     attach_file_btn: StandardButton
+    tf_rate: TextField
 
     input_scheme_fields: list
     input_fields: dict
@@ -96,13 +99,24 @@ class RequisiteOrderPaymentView(ClientBaseView):
         self.order = await self.client.session.api.client.orders.get(id_=self.order_id)
         self.file_keys = await self.client.session.api.client.files.keys.create()
         await self.set_type(loading=False)
+        controls = []
+        if self.order.requisite.is_flex:
+            self.tf_rate = TextField(
+                label=await self.client.session.gtv(key='rate'),
+            )
+            controls += [
+                self.tf_rate,
+            ]
+        controls += [
+            *await self.get_field_controls()
+        ]
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='request_order_title'),
             with_expand=True,
             main_section_controls=[
                 Container(
                     content=Column(
-                        controls=await self.get_field_controls(),
+                        controls=controls,
                         scroll=ScrollMode.AUTO,
                     ),
                     expand=True,
@@ -188,19 +202,28 @@ class RequisiteOrderPaymentView(ClientBaseView):
 
     async def order_confirm(self, _):
         await self.set_type(loading=True)
+        rate = None
+        if self.order.requisite.is_flex:
+            if not self.tf_rate.value:
+                await self.set_type(loading=False)
+                self.tf_rate.error_text = await self.client.session.gtv(key='error_empty')
+                await self.tf_rate.update_async()
+                return
+            rate = value_to_int(value=self.tf_rate.value, decimal=self.order.request.rate_decimal)
+        for input_scheme_field in self.order.input_scheme_fields:
+            if not self.input_fields.get(input_scheme_field['key']):
+                if input_scheme_field['type'] == 'image' and self.send_key:
+                    self.input_fields[input_scheme_field['key']] = self.send_key
+                continue
+            if input_scheme_field['type'] == 'int':
+                if not await Error.check_field(self, self.fields[input_scheme_field['key']], check_int=True):
+                    await self.set_type(loading=False)
+                    return
+                self.input_fields[input_scheme_field['key']] = int(self.input_fields[input_scheme_field['key']])
         try:
-            for input_scheme_field in self.order.input_scheme_fields:
-                if not self.input_fields.get(input_scheme_field['key']):
-                    if input_scheme_field['type'] == 'image' and self.send_key:
-                        self.input_fields[input_scheme_field['key']] = self.send_key
-                    continue
-                if input_scheme_field['type'] == 'int':
-                    if not await Error.check_field(self, self.fields[input_scheme_field['key']], check_int=True):
-                        await self.set_type(loading=False)
-                        return
-                    self.input_fields[input_scheme_field['key']] = int(self.input_fields[input_scheme_field['key']])
             await self.client.session.api.client.orders.updates.confirmation(
                 id_=self.order_id,
+                rate=rate,
                 input_fields=self.input_fields,
             )
             await self.set_type(loading=False)

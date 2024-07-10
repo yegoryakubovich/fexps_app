@@ -101,59 +101,59 @@ class RequestOrderView(ClientBaseView):
         ]
         for scheme_field in self.order.requisite_scheme_fields:
             info_controls += [
-                Container(
-                    content=Row(
-                        controls=[
-                            TextField(
-                                label=await self.client.session.gtv(key=scheme_field.get('name_text_key')),
-                                value=self.order.requisite_fields.get(scheme_field.get('key')),
-                                expand=True,
-                            ),
-                            StandardButton(
-                                content=Image(src=Icons.COPY, width=18, color=self.method.color),
-                                on_click=partial(
-                                    self.copy_to_clipboard,
-                                    self.order.requisite_fields.get(scheme_field.get('key')),
-                                ),
-                                bgcolor=self.method.bgcolor,
-                                horizontal=4,
-                                vertical=4,
-                            ),
-                        ],
-                        spacing=8,
-                    ),
-                    bgcolor=colors.BACKGROUND,
-                    padding=8,
-                ),
-            ]
-        info_controls += [
-            Container(
-                content=Row(
+                Row(
                     controls=[
                         TextField(
-                            label=await self.client.session.gtv(key='sum'),
-                            value=currency_value,
-                            suffix_text=self.currency.id_str.upper(),
+                            label=await self.client.session.gtv(key=scheme_field.get('name_text_key')),
+                            value=self.order.requisite_fields.get(scheme_field.get('key')),
+                            color=self.method.color,
+                            bgcolor=self.method.bgcolor,
+                            border_color=self.method.color,
                             expand=True,
+                            read_only=True,
                         ),
                         StandardButton(
                             content=Image(src=Icons.COPY, width=18, color=self.method.color),
-                            on_click=partial(self.copy_to_clipboard, currency_value),
+                            on_click=partial(
+                                self.copy_to_clipboard,
+                                self.order.requisite_fields.get(scheme_field.get('key')),
+                            ),
                             bgcolor=self.method.bgcolor,
-                            horizontal=0,
-                            vertical=0,
+                            horizontal=4,
+                            vertical=4,
                         ),
                     ],
                     spacing=8,
                 ),
-                bgcolor=colors.BACKGROUND,
-                padding=8,
+            ]
+        info_controls += [
+            Row(
+                controls=[
+                    TextField(
+                        label=await self.client.session.gtv(key='sum'),
+                        value=currency_value,
+                        suffix_text=self.currency.id_str.upper(),
+                        color=self.method.color,
+                        bgcolor=self.method.bgcolor,
+                        border_color=self.method.color,
+                        expand=True,
+                        read_only=True,
+                    ),
+                    StandardButton(
+                        content=Image(src=Icons.COPY, width=18, color=self.method.color),
+                        on_click=partial(self.copy_to_clipboard, currency_value),
+                        bgcolor=self.method.bgcolor,
+                        horizontal=0,
+                        vertical=0,
+                    ),
+                ],
+                spacing=8,
             ),
         ]
         self.info_card = InformationContainer(
             content=Column(
                 controls=info_controls,
-                spacing=-50,
+                # spacing=-50,
             ),
             bgcolor=self.method.bgcolor,
             padding=padding.symmetric(vertical=32, horizontal=32),
@@ -253,66 +253,6 @@ class RequestOrderView(ClientBaseView):
         if update:
             await self.chat_button.update_async()
 
-    async def update_order_request_completed_button(self, update: bool = True) -> None:
-        if self.order_request.type == 'update_value':
-            value = self.order_request.data['currency_value']
-            value_str = value_to_str(value=value_to_float(value=value, decimal=self.currency.decimal))
-            text_str = await self.client.session.gtv(
-                key=f'order_request_{self.order_request.type}_completed',
-                value=value_str,
-                currency=self.currency.id_str.upper(),
-            )
-        else:
-            text_str = await self.client.session.gtv(key=f'order_request_{self.order_request.type}_completed')
-        self.order_request_completed_button = StandardButton(
-            content=Row(
-                controls=[
-                    Text(
-                        value=text_str,
-                        size=settings.get_font_size(multiple=1.5),
-                        font_family=Fonts.SEMIBOLD,
-                        color=colors.BLACK,
-                    ),
-                ],
-                alignment=MainAxisAlignment.CENTER,
-            ),
-            bgcolor=colors.GREEN,
-            on_click=partial(self.order_request_update, 'completed'),
-            expand=1,
-        )
-        if update:
-            await self.order_request_completed_button.update_async()
-
-    async def update_order_request_canceled_button(self, update: bool = True) -> None:
-        if self.order_request.type == 'update_value':
-            value = self.order_request.data['currency_value']
-            value_str = value_to_str(value=value_to_float(value=value, decimal=self.currency.decimal))
-            text_str = await self.client.session.gtv(
-                key=f'order_request_{self.order_request.type}_canceled',
-                value=value_str,
-                currency=self.currency.id_str.upper(),
-            )
-        else:
-            text_str = await self.client.session.gtv(key=f'order_request_{self.order_request.type}_canceled')
-        self.order_request_canceled_button = StandardButton(
-            content=Row(
-                controls=[
-                    Text(
-                        value=text_str,
-                        size=settings.get_font_size(multiple=1.5),
-                        font_family=Fonts.SEMIBOLD,
-                        color=colors.BLACK,
-                    ),
-                ],
-                alignment=MainAxisAlignment.CENTER,
-            ),
-            bgcolor=colors.RED,
-            on_click=partial(self.order_request_update, 'canceled'),
-            expand=1,
-        )
-        if update:
-            await self.order_request_canceled_button.update_async()
-
     """
     UPDATES
     """
@@ -389,7 +329,7 @@ class RequestOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='request_order_back_button'),
-                        size=settings.get_font_size(multiple=2),
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -432,17 +372,7 @@ class RequestOrderView(ClientBaseView):
         await self.update_chat_button(update=False)
         self.inactive = False
         if self.order_request:
-            if self.client.session.current_wallet.id != self.order_request.wallet.id:
-                await self.update_order_request_canceled_button(update=False)
-                await self.update_order_request_completed_button(update=False)
-                buttons += [
-                    Row(
-                        controls=[
-                            self.order_request_canceled_button,
-                            self.order_request_completed_button,
-                        ]
-                    ),
-                ]
+            pass
         elif self.order.type == OrderTypes.INPUT:
             if self.order.state == OrderStates.WAITING:
                 pass
@@ -534,7 +464,7 @@ class RequestOrderView(ClientBaseView):
         )
 
     async def copy_to_clipboard(self, data, _):
-        await self.client.page.set_clipboard_async(str(data))
+        await self.client.session.page.set_clipboard(str(data))
 
     async def chat_open(self, _):
         from app.views.client.chat import ChatView
@@ -603,7 +533,10 @@ class RequestOrderView(ClientBaseView):
             Row(
                 controls=[
                     StandardButton(
-                        text=await self.client.session.gtv(key='confirm'),
+                        content=Text(
+                            value=await self.client.session.gtv(key='confirm'),
+                            size=settings.get_font_size(multiple=1.5),
+                        ),
                         on_click=self.order_request_update_value,
                         expand=True,
                     ),

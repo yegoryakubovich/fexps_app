@@ -200,7 +200,7 @@ class RequisiteOrderView(ClientBaseView):
                     value=value_to_str(currency_value),
                     currency=self.currency.id_str.upper(),
                 ),
-                size=settings.get_font_size(multiple=2),
+                size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.BLACK,
             ),
@@ -215,7 +215,7 @@ class RequisiteOrderView(ClientBaseView):
         self.payment_confirmation_cancel_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(key='requisite_order_payment_confirmation_cancel_button'),
-                size=settings.get_font_size(multiple=2),
+                size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.BLACK,
             ),
@@ -239,7 +239,7 @@ class RequisiteOrderView(ClientBaseView):
                     value=value_to_str(currency_value),
                     currency=self.currency.id_str.upper(),
                 ),
-                size=settings.get_font_size(multiple=2),
+                size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.WHITE,
             ),
@@ -265,7 +265,7 @@ class RequisiteOrderView(ClientBaseView):
                     ),
                     Text(
                         value=await self.client.session.gtv(key='chat_button'),
-                        size=settings.get_font_size(multiple=2),
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -289,7 +289,7 @@ class RequisiteOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=await self.client.session.gtv(key='requisite_order_back_button'),
-                        size=settings.get_font_size(multiple=2),
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
@@ -323,7 +323,7 @@ class RequisiteOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=text_str,
-                        size=settings.get_font_size(multiple=2),
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.BLACK,
                     ),
@@ -353,7 +353,7 @@ class RequisiteOrderView(ClientBaseView):
                 controls=[
                     Text(
                         value=text_str,
-                        size=settings.get_font_size(multiple=2),
+                        size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.BLACK,
                     ),
@@ -395,17 +395,16 @@ class RequisiteOrderView(ClientBaseView):
         await self.update_chat_button(update=False)
         self.inactive = False
         if self.order_request:
-            if self.client.session.current_wallet.id != self.order_request.wallet.id:
-                await self.update_order_request_canceled_button(update=False)
-                await self.update_order_request_completed_button(update=False)
-                buttons += [
-                    Row(
-                        controls=[
-                            self.order_request_canceled_button,
-                            self.order_request_completed_button,
-                        ]
-                    ),
-                ]
+            await self.update_order_request_canceled_button(update=False)
+            await self.update_order_request_completed_button(update=False)
+            buttons += [
+                Row(
+                    controls=[
+                        self.order_request_canceled_button,
+                        self.order_request_completed_button,
+                    ]
+                ),
+            ]
         elif self.order.type == OrderTypes.INPUT:
             if self.order.state == OrderStates.WAITING:
                 pass

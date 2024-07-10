@@ -60,13 +60,13 @@ class WalletSelectView(ClientBaseView):
                                 controls=[
                                     Text(
                                         value=f'{wallet.name}',
-                                        size=settings.get_font_size(multiple=2),
+                                        size=settings.get_font_size(multiple=1.5),
                                         font_family=Fonts.SEMIBOLD,
                                         color=color,
                                     ),
                                     Text(
                                         value=f'{value}',
-                                        size=settings.get_font_size(multiple=2),
+                                        size=settings.get_font_size(multiple=1.5),
                                         font_family=Fonts.SEMIBOLD,
                                         color=color,
                                     ),

@@ -165,7 +165,7 @@ class RequisiteView(ClientBaseView):
         self.update_value_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(key='requisite_update_value_button'),
-                size=settings.get_font_size(multiple=2),
+                size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.ON_PRIMARY,
             ),
@@ -180,7 +180,7 @@ class RequisiteView(ClientBaseView):
         self.stop_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(key='requisite_stop_button'),
-                size=settings.get_font_size(multiple=2),
+                size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.ON_PRIMARY,
             ),
@@ -195,7 +195,7 @@ class RequisiteView(ClientBaseView):
         self.disable_button = StandardButton(
             content=Text(
                 value=await self.client.session.gtv(key='requisite_disable_button'),
-                size=settings.get_font_size(multiple=2),
+                size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.ON_PRIMARY,
             ),
@@ -282,7 +282,7 @@ class RequisiteView(ClientBaseView):
                     StandardButton(
                         content=Text(
                             value=await self.client.session.gtv(key='confirm'),
-                            size=settings.get_font_size(multiple=1.6),
+                            size=settings.get_font_size(multiple=1.5),
                             font_family=Fonts.REGULAR,
                         ),
                         on_click=self.requisite_update_value,
