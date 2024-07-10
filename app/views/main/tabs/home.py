@@ -453,9 +453,9 @@ class HomeTab(BaseTab):
         ]
 
     async def select_wallet_view(self, _):
-        from app.views.client.wallets import WalletSelectView
+        from app.views.client.wallets import WalletView
         await self.client.change_view(
-            view=WalletSelectView(
+            view=WalletView(
                 current_wallet_id=self.client.session.current_wallet.id,
             ),
         )

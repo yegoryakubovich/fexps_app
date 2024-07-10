@@ -28,8 +28,8 @@ from config import settings
 from fexps_api_client.utils import ApiException
 
 
-class WalletSelectView(ClientBaseView):
-    route = '/client/wallets/select'
+class WalletView(ClientBaseView):
+    route = '/client/wallet'
     wallets: list
     wallet = dict
 
