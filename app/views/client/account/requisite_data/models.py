@@ -73,7 +73,7 @@ class RequisiteDataCreateModel:
                 if method.currency.id_str.lower() != self.currency_id_str.lower():
                     continue
                 method_str = await self.session.gtv(key=method.name_text)
-                if settings.debug:
+                if self.client.session.debug:
                     method_str = f'{method_str} ({method.id})'
                 method_options += [
                     Option(text=method_str, key=method.id),
@@ -124,7 +124,7 @@ class RequisiteDataCreateModel:
             if method.currency.id_str.lower() != self.dd_currency.value.lower():
                 continue
             method_str = await self.session.gtv(key=method.name_text)
-            if settings.debug:
+            if self.client.session.debug:
                 method_str = f'{method_str} ({method.id})'
             method_options += [
                 Option(text=method_str, key=method.id),
@@ -146,7 +146,7 @@ class RequisiteDataCreateModel:
         for field in self.method['schema_fields']:
             type_ = field["type"]
             name_list = [await self.session.gtv(key=field[f'name_text_key'])]
-            if settings.debug:
+            if self.client.session.debug:
                 type_str = await self.session.gtv(key=type_)
                 name_list += [f'({type_str})']
             if not field['optional']:

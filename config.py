@@ -31,7 +31,6 @@ class Settings(BaseSettings):
     chat_url: str
     file_url: str
 
-    debug: bool = False
     test: bool
     test_url: str
     test_chat_url: str

@@ -22,7 +22,7 @@ from flet_core import ScrollMode, Row, Column, Container, AlertDialog, alignment
     MainAxisAlignment, colors, ExpansionTile, border
 from flet_core.dropdown import Option
 
-from app.controls.button import StandardButton, StitchButton
+from app.controls.button import StandardButton, SwitchButton
 from app.controls.information import SubTitle, Text
 from app.controls.input import Dropdown, TextField
 from app.controls.layout import ClientBaseView
@@ -57,7 +57,7 @@ class RequisiteCreateView(ClientBaseView):
     tf_input_currency_value_max = TextField
     dd_input_method: Dropdown
     tf_input_rate: TextField
-    btn_input_flex: Optional[StitchButton]
+    btn_input_flex: Optional[SwitchButton]
     # output
     output_column: Column
     output_subtitle_text: Text
@@ -130,7 +130,7 @@ class RequisiteCreateView(ClientBaseView):
             if method.currency.id_str.lower() != currency_id_str.lower():
                 continue
             method_str = await self.client.session.gtv(key=method.name_text)
-            if settings.debug:
+            if self.client.session.debug:
                 method_str = f'{method_str} ({method.id})'
             options += [
                 Option(text=method_str, key=method.id),
@@ -201,7 +201,7 @@ class RequisiteCreateView(ClientBaseView):
             label=await self.client.session.gtv(key='rate'),
             expand=True,
         )
-        self.btn_input_flex = StitchButton(
+        self.btn_input_flex = SwitchButton(
             label=await self.client.session.gtv(key='requisite_create_flex'),
             on_change=self.change_input_flex_btn,
             value=False,
@@ -238,7 +238,7 @@ class RequisiteCreateView(ClientBaseView):
                         collapsed_bgcolor=colors.BACKGROUND,
                         icon_color=colors.ON_BACKGROUND,
                         collapsed_icon_color=colors.ON_BACKGROUND,
-                        initially_expanded=settings.debug,
+                        initially_expanded=self.client.session.debug,
                     ),
                     border=border.all(color=colors.ON_BACKGROUND, width=1),
                 ),
@@ -331,7 +331,7 @@ class RequisiteCreateView(ClientBaseView):
                         collapsed_bgcolor=colors.BACKGROUND,
                         icon_color=colors.ON_BACKGROUND,
                         collapsed_icon_color=colors.ON_BACKGROUND,
-                        initially_expanded=settings.debug,
+                        initially_expanded=self.client.session.debug,
                     ),
                     border=border.all(color=colors.ON_BACKGROUND, width=1),
                 ),

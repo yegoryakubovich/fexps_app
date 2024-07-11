@@ -53,7 +53,7 @@ class RequestOrderPaymentView(ClientBaseView):
             type_ = input_scheme_field["type"]
             type_str = await self.client.session.gtv(key=type_)
             name_list = [await self.client.session.gtv(key=input_scheme_field['name_text_key'])]
-            if settings.debug:
+            if self.client.session.debug:
                 name_list += [f'({type_str})']
             if not input_scheme_field['optional']:
                 name_list += ['*']

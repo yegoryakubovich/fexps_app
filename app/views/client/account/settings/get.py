@@ -15,9 +15,9 @@
 #
 
 
-from flet_core import Column
+from flet_core import Column, Row
 
-from app.controls.button import ListItemButton
+from app.controls.button import ListItemButton, SwitchButton
 from app.controls.layout import ClientBaseView
 from app.utils import Icons
 from config import settings
@@ -34,6 +34,16 @@ class AccountSettingsView(ClientBaseView):
             main_section_controls=[
                 Column(
                     controls=[
+                        Row(
+                            controls=[
+                                SwitchButton(
+                                    label=await self.client.session.gtv(key='account_settings_debug'),
+                                    value=self.client.session.debug,
+                                    on_change=self.change_debug,
+                                    expand=True,
+                                )
+                            ],
+                        ),
                         ListItemButton(
                             icon=Icons.NOTIFICATIONS,
                             name=await self.client.session.gtv(key='account_settings_edit_profile'),
@@ -65,18 +75,22 @@ class AccountSettingsView(ClientBaseView):
             ],
         )
 
-    async def edit_profile(self, _):
+    async def change_debug(self, _=None):
+        self.client.session.debug = not self.client.session.debug
+        await self.client.session.set_cs(key='debug', value=self.client.session.debug)
+
+    async def edit_profile(self, _=None):
         from app.views.client.account.settings.edit_profile import AccountSettingsEdtProfileView
         await self.client.change_view(view=AccountSettingsEdtProfileView())
 
-    async def change_password(self, _):
+    async def change_password(self, _=None):
         from app.views.client.account.settings.change_password import AccountSettingsChangePasswordView
         await self.client.change_view(view=AccountSettingsChangePasswordView())
 
-    async def account_client_text(self, _):
+    async def account_client_text(self, _=None):
         from app.views.client.account.settings.account_client_text import AccountSettingsAccountClientTextView
         await self.client.change_view(view=AccountSettingsAccountClientTextView(go_back=True))
 
-    async def account_contact(self, _):
+    async def account_contact(self, _=None):
         from app.views.client.account.settings.account_contact import AccountSettingsAccountContactView
         await self.client.change_view(view=AccountSettingsAccountContactView(go_back=True))

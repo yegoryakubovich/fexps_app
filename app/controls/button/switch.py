@@ -21,7 +21,7 @@ from app.utils import Fonts
 from config import settings
 
 
-class StitchButton(Switch):
+class SwitchButton(Switch):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.label_style = TextStyle(

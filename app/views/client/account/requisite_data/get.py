@@ -54,7 +54,7 @@ class RequisiteDataView(ClientBaseView):
                 )
             )
         method_str = await self.client.session.gtv(key=self.method.name_text)
-        if settings.debug:
+        if self.client.session.debug:
             method_str = f'{method_str} ({self.method.id})'
         self.controls = await self.get_controls(
             title=self.requisite_data['name'],

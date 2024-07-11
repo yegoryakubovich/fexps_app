@@ -19,4 +19,4 @@ from .chip import Chip
 from .filled import FilledButton
 from .list_item import ListItemButton
 from .standard import StandardButton
-from .switch import StitchButton
+from .switch import SwitchButton

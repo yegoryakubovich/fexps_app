@@ -42,6 +42,7 @@ class Session:
     registration: Registration
     current_wallet: None
     wallets: list | None
+    debug: bool
     bs_error: Any
     bs_info: Any
     datepicker: Any
@@ -78,11 +79,9 @@ class Session:
 
     async def init_accounts(self):
         self.tokens = await self.get_cs(key='tokens')
-        logging.critical(self.tokens)
         if not self.tokens:
             self.tokens = []
         self.token = await self.get_cs(key='token')
-        logging.critical(self.token)
         account_ids = []
         if self.token:
             try:
@@ -125,6 +124,10 @@ class Session:
             if not self.current_wallet:
                 self.current_wallet = self.wallets[0]
                 await self.set_cs(key='current_wallet', value=self.current_wallet)
+            self.debug = await self.get_cs(key='debug')
+            if not self.debug:
+                await self.set_cs(key='debug', value=False)
+                self.debug = False
         except ApiException:
             await self.set_cs(key='token', value=None)
             await self.set_cs(key='current_wallet', value=None)

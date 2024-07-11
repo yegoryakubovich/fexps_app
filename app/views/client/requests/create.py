@@ -101,7 +101,7 @@ class RequestCreateView(ClientBaseView):
             if method.currency.id_str.lower() != currency_id_str.lower():
                 continue
             method_str = await self.client.session.gtv(key=method.name_text)
-            if settings.debug:
+            if self.client.session.debug:
                 method_str = f'{method_str} ({method.id})'
             options += [
                 Option(text=method_str, key=method.id),
