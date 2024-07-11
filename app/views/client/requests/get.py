@@ -475,7 +475,6 @@ class RequestView(ClientBaseView):
         self.account_client_text = await self.client.session.api.client.accounts.clients_texts.get(
             key=f'request_{self.request.type}_{self.request.state}',
         )
-        logging.critical(self.account_client_text)
         await self.set_type(loading=False)
         await self.update_info_card(update=False)
         controls += [
