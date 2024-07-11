@@ -84,6 +84,8 @@ class MainView(View):
             BottomNavigationTab(
                 key=tab.name,
                 name=await self.client.session.gtv(key=tab.name),
+                account_change_func=self.client.session.change_account,
+                change_view=self.client.change_view,
                 icon_src=tab.icon_src,
                 icon_src_base64=tab.icon_src_base64,
                 control=tab.control,

@@ -234,7 +234,7 @@ class RequestOrderView(ClientBaseView):
                 controls=[
                     Image(
                         src=Icons.CHAT,
-                        width=28,
+                        width=14,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
                     Text(

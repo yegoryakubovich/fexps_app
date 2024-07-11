@@ -134,13 +134,11 @@ class ChangeAccountView(ClientBaseView):
 
     async def account_select(self, account_id: int, _=None):
         from app.views.auth.init import InitView
-        if account_id == self.client.session.account.id:
-            return
-        for account_tuple in self.client.session.accounts:
-            if account_id != account_tuple[0]:
-                continue
-            await self.client.session.set_cs(key='token', value=account_tuple[1])
-            await self.client.session.set_cs(key='current_wallet', value=None)
+        account_change = await self.client.session.change_account(
+            change_view=self.client.change_view,
+            account_id=account_id,
+        )
+        if account_change:
             await self.client.change_view(view=InitView(), delete_current=True)
 
 

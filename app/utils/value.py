@@ -76,7 +76,7 @@ def value_to_str(value: Optional[float]) -> Optional[str]:
         value = value.replace(',', '.')
     if not value and value != 0:
         return ''
-    return f'{float(value):,}'.replace(',', ' ')
+    return f'{float(value):_}'.replace('_', ' ')
 
 
 def requisite_value_to_str(

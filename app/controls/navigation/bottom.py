@@ -15,6 +15,8 @@
 #
 
 
+import datetime
+import logging
 from typing import Any, Optional
 
 from flet_core import Column, Container, CrossAxisAlignment, Image, MainAxisAlignment, Row, Text, \
@@ -26,10 +28,27 @@ from config import settings
 
 class BottomNavigationTab(Container):
     on_click_tab: Any
+    account_change_func: callable
     controls: list
+    dt_account_click: Optional[datetime.datetime]
 
     async def click(self, _):
         await self.on_click_tab(tab=self)
+        if self.key != 'tab_account':
+            return
+        now = datetime.datetime.now()
+        if not self.dt_account_click:
+            self.dt_account_click = now
+            return
+        delta = now - self.dt_account_click
+        if delta > datetime.timedelta(seconds=0.5):
+            self.dt_account_click = now
+            return
+        await self.account_change_func(
+            change_view=self.change_view,
+            account_next=True,
+        )
+        logging.critical('CHANGE ACCOUNT')
 
     async def set_state(self, activated: bool, key: str):
         if key == 'tab_account':
@@ -48,6 +67,8 @@ class BottomNavigationTab(Container):
             self,
             key: str,
             name: str,
+            account_change_func: callable,
+            change_view: callable,
             icon_src: Optional[str] = None,
             icon_src_base64: Optional[str] = None,
             control=None,
@@ -59,6 +80,9 @@ class BottomNavigationTab(Container):
         self.key = key
         self.name = name
         self.control = control
+        self.dt_account_click = None
+        self.account_change_func = account_change_func
+        self.change_view = change_view
 
         self.icon = Image(
             src=icon_src,

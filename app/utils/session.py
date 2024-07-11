@@ -77,6 +77,38 @@ class Session:
         self.page.overlay.append(self.datepicker)
         await self.page.update_async()
 
+    async def change_account(
+            self,
+            change_view: callable,
+            account_id: int = None,
+            account_next: bool = False,
+    ) -> bool:
+        from app.views.auth.init import InitView
+        if len(self.tokens) == 1:
+            return False
+        if account_id:
+            if account_id == self.account.id:
+                return False
+            for account_tuple in self.accounts:
+                if account_id != account_tuple[0]:
+                    continue
+                await self.set_cs(key='token', value=account_tuple[1])
+        elif account_next:
+            account_i = None
+            for i, acc_tuple in enumerate(self.accounts):
+                acc_id, acc_token, acc = acc_tuple
+                if self.account.id != acc_id:
+                    continue
+                account_i = i
+                break
+            next_i = account_i + 1
+            if next_i >= len(self.tokens):
+                next_i -= len(self.tokens)
+            logging.critical(self.accounts[account_i])
+            await self.set_cs(key='token', value=self.accounts[next_i][1])
+        await self.set_cs(key='current_wallet', value=None)
+        await change_view(view=InitView(), delete_current=True)
+
     async def init_accounts(self):
         self.tokens = await self.get_cs(key='tokens')
         if not self.tokens:

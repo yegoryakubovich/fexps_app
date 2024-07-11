@@ -16,6 +16,7 @@
 
 
 import asyncio
+import logging
 from functools import partial
 
 from flet_core import Column, Container, Row, alignment, AlertDialog, Image, colors, ScrollMode, IconButton, icons, \
@@ -26,7 +27,7 @@ from app.controls.button import StandardButton
 from app.controls.information import SubTitle, Text
 from app.controls.input import TextField, Dropdown
 from app.controls.layout import ClientBaseView
-from app.utils import Icons, Fonts, Error, value_to_float
+from app.utils import Icons, Fonts, Error, value_to_float, value_to_str
 from app.utils.calculations.requests.rate import calculate_request_rate_all_by_input_currency_value, \
     calculate_request_rate_all_by_output_currency_value, calculate_request_rate_input_by_input_currency_value, \
     calculate_request_rate_input_by_input_value, calculate_request_rate_output_by_output_value, \
@@ -124,7 +125,7 @@ class RequestCreateView(ClientBaseView):
             on_change=partial(self.change_currency, 'input'),
             expand=2,
         )
-        self.t_input_available_sum = Text(value=0)
+        self.t_input_available_sum = Text(value=value_to_str(value=0))
         self.dd_input_method = Dropdown(
             label=await self.client.session.gtv(key='request_create_input_method'),
             on_change=self.change_method,
@@ -194,7 +195,7 @@ class RequestCreateView(ClientBaseView):
             on_change=self.change_value,
             expand=4,
         )
-        self.t_output_available_sum = Text(value=0)
+        self.t_output_available_sum = Text(value=value_to_str(value=0))
         self.dd_output_currency = Dropdown(
             label=await self.client.session.gtv(key='currency'),
             options=await self.get_currency_options(),
@@ -354,9 +355,12 @@ class RequestCreateView(ClientBaseView):
             input_method_id = self.dd_input_method.value
             try:
                 input_method = await self.client.session.api.client.methods.get(id_=input_method_id)
-                self.t_input_available_sum.value = value_to_float(
-                    value=input_method['input_requisites_sum'],
-                    decimal=input_method['currency']['decimal'],
+                logging.critical(value_to_str(value=input_method['input_requisites_sum']))
+                self.t_input_available_sum.value = value_to_str(
+                    value=value_to_float(
+                        value=input_method['input_requisites_sum'],
+                        decimal=input_method['currency']['decimal'],
+                    ),
                 )
                 await self.t_input_available_sum.update_async()
             except:
@@ -365,9 +369,11 @@ class RequestCreateView(ClientBaseView):
             output_method_id = self.dd_output_method.value
             try:
                 output_method = await self.client.session.api.client.methods.get(id_=output_method_id)
-                self.t_output_available_sum.value = value_to_float(
-                    value=output_method['output_requisites_sum'],
-                    decimal=output_method['currency']['decimal'],
+                self.t_output_available_sum.value = value_to_str(
+                    value=value_to_float(
+                        value=value_to_str(value=output_method['output_requisites_sum']),
+                        decimal=output_method['currency']['decimal'],
+                    ),
                 )
                 await self.t_output_available_sum.update_async()
             except:
