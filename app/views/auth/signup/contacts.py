@@ -30,6 +30,9 @@ class ContactRegistrationView(AuthView):
     contacts = list[dict]
     result: dict
     snack_bar: SnackBar
+    def __init__(self, new_login: bool = False):
+        super().__init__()
+        self.new_login = new_login
 
     async def construct(self):
         self.result = {}
@@ -81,6 +84,9 @@ class ContactRegistrationView(AuthView):
                 ),
             ],
         )
+
+    async def go_back(self, _=None):
+        await self.client.change_view(go_back=True)
 
     async def change_contact(self, contact_id: int, event: ControlEvent):
         self.result[contact_id] = event.data

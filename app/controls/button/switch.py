@@ -15,9 +15,17 @@
 #
 
 
-from flet_core import Switch
+from flet_core import Switch, TextStyle, colors
+
+from app.utils import Fonts
+from config import settings
 
 
 class StitchButton(Switch):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.label_style = TextStyle(
+            font_family=Fonts.REGULAR,
+            color=colors.ON_BACKGROUND,
+            size=settings.get_font_size(multiple=1.5),
+        )

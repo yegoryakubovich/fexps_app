@@ -60,12 +60,13 @@ class View(BaseView):
     async def get_title(
             self,
             title: str,
+            with_restart: bool = True,
             create_button=None,
             text_key: str = None,
     ):
 
         async def go_back(_):
-            await self.client.change_view(go_back=True, with_restart=True)
+            await self.client.change_view(go_back=True, with_restart=with_restart)
 
         async def go_text(text_key_, _):
             from app.views.admin.texts import TextView

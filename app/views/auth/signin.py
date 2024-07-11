@@ -29,6 +29,10 @@ class AuthenticationView(AuthView):
     tf_username: TextField
     tf_password: TextField
 
+    def __init__(self, new_login: bool = False):
+        super().__init__()
+        self.new_login = new_login
+
     async def construct(self):
         self.tf_username = TextField(
             label=await self.client.session.gtv(key='username'),
@@ -38,9 +42,10 @@ class AuthenticationView(AuthView):
             password=True,
             can_reveal_password=True,
         )
-        self.scroll=ScrollMode.AUTO
+        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='sign_in'),
+            go_back=self.go_back if self.new_login else None,
             controls=[
                 Column(
                     controls=[
@@ -88,6 +93,9 @@ class AuthenticationView(AuthView):
             ],
         )
 
+    async def go_back(self, _=None):
+        await self.client.change_view(go_back=True)
+
     async def authenticate(self, _):
         await self.set_type(loading=True)
         fields = [(self.tf_username, 6, 32), (self.tf_password, 6, 32)]
@@ -107,8 +115,13 @@ class AuthenticationView(AuthView):
             return await self.client.session.error(exception=exception)
 
         # Get result, set in CS
+        tokens = await self.client.session.get_cs(key='tokens')
+        if not tokens:
+            tokens = []
         token = session.token
+        await self.client.session.set_cs(key='tokens', value=tokens + [token])
         await self.client.session.set_cs(key='token', value=token)
+        await self.client.session.set_cs(key='current_wallet', value=None)
 
         # Change view
         self.client.page.views.clear()
@@ -118,4 +131,7 @@ class AuthenticationView(AuthView):
 
     async def go_registration(self, _):
         from app.views.auth.signup import RegistrationFirstView
-        await self.client.change_view(view=RegistrationFirstView(), delete_current=True)
+        await self.client.change_view(
+            view=RegistrationFirstView(new_login=self.new_login),
+            delete_current=True,
+        )

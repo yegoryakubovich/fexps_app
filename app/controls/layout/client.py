@@ -105,12 +105,14 @@ class ClientBaseView(View):
             self,
             title: str,
             main_section_controls: list,
+            with_restart: bool = True,
             sections: list[ClientSection] = None,
             create_button: Any = None,
             with_expand: bool = False,
     ) -> list:
         title_control = await self.get_title(
             title=title,
+            with_restart=with_restart,
             create_button=create_button,
         )
 

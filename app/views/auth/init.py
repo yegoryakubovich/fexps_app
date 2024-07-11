@@ -26,6 +26,10 @@ class InitView(AuthView):
     dropdown: Dropdown
     languages: list
 
+    def __init__(self, new_login: bool = False):
+        super().__init__()
+        self.new_login = new_login
+
     async def on_load(self):
         await self.set_type(loading=True)
         self.client.session = Session(client=self.client)
@@ -40,9 +44,12 @@ class InitView(AuthView):
         await self.client.session.get_text_pack(language=self.client.session.language)
 
         # If not token
-        if not self.client.session.token:
+        if self.new_login or not self.client.session.token:
             from app.views.auth.signup.first import RegistrationFirstView
-            await self.client.change_view(view=RegistrationFirstView(), delete_current=True)
+            await self.client.change_view(
+                view=RegistrationFirstView(new_login=self.new_login),
+                delete_current=True,
+            )
             return
 
         await self.client.change_view(view=MainView())

@@ -32,12 +32,13 @@ from fexps_api_client.utils import ApiException
 class Session:
     client: Client
     page: Page
+    tokens: list[str]
     token: str | None
     language: str | None
     text_pack_id: int | None
     text_pack_language: str | None
     text_pack: dict | None
-    api: FexpsApiClient
+    api: FexpsApiClient | None
     registration: Registration
     current_wallet: None
     wallets: list | None
@@ -50,6 +51,7 @@ class Session:
     def __init__(self, client: Client):
         self.client = client
         self.page = client.page
+        self.accounts: list[tuple[int, str, dict]] = []
         self.account = None
         self.timezone = None
         self.updater = True
@@ -74,8 +76,39 @@ class Session:
         self.page.overlay.append(self.datepicker)
         await self.page.update_async()
 
-    async def init(self):
+    async def init_accounts(self):
+        self.tokens = await self.get_cs(key='tokens')
+        logging.critical(self.tokens)
+        if not self.tokens:
+            self.tokens = []
         self.token = await self.get_cs(key='token')
+        logging.critical(self.token)
+        account_ids = []
+        if self.token:
+            try:
+                self.api = FexpsApiClient(url=settings.get_url(), token=self.token)
+                self.account = await self.api.client.accounts.get()
+            except:
+                self.tokens.pop(self.tokens.index(self.token))
+                self.token = None
+                await self.client.session.set_cs(key='token', value=None)
+                await self.client.session.set_cs(key='current_wallet', value=None)
+        for token in self.tokens:
+            try:
+                api = FexpsApiClient(url=settings.get_url(), token=token)
+                account = await api.client.accounts.get()
+                if account.id not in account_ids:
+                    if not self.token:
+                        self.token = token
+                    account_ids.append(account.id)
+                    self.accounts.append((account.id, token, account))
+                    continue
+            except:
+                pass
+            self.tokens.pop(self.tokens.index(token))
+
+    async def init(self):
+        await self.init_accounts()
         self.language = await self.get_cs(key='language')
         self.text_pack = await self.get_cs(key='text_pack')
         self.current_wallet = await self.get_cs(key='current_wallet')

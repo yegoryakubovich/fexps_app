@@ -33,6 +33,10 @@ class RegistrationSecondView(AuthView):
     tf_lastname: TextField
     countries = list[dict]
 
+    def __init__(self, new_login: bool = False):
+        super().__init__()
+        self.new_login = new_login
+
     async def construct(self):
         await self.set_type(loading=True)
         self.countries = await self.client.session.api.client.countries.get_list()
@@ -80,6 +84,9 @@ class RegistrationSecondView(AuthView):
                 ),
             ],
         )
+
+    async def go_back(self, _=None):
+        await self.client.change_view(go_back=True)
 
     async def change_view(self, _):
         await self.set_type(loading=True)

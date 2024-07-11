@@ -53,6 +53,7 @@ class AccountNotificationLinkTelegramView(ClientBaseView):
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='notification_link_telegram_title'),
             with_expand=True,
+            with_restart=False,
             main_section_controls=[
                 Container(
                     content=Column(

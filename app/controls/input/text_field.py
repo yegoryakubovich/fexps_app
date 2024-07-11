@@ -26,6 +26,7 @@ class TextField(FletTextField):
             self,
             color: str = colors.ON_BACKGROUND,
             bgcolor: str = colors.BACKGROUND,
+            selection_color: str = None,
             key_question=None,
             **kwargs,
     ):
@@ -42,5 +43,5 @@ class TextField(FletTextField):
             size=settings.get_font_size(multiple=1.5),
         )
         self.bgcolor = bgcolor
-        self.selection_color = color
+        self.selection_color = selection_color
         self.key_question = key_question

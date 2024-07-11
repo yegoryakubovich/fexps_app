@@ -16,7 +16,6 @@
 
 
 from base64 import b64encode
-from functools import partial
 from typing import Any
 
 from flet_core import Column, ScrollMode, Container, padding, colors, alignment, CrossAxisAlignment, \
@@ -84,17 +83,22 @@ class AccountTab(BaseTab):
                         on_click=self.update_language,
                     ),
                     Setting(
-                        name='account_logout',
-                        icon=Icons.LOGOUT,
-                        on_click=partial(
-                            self.client.session.bs_info.open_,
-                            icon=Icons.LOGOUT,
-                            title=await self.client.session.gtv(key='logout_title'),
-                            description=await self.client.session.gtv(key='logout_description'),
-                            button_title=await self.client.session.gtv(key='confirm'),
-                            button_on_click=self.logout,
-                        ),
+                        name='account_change_account',
+                        icon=Icons.ACCOUNT,
+                        on_click=self.change_account,
                     ),
+                    # Setting(
+                    #     name='account_logout',
+                    #     icon=Icons.LOGOUT,
+                    #     on_click=partial(
+                    #         self.client.session.bs_info.open_,
+                    #         icon=Icons.LOGOUT,
+                    #         title=await self.client.session.gtv(key='logout_title'),
+                    #         description=await self.client.session.gtv(key='logout_description'),
+                    #         button_title=await self.client.session.gtv(key='confirm'),
+                    #         button_on_click=self.logout,
+                    #     ),
+                    # ),
                 ],
             ),
             Section(
@@ -230,10 +234,9 @@ class AccountTab(BaseTab):
         from app.views.auth.language import LanguageView
         await self.client.change_view(view=LanguageView(go_back=True))
 
-    async def logout(self, _):
-        await self.client.session.set_cs(key='token', value=None)
-        from app.views.auth.init import InitView
-        await self.client.change_view(view=InitView(), delete_current=True)
+    async def change_account(self, _):
+        from app.views.client.account.change_account import ChangeAccountView
+        await self.client.change_view(view=ChangeAccountView(go_back=True))
 
     async def about_us(self, _):
         from app.views.client.account.about_us import AboutUsView

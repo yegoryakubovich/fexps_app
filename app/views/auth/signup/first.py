@@ -32,6 +32,10 @@ class RegistrationFirstView(AuthView):
     tf_username: TextField
     tf_password: TextField
 
+    def __init__(self, new_login: bool = False):
+        super().__init__()
+        self.new_login = new_login
+
     async def construct(self):
         self.tf_username = TextField(
             label=await self.client.session.gtv(key='username'),
@@ -45,6 +49,7 @@ class RegistrationFirstView(AuthView):
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='registration_account_create_view_title'),
+            go_back=self.go_back if self.new_login else None,
             controls=[
                 Column(
                     controls=[
@@ -93,6 +98,9 @@ class RegistrationFirstView(AuthView):
             ]
         )
 
+    async def go_back(self, _=None):
+        await self.client.change_view(go_back=True)
+
     async def change_view(self, _):
         await self.set_type(loading=True)
         fields = [(self.tf_username, 6, 32), (self.tf_password, 7, 32)]
@@ -123,4 +131,7 @@ class RegistrationFirstView(AuthView):
 
     async def go_authentication(self, _):
         from app.views.auth.signin import AuthenticationView
-        await self.client.change_view(view=AuthenticationView(), delete_current=True)
+        await self.client.change_view(
+            view=AuthenticationView(new_login=self.new_login),
+            delete_current=True,
+        )

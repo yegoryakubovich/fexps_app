@@ -21,6 +21,7 @@ from flet_core import Dropdown as FletDropdown, colors, TextStyle
 from flet_core.dropdown import Option
 
 from app.utils import Fonts
+from config import settings
 
 
 class Dropdown(FletDropdown):
@@ -30,10 +31,12 @@ class Dropdown(FletDropdown):
         self.text_style = TextStyle(
             font_family=Fonts.REGULAR,
             color=colors.ON_BACKGROUND,
+            size=settings.get_font_size(multiple=1.5),
         )
         self.label_style = TextStyle(
             font_family=Fonts.REGULAR,
             color=colors.ON_BACKGROUND,
+            size=settings.get_font_size(multiple=1.5),
         )
 
     def change_options(self, options: Optional[list[Option]] = None):

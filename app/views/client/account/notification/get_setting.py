@@ -80,6 +80,7 @@ class AccountNotificationSettingView(ClientBaseView):
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='notification_setting_title'),
             with_expand=True,
+            with_restart=False,
             main_section_controls=[
                 self.snack_bar,
                 Container(

@@ -27,6 +27,10 @@ from fexps_api_client import FexpsApiClient
 
 
 class AgreementRegistrationView(AuthView):
+    def __init__(self, new_login: bool = False):
+        super().__init__()
+        self.new_login = new_login
+
     async def construct(self):
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
@@ -68,6 +72,9 @@ class AgreementRegistrationView(AuthView):
             ],
         )
 
+    async def go_back(self, _=None):
+        await self.client.change_view(go_back=True)
+
     async def change_view(self, _):
         await self.set_type(loading=True)
         await self.client.session.api.client.accounts.create(
@@ -87,7 +94,12 @@ class AgreementRegistrationView(AuthView):
         )
 
         token = session.token
+        tokens = await self.client.session.get_cs(key='tokens')
+        if not tokens:
+            tokens = []
+        await self.client.session.set_cs(key='tokens', value=tokens + [token])
         await self.client.session.set_cs(key='token', value=token)
+        await self.client.session.set_cs(key='current_wallet', value=None)
         self.client.session.api = FexpsApiClient(url=settings.get_url(), token=token)
         for contact_id, value in self.client.session.registration.contacts.items():
             if not contact_id or not value:
