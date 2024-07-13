@@ -40,7 +40,13 @@ from fexps_api_client.utils import ApiException
 class DynamicTimer(UserControl):
     time_text: Text
 
-    def __init__(self, seconds: int, font_size: int = 16, font_family=Fonts.BOLD, color=colors.BLACK):
+    def __init__(
+            self,
+            seconds: int,
+            font_size: int = settings.get_font_size(multiple=1.5),
+            font_family=Fonts.BOLD,
+            color=colors.BLACK,
+    ):
         super().__init__()
         self.running = True
         self.seconds = seconds
@@ -73,7 +79,12 @@ class DynamicTimer(UserControl):
         await self.time_text.update_async()
 
     def build(self):
-        self.time_text = Text(value='', size=self.font_size, color=self.color, font_family=self.font_family)
+        self.time_text = Text(
+            value='',
+            size=self.font_size,
+            color=self.color,
+            font_family=self.font_family,
+        )
         return self.time_text
 
 
@@ -141,8 +152,15 @@ class RequestView(ClientBaseView):
             value_str = f'{self.request.name} ({value_str})'
         logging.critical(value_str)
         state_row = await self.client.session.gtv(key=f'request_state_{self.request.state}')
-        info_card_controls = []
-        info_card_controls += [
+        if self.request.state in [RequestStates.CANCELED, RequestStates.COMPLETED]:
+            timer = Text(value='')
+        else:
+            timer = DynamicTimer(
+                seconds=self.request.rate_fixed_delta,
+                font_family=Fonts.SEMIBOLD,
+                color=colors.ON_PRIMARY_CONTAINER,
+            )
+        info_card_controls = [
             Row(
                 controls=[
                     Text(
@@ -217,12 +235,7 @@ class RequestView(ClientBaseView):
                                 font_family=Fonts.SEMIBOLD,
                                 color=colors.ON_PRIMARY_CONTAINER,
                             ),
-                            DynamicTimer(
-                                seconds=self.request.rate_fixed_delta,
-                                font_size=settings.get_font_size(multiple=1.5),
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
+                            timer,
                         ],
                     ),
                 ],
@@ -301,7 +314,9 @@ class RequestView(ClientBaseView):
             await self.info_card.update_async()
 
     async def update_confirmation_timer(self, update: bool = True):
-        self.confirmation_timer = DynamicTimer(seconds=self.request.confirmation_delta)
+        self.confirmation_timer = DynamicTimer(
+            seconds=self.request.confirmation_delta,
+        )
         if update:
             await self.confirmation_timer.update_async()
 

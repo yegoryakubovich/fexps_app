@@ -15,7 +15,6 @@
 #
 
 
-import logging
 from functools import partial
 
 from flet_core import Column, Container, colors, Row, ScrollMode, Image, MainAxisAlignment
@@ -127,6 +126,12 @@ class ChangeAccountView(ClientBaseView):
         )
 
     async def account_add(self, _=None):
+        if len(self.client.session.tokens) >= settings.max_accounts:
+            await self.client.session.bs_error.open_(
+                icon=Icons.ERROR,
+                title=await self.client.session.gtv(key='change_account_max_error', max_count=settings.max_accounts),
+            )
+            return
         from app.views.auth.init import InitView
         await self.client.change_view(
             view=InitView(new_login=True),
@@ -140,7 +145,6 @@ class ChangeAccountView(ClientBaseView):
         )
         if account_change:
             await self.client.change_view(view=InitView(), delete_current=True)
-
 
     async def account_logout(self, account_id: int, _=None):
         from app.views.auth.init import InitView

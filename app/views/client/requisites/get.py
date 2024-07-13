@@ -152,9 +152,9 @@ class RequisiteView(ClientBaseView):
                 value=await self.client.session.gtv(key='requisite_enable_button'),
                 size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
-                color=colors.ON_PRIMARY,
+                color=colors.BLACK,
             ),
-            bgcolor=colors.PRIMARY,
+            bgcolor=colors.GREEN,
             on_click=self.requisite_state_enable,
             expand=1,
         )
@@ -182,9 +182,9 @@ class RequisiteView(ClientBaseView):
                 value=await self.client.session.gtv(key='requisite_stop_button'),
                 size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
-                color=colors.ON_PRIMARY,
+                color=colors.BLACK,
             ),
-            bgcolor=colors.PRIMARY,
+            bgcolor=colors.RED,
             on_click=self.requisite_state_stop,
             expand=1,
         )
@@ -197,9 +197,9 @@ class RequisiteView(ClientBaseView):
                 value=await self.client.session.gtv(key='requisite_disable_button'),
                 size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
-                color=colors.ON_PRIMARY,
+                color=colors.BLACK,
             ),
-            bgcolor=colors.PRIMARY,
+            bgcolor=colors.RED,
             on_click=self.requisite_state_disable,
             expand=1,
         )
@@ -224,18 +224,28 @@ class RequisiteView(ClientBaseView):
                 Row(
                     controls=[
                         self.update_value_button,
+                    ],
+                ),
+                Row(
+                    controls=[
                         self.stop_button,
                     ],
                 ),
             ]
         elif self.requisite.state == 'stop':
+            await self.update_update_value_button(update=False)
             await self.update_enable_button(update=False)
             await self.update_disable_button(update=False)
             buttons += [
                 Row(
                     controls=[
-                        self.enable_button,
+                        self.update_value_button,
+                    ],
+                ),
+                Row(
+                    controls=[
                         self.disable_button,
+                        self.enable_button,
                     ],
                 ),
             ]

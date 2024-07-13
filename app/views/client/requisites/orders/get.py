@@ -19,14 +19,15 @@ from functools import partial
 from typing import Optional
 
 from flet_core import Column, Container, Row, Divider, MainAxisAlignment, \
-    padding, Image, colors, ScrollMode, AlertDialog, TextField
+    padding, Image, colors, ScrollMode, AlertDialog
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, InformationContainer
+from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons
 from app.utils.constants.order import OrderStates, OrderTypes
-from app.utils.value import value_to_str, requisite_value_to_str
+from app.utils.value import value_to_str
 from config import settings
 from fexps_api_client.utils import ApiException
 
@@ -101,9 +102,9 @@ class RequisiteOrderView(ClientBaseView):
                         TextField(
                             label=await self.client.session.gtv(key=scheme_field.get('name_text_key')),
                             value=self.order.requisite_fields.get(scheme_field.get('key')),
-                            color=self.method.color,
-                            bgcolor=self.method.bgcolor,
-                            border_color=self.method.color,
+                            # color=self.method.color,
+                            # bgcolor=self.method.bgcolor,
+                            # border_color=self.method.color,
                             expand=True,
                             read_only=True,
                         ),
@@ -128,9 +129,9 @@ class RequisiteOrderView(ClientBaseView):
                         label=await self.client.session.gtv(key='sum'),
                         value=currency_value,
                         suffix_text=self.currency.id_str.upper(),
-                        color=self.method.color,
-                        bgcolor=self.method.bgcolor,
-                        border_color=self.method.color,
+                        # color=self.method.color,
+                        # bgcolor=self.method.bgcolor,
+                        # border_color=self.method.color,
                         expand=True,
                         read_only=True,
                     ),

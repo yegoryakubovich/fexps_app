@@ -201,15 +201,14 @@ class RequisiteOrderPaymentView(ClientBaseView):
         self.input_fields[key] = event.data
 
     async def order_confirm(self, _):
-        await self.set_type(loading=True)
         rate = None
         if self.order.requisite.is_flex:
             if not self.tf_rate.value:
-                await self.set_type(loading=False)
                 self.tf_rate.error_text = await self.client.session.gtv(key='error_empty')
                 await self.tf_rate.update_async()
                 return
             rate = value_to_int(value=self.tf_rate.value, decimal=self.order.request.rate_decimal)
+        await self.set_type(loading=True)
         for input_scheme_field in self.order.input_scheme_fields:
             if not self.input_fields.get(input_scheme_field['key']):
                 if input_scheme_field['type'] == 'image' and self.send_key:

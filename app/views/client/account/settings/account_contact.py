@@ -64,7 +64,7 @@ class AccountSettingsAccountContactView(ClientBaseView):
         self.snack_bar = SnackBar(
             content=Text(
                 value=await self.client.session.gtv(key='error_contacts_min'),
-                color=colors.WHITE,
+                color=colors.BLACK,
                 bgcolor=colors.RED,
             ),
         )

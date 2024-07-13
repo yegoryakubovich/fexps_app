@@ -19,7 +19,7 @@ from flet_core import SnackBar as FletSnackBar
 
 
 class SnackBar(FletSnackBar):
-    def __init__(self, **kwargs):
+    def __init__(self, bgcolor='#008F12', **kwargs):
         super().__init__(**kwargs)
-        self.bgcolor = '#008F12'
+        self.bgcolor = bgcolor
         self.duration = 1000

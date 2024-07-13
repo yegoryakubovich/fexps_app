@@ -153,7 +153,6 @@ class RequestOrderView(ClientBaseView):
         self.info_card = InformationContainer(
             content=Column(
                 controls=info_controls,
-                # spacing=-50,
             ),
             bgcolor=self.method.bgcolor,
             padding=padding.symmetric(vertical=32, horizontal=32),
