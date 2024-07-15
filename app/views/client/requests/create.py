@@ -15,12 +15,12 @@
 #
 
 
-import asyncio
 import logging
 from functools import partial
+from typing import Optional
 
-from flet_core import Column, Container, Row, alignment, AlertDialog, Image, colors, ScrollMode, IconButton, icons, \
-    MainAxisAlignment, Divider
+from flet_core import Column, Container, Row, alignment, AlertDialog, Image, colors, ScrollMode, MainAxisAlignment, \
+    Divider, ExpansionTile, border
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -46,6 +46,11 @@ def copy_options(options: list[Option]) -> list[Option]:
     ]
 
 
+class RequisiteDataCreateTypes:
+    DEFAULT = 'create_default'
+    DISPOSABLE = 'create_disposable'
+
+
 class RequestCreateView(ClientBaseView):
     route = '/client/request/create'
 
@@ -69,11 +74,11 @@ class RequestCreateView(ClientBaseView):
     dd_output_currency: Dropdown
     dd_output_method: Dropdown
     dd_output_requisite_data: Dropdown
-    btn_output_requisite_data: StandardButton
+    et_output_requisite_data: ExpansionTile
 
     tf_account_client_text: TextField
 
-    requisite_data_model: RequisiteDataCreateModel
+    requisite_data_model: Optional[RequisiteDataCreateModel]
 
     async def delete_error_texts(self, _=None) -> None:
         fields = [
@@ -84,7 +89,6 @@ class RequestCreateView(ClientBaseView):
             self.dd_output_currency,
             self.dd_output_method,
             self.dd_output_requisite_data,
-            self.btn_output_requisite_data,
         ]
         for field in fields:
             field.error_text = None
@@ -109,6 +113,22 @@ class RequestCreateView(ClientBaseView):
             options += [
                 Option(text=method_str, key=method.id),
             ]
+        return options
+
+    async def get_requisite_data_options(self, method_id: int) -> list[Option]:
+        requisites_datas = await self.client.session.api.client.requisites_datas.get_list()
+        options = [
+            Option(text=await self.client.session.gtv(key=f'request_create_requisite_data_{key}'), key=key)
+            for key in [RequisiteDataCreateTypes.DEFAULT, RequisiteDataCreateTypes.DISPOSABLE]
+        ]
+        for requisite_data in requisites_datas:
+            if int(requisite_data.method.id) != method_id:
+                continue
+            if not requisite_data.allow:
+                continue
+            options.append(
+                Option(text=f'{requisite_data.name}', key=requisite_data.id),
+            )
         return options
 
     """
@@ -217,19 +237,20 @@ class RequestCreateView(ClientBaseView):
             label=await self.client.session.gtv(key='request_create_output_requisite_data'),
             on_change=self.change_output_requisite_data,
             disabled=True,
-            expand=True,
         )
-        self.btn_output_requisite_data = StandardButton(
-            content=Image(
-                src=Icons.CREATE,
-                height=10,
-                color=colors.ON_PRIMARY,
+        self.et_output_requisite_data = ExpansionTile(
+            title=Text(
+                value=await self.client.session.gtv(key='request_create_requisite_data_extra_options'),
+                size=settings.get_font_size(multiple=2),
+                font_family=Fonts.BOLD,
+                color=colors.ON_BACKGROUND,
             ),
-            vertical=7,
-            horizontal=7,
-            bgcolor=colors.PRIMARY,
-            on_click=self.create_output_requisite_data,
-            disabled=True,
+            bgcolor=colors.BACKGROUND,
+            collapsed_bgcolor=colors.BACKGROUND,
+            icon_color=colors.ON_BACKGROUND,
+            collapsed_icon_color=colors.ON_BACKGROUND,
+            initially_expanded=self.client.session.debug,
+            controls_padding=5,
         )
         self.output_column = Column(
             controls=[
@@ -251,12 +272,11 @@ class RequestCreateView(ClientBaseView):
                     spacing=10
                 ),
                 self.dd_output_method,
-                Row(
-                    controls=[
-                        self.dd_output_requisite_data,
-                        self.btn_output_requisite_data,
-                    ]
-                )
+                self.dd_output_requisite_data,
+                Container(
+                    content=self.et_output_requisite_data,
+                    border=border.all(color=colors.ON_BACKGROUND, width=1),
+                ),
             ],
         )
         if update:
@@ -290,12 +310,6 @@ class RequestCreateView(ClientBaseView):
             label=await self.client.session.gtv(key='request_get_client_text'),
             multiline=True,
         )
-        logging.critical('\n'.join([
-            str(await self.client.session.get_cs(key='request_create_input_currency')),
-            str(await self.client.session.get_cs(key='request_create_output_currency')),
-            str(await self.client.session.get_cs(key='request_create_input_method')),
-            str(await self.client.session.get_cs(key='request_create_output_method')),
-        ]))
         await self.write_data()
         self.controls = await self.get_controls(
             with_expand=True,
@@ -384,9 +398,6 @@ class RequestCreateView(ClientBaseView):
             self.dd_output_method.disabled = False
             output_method_options = await self.get_method_options(currency_id_str=currency)
             self.dd_output_method.change_options(options=output_method_options)
-            self.btn_output_requisite_data.disabled = False
-            if not output_method_options:
-                self.btn_output_requisite_data.disabled = True
             self.dd_output_requisite_data.value = None
             await self.set_type(loading=False)
             await self.change_output_method(update=update)
@@ -472,7 +483,7 @@ class RequestCreateView(ClientBaseView):
         await self.calculation(update=update)
 
     """
-    OUTPUT
+    OUTPUT METHOD
     """
 
     async def change_output_method(self, update: bool = True, _=None):
@@ -480,67 +491,49 @@ class RequestCreateView(ClientBaseView):
             await self.delete_error_texts()
         if not self.dd_output_method or not self.dd_output_method.value:
             return
-        await self.set_type(loading=True)
-        requisites_datas = await self.client.session.api.client.requisites_datas.get_list()
-        options = []
-        for requisite_data in requisites_datas:
-            if int(requisite_data.method.id) != int(self.dd_output_method.value):
-                continue
-            options.append(
-                Option(text=f'{requisite_data.name}', key=requisite_data.id),
-            )
+        options = await self.get_requisite_data_options(method_id=int(self.dd_output_method.value))
         self.dd_output_requisite_data.disabled = False
         self.dd_output_requisite_data.change_options(options=options)
-        await self.set_type(loading=False)
         await self.change_method(update=update)
+
+    """
+    OUTPUT REQUISITE DATA
+    """
 
     async def change_output_requisite_data(self, _=None):
         await self.delete_error_texts()
-
-    async def create_output_requisite_data(self, _=None):
-        await self.delete_error_texts()
-        self.requisite_data_model = RequisiteDataCreateModel(
-            session=self.client.session,
-            update_async=self.update_async,
-            after_close=self.create_output_requisite_data_after_close,
-            currency_id_str=self.dd_output_currency.value,
-            method_id=self.dd_output_method.value,
-        )
-        await self.requisite_data_model.construct()
-        self.dialog.content = Container(
-            content=Column(
-                controls=[
-                    Row(
-                        controls=[
-                            Text(
-                                value=self.requisite_data_model.title,
-                                size=settings.get_font_size(multiple=1.5),
-                                font_family=Fonts.BOLD,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                            IconButton(
-                                icon=icons.CLOSE,
-                                on_click=self.create_output_requisite_data_close,
-                                icon_color=colors.ON_BACKGROUND,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.SPACE_BETWEEN,
-                    ),
-                    *self.requisite_data_model.controls,
-                ],
-                scroll=ScrollMode.AUTO,
-            ),
-            width=400,
-        )
-        self.dialog.actions = self.requisite_data_model.buttons
-        self.dialog.open = True
-        await self.dialog.update_async()
-        await self.change_method()
+        self.requisite_data_model = None
+        self.et_output_requisite_data.controls = []
+        if self.dd_output_requisite_data.value == RequisiteDataCreateTypes.DEFAULT:
+            self.requisite_data_model = RequisiteDataCreateModel(
+                session=self.client.session,
+                update_async=self.update_async,
+                after_close=self.create_output_requisite_data_after_close,
+                currency_id_str=self.dd_output_currency.value,
+                method_id=self.dd_output_method.value,
+            )
+        elif self.dd_output_requisite_data.value == RequisiteDataCreateTypes.DISPOSABLE:
+            self.requisite_data_model = RequisiteDataCreateModel(
+                session=self.client.session,
+                update_async=self.update_async,
+                after_close=self.create_output_requisite_data_after_close,
+                currency_id_str=self.dd_output_currency.value,
+                method_id=self.dd_output_method.value,
+                is_disposable=True,
+            )
+        if self.requisite_data_model:
+            await self.requisite_data_model.construct()
+            self.et_output_requisite_data.controls = [
+                *self.requisite_data_model.controls,
+                *self.requisite_data_model.buttons,
+            ]
+            self.et_output_requisite_data.initially_expanded = True
+        await self.et_output_requisite_data.update_async()
 
     async def create_output_requisite_data_after_close(self):
-        self.dialog.open = False
-        await self.dialog.update_async()
-        await asyncio.sleep(0.1)
+        self.et_output_requisite_data.initially_expanded = self.client.session.debug
+        self.et_output_requisite_data.controls = []
+        await self.et_output_requisite_data.update_async()
         await self.change_output_method()
         if self.dd_output_currency.value == self.requisite_data_model.currency_id_str:
             if str(self.dd_output_method.value) == str(self.requisite_data_model.method_id):

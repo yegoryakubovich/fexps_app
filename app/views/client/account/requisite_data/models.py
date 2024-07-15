@@ -43,6 +43,7 @@ class RequisiteDataCreateModel:
     dd_currency: Dropdown
     dd_method: Dropdown
     fields: dict
+    is_disposable: bool
 
     def __init__(
             self,
@@ -51,6 +52,7 @@ class RequisiteDataCreateModel:
             after_close: callable = None,
             currency_id_str: str = None,
             method_id: int = None,
+            is_disposable: bool = False,
     ):
         self.title = ''
         self.session = session
@@ -58,10 +60,11 @@ class RequisiteDataCreateModel:
         self.after_close = after_close
         self.currency_id_str = currency_id_str
         self.method_id = method_id
+        self.is_disposable = is_disposable
 
     async def construct(self):
         self.title = await self.session.gtv(key='requisite_data_create_view_title')
-        self.fields, self.fields_keys = {}, {}
+        self.fields = {}
         self.methods = await self.session.api.client.methods.get_list()
         currency_options = [
             Option(text=currency.id_str.upper(), key=currency.id_str)
@@ -97,8 +100,16 @@ class RequisiteDataCreateModel:
         self.controls = [
             self.error_field,
             self.tf_name,
-            self.dd_currency,
-            self.dd_method,
+        ]
+        if not self.currency_id_str:
+            self.controls += [
+                self.dd_currency,
+            ]
+        if not self.method_id:
+            self.controls += [
+                self.dd_method,
+            ]
+        self.controls += [
             self.optional,
         ]
         self.buttons = [
@@ -174,6 +185,7 @@ class RequisiteDataCreateModel:
                 name=self.tf_name.value,
                 method_id=int(self.dd_method.value),
                 fields=self.fields,
+                is_disposable=self.is_disposable,
             )
         except ApiException as exception:
             return await self.session.error(exception=exception)
