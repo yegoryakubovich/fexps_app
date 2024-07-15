@@ -27,7 +27,6 @@ class AboutUsView(ClientBaseView):
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='about'),
-            with_restart=False,
             main_section_controls=[
                 Text(
                     value='text',

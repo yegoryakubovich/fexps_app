@@ -105,7 +105,7 @@ class ClientBaseView(View):
             self,
             title: str,
             main_section_controls: list,
-            with_restart: bool = True,
+            with_restart: bool = False,
             sections: list[ClientSection] = None,
             create_button: Any = None,
             with_expand: bool = False,

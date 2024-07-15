@@ -30,7 +30,6 @@ class AccountSettingsView(ClientBaseView):
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='account_settings_title'),
             with_expand=True,
-            with_restart=False,
             main_section_controls=[
                 Column(
                     controls=[

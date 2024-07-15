@@ -87,18 +87,6 @@ class AccountTab(BaseTab):
                         icon=Icons.ACCOUNT,
                         on_click=self.change_account,
                     ),
-                    # Setting(
-                    #     name='account_logout',
-                    #     icon=Icons.LOGOUT,
-                    #     on_click=partial(
-                    #         self.client.session.bs_info.open_,
-                    #         icon=Icons.LOGOUT,
-                    #         title=await self.client.session.gtv(key='logout_title'),
-                    #         description=await self.client.session.gtv(key='logout_description'),
-                    #         button_title=await self.client.session.gtv(key='confirm'),
-                    #         button_on_click=self.logout,
-                    #     ),
-                    # ),
                 ],
             ),
             Section(

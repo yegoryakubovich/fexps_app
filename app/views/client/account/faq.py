@@ -48,7 +48,6 @@ class FAQView(ClientBaseView):
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='faq'),
-            with_restart=False,
             main_section_controls=[
                 ExpansionPanelList(
                     controls=expansion_panels,

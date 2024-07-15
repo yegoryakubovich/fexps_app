@@ -100,7 +100,6 @@ class ChangeAccountView(ClientBaseView):
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='change_account_title'),
             with_expand=True,
-            with_restart=False,
             main_section_controls=[
                 Container(
                     content=self.accounts_column,
