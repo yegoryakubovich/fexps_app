@@ -16,7 +16,6 @@
 
 
 import asyncio
-import logging
 from functools import partial
 from typing import Optional
 
@@ -150,16 +149,23 @@ class RequestView(ClientBaseView):
         rate_str = value_to_str(value=get_fix_rate(rate=rate))
         if self.request.name:
             value_str = f'{self.request.name} ({value_str})'
-        logging.critical(value_str)
         state_row = await self.client.session.gtv(key=f'request_state_{self.request.state}')
-        if self.request.state in [RequestStates.CANCELED, RequestStates.COMPLETED]:
-            timer = Text(value='')
-        else:
-            timer = DynamicTimer(
-                seconds=self.request.rate_fixed_delta,
+        rate_controls = [
+            Text(
+                value=rate_str,
+                size=settings.get_font_size(multiple=1.5),
                 font_family=Fonts.SEMIBOLD,
                 color=colors.ON_PRIMARY_CONTAINER,
-            )
+            ),
+        ]
+        if self.request.state not in [RequestStates.CANCELED, RequestStates.COMPLETED]:
+            rate_controls += [
+                DynamicTimer(
+                    seconds=self.request.rate_fixed_delta,
+                    font_family=Fonts.SEMIBOLD,
+                    color=colors.ON_PRIMARY_CONTAINER,
+                ),
+            ]
         info_card_controls = [
             Row(
                 controls=[
@@ -228,15 +234,7 @@ class RequestView(ClientBaseView):
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
                     Row(
-                        controls=[
-                            Text(
-                                value=rate_str,
-                                size=settings.get_font_size(multiple=1.5),
-                                font_family=Fonts.SEMIBOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                            timer,
-                        ],
+                        controls=rate_controls,
                     ),
                 ],
                 alignment=MainAxisAlignment.SPACE_BETWEEN,
