@@ -26,21 +26,32 @@ class TextField(FletTextField):
             self,
             color: str = colors.ON_BACKGROUND,
             bgcolor: str = colors.BACKGROUND,
-            selection_color: str = None,
             key_question=None,
             **kwargs,
     ):
         super().__init__(**kwargs)
         self.border_color = colors.SECONDARY
+        self.label_style = TextStyle(
+            font_family=Fonts.BOLD,
+            color=color,
+            size=settings.get_font_size(multiple=1.5),
+        )
+        self.prefix_style = TextStyle(
+            font_family=Fonts.REGULAR,
+            color=color,
+            size=settings.get_font_size(multiple=1.5),
+        )
         self.text_style = TextStyle(
             font_family=Fonts.REGULAR,
             color=color,
-        )
-        self.label_style = TextStyle(
-            font_family=Fonts.REGULAR,
-            color=colors.ON_BACKGROUND,
             size=settings.get_font_size(multiple=1.5),
         )
+        self.suffix_style = TextStyle(
+            font_family=Fonts.REGULAR,
+            color=color,
+            size=settings.get_font_size(multiple=1.5),
+        )
+
         self.bgcolor = bgcolor
-        self.selection_color = selection_color
+        self.selection_color = colors.BLUE_400
         self.key_question = key_question
