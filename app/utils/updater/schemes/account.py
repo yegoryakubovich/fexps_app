@@ -15,24 +15,28 @@
 #
 
 
-from app.utils.updater import update_check
-from app.utils.updater.schemes.account import get_account_scheme
-from app.views.main.tabs import AccountTab
-
-
-async def check_update_main_account_view(view: AccountTab, update: bool = True):
-    check_list = []
-    # account
-    account = await view.client.session.api.client.accounts.get()
-    check_list += [
-        update_check(
-            scheme=get_account_scheme,
-            obj_1=view.client.session.account,
-            obj_2=account,
-        ),
+def get_account_list_scheme(accounts: list[dict] = None) -> list:
+    if accounts is None:
+        return []
+    return [
+        get_account_scheme(account=account)
+        for account in accounts
     ]
-    if True not in check_list:
-        return
-    await view.construct()
-    if update:
-        await view.update_async()
+
+
+def get_account_scheme(account: dict = None) -> list:
+    if account is None:
+        return []
+    return [
+        account['id'],
+        account['username'],
+        account['firstname'],
+        account['lastname'],
+        account['country'],
+        account['language'],
+        account['timezone'],
+        account['currency'],
+        account['file'],
+        account['permissions'],
+        account['text_pack_id'],
+    ]

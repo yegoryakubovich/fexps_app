@@ -54,6 +54,7 @@ class Section:
 class AccountTab(BaseTab):
 
     async def construct(self):
+        self.client.session.account = await self.client.session.api.client.accounts.get()
         firstname = self.client.session.account.firstname
         lastname = self.client.session.account.lastname
         username = self.client.session.account.username
@@ -163,7 +164,7 @@ class AccountTab(BaseTab):
                                         content=Image(
                                             src=account_icon_src,
                                             src_base64=icon_src_base64,
-                                            color=colors.SECONDARY if account_icon_src else None
+                                            color=colors.SECONDARY if account_icon_src else None,
                                         ),
                                         bgcolor=colors.ON_PRIMARY,
                                         radius=48,

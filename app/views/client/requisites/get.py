@@ -17,15 +17,16 @@
 
 from functools import partial
 
-from flet_core import Row, colors, MainAxisAlignment, Image, Column, ScrollMode, Container, AlertDialog
+from flet_core import Row, colors, MainAxisAlignment, Image, Column, ScrollMode, Container, AlertDialog, padding, \
+    Divider
 
 from app.controls.button import StandardButton
-from app.controls.information import SubTitle, Text
+from app.controls.information import SubTitle, Text, InformationContainer
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
-from app.utils import Icons, Fonts, value_to_float, Error, value_to_int
+from app.utils import Icons, Fonts, value_to_float, Error, value_to_int, value_to_str
 from app.utils.constants.order import OrderStates
-from app.utils.value import requisite_value_to_str
+from app.utils.value import requisite_value_to_str, get_fix_rate
 from app.views.client.requisites.orders.get import RequisiteOrderView
 from config import settings
 from fexps_api_client.utils import ApiException
@@ -40,6 +41,7 @@ class RequisiteView(ClientBaseView):
     dialog: AlertDialog
     tf_currency_value: TextField
 
+    info_card: InformationContainer
     orders_row: Row
     update_value_button: StandardButton
     enable_button: StandardButton
@@ -49,6 +51,200 @@ class RequisiteView(ClientBaseView):
     def __init__(self, requisite_id: int):
         super().__init__()
         self.requisite_id = requisite_id
+
+    """
+    INFO CARD
+    """
+
+    async def update_info_card(self, update: bool = True) -> None:
+        info_card_controls = [
+            Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='requisite_id'),
+                        size=settings.get_font_size(multiple=1.5),
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                    Text(
+                        value=f'{self.requisite.id:08}',
+                        size=settings.get_font_size(multiple=1.5),
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+            Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='type'),
+                        size=settings.get_font_size(multiple=1.5),
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                    Text(
+                        value=f'{self.requisite.type}',
+                        size=settings.get_font_size(multiple=1.5),
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+            Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='state'),
+                        size=settings.get_font_size(multiple=1.5),
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                    Text(
+                        value=f'{self.requisite.state}',
+                        size=settings.get_font_size(multiple=1.5),
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+            Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='requisite_is_flex'),
+                        size=settings.get_font_size(multiple=1.5),
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                    Text(
+                        value=await self.client.session.gtv(key=f'requisite_is_flex_{self.requisite.is_flex}'.lower()),
+                        size=settings.get_font_size(multiple=1.5),
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+            Divider(color=colors.ON_PRIMARY_CONTAINER),
+            Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='currency'),
+                        size=settings.get_font_size(multiple=1.5),
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                    Text(
+                        value=self.requisite.currency.id_str.upper(),
+                        size=settings.get_font_size(multiple=1.5),
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+        ]
+        currency_value = value_to_str(
+            value=value_to_float(value=self.requisite.currency_value, decimal=self.requisite.currency.decimal),
+        )
+        total_currency_value = value_to_str(
+            value=value_to_float(value=self.requisite.total_currency_value, decimal=self.requisite.currency.decimal),
+        )
+        info_card_controls += [
+            Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='currency_value'),
+                        size=settings.get_font_size(multiple=1.5),
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                    Text(
+                        value=f'{currency_value}/{total_currency_value}',
+                        size=settings.get_font_size(multiple=1.5),
+                        font_family=Fonts.SEMIBOLD,
+                        color=colors.ON_PRIMARY_CONTAINER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
+            ),
+        ]
+        if self.requisite.rate:
+            rate_str = value_to_str(
+                value=get_fix_rate(
+                    rate=value_to_float(value=self.requisite.rate, decimal=self.requisite.currency.rate_decimal),
+                ),
+            )
+            info_card_controls += [
+                Row(
+                    controls=[
+                        Text(
+                            value=await self.client.session.gtv(key='rate'),
+                            size=settings.get_font_size(multiple=1.5),
+                            font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
+                        ),
+                        Text(
+                            value=rate_str,
+                            size=settings.get_font_size(multiple=1.5),
+                            font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
+                        ),
+                    ],
+                    alignment=MainAxisAlignment.SPACE_BETWEEN,
+                ),
+            ]
+        if self.requisite.input_method:
+            info_card_controls += [
+                Row(
+                    controls=[
+                        Text(
+                            value=await self.client.session.gtv(key='requisite_input_method'),
+                            size=settings.get_font_size(multiple=1.5),
+                            font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
+                        ),
+                        Text(
+                            value=await self.client.session.gtv(key=self.requisite.input_method.name_text),
+                            size=settings.get_font_size(multiple=1.5),
+                            font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
+                        ),
+                    ],
+                    alignment=MainAxisAlignment.SPACE_BETWEEN,
+                ),
+            ]
+        if self.requisite.output_method:
+            info_card_controls += [
+                Row(
+                    controls=[
+                        Text(
+                            value=await self.client.session.gtv(key='requisite_output_method'),
+                            size=settings.get_font_size(multiple=1.5),
+                            font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
+                        ),
+                        Text(
+                            value=await self.client.session.gtv(key=self.requisite.output_method.name_text),
+                            size=settings.get_font_size(multiple=1.5),
+                            font_family=Fonts.SEMIBOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
+                        ),
+                    ],
+                    alignment=MainAxisAlignment.SPACE_BETWEEN,
+                ),
+            ]
+        self.info_card = InformationContainer(
+            content=Column(
+                controls=info_card_controls,
+                spacing=-50,
+            ),
+            bgcolor=colors.PRIMARY_CONTAINER,
+            padding=padding.symmetric(vertical=32, horizontal=32),
+        )
+        if update:
+            await self.info_card.update_async()
 
     """
     ORDERS
@@ -213,8 +409,10 @@ class RequisiteView(ClientBaseView):
         self.requisite = await self.client.session.api.client.requisites.get(id_=self.requisite_id)
         self.orders = await self.client.session.api.client.orders.list_get.by_requisite(requisite_id=self.requisite_id)
         await self.set_type(loading=False)
+        await self.update_info_card(update=False)
         await self.update_order_row(update=False)
         controls += [
+            self.info_card,
             self.orders_row,
         ]
         if self.requisite.state == 'enable':

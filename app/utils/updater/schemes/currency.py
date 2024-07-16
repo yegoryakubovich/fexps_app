@@ -15,12 +15,12 @@
 #
 
 
-def get_currency_list_scheme(currencys: list[dict] = None) -> list:
-    if currencys is None:
+def get_currency_list_scheme(currencies: list[dict] = None) -> list:
+    if currencies is None:
         return []
     return [
         get_currency_scheme(currency)
-        for currency in currencys
+        for currency in currencies
     ]
 
 
