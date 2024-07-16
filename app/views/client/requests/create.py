@@ -19,8 +19,8 @@ import logging
 from functools import partial
 from typing import Optional
 
-from flet_core import Column, Container, Row, alignment, AlertDialog, Image, colors, ScrollMode, MainAxisAlignment, \
-    Divider, ExpansionTile, border
+from flet_core import Column, Container, Row, alignment, Image, colors, ScrollMode, MainAxisAlignment, \
+    Divider
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -57,7 +57,6 @@ class RequestCreateView(ClientBaseView):
     methods = dict
     currencies = list[dict]
     calculate = dict
-    dialog: AlertDialog
 
     # input
     input_column: Column
@@ -74,7 +73,7 @@ class RequestCreateView(ClientBaseView):
     dd_output_currency: Dropdown
     dd_output_method: Dropdown
     dd_output_requisite_data: Dropdown
-    et_output_requisite_data: ExpansionTile
+    output_requisite_data_column: Column
 
     tf_account_client_text: TextField
 
@@ -238,20 +237,7 @@ class RequestCreateView(ClientBaseView):
             on_change=self.change_output_requisite_data,
             disabled=True,
         )
-        self.et_output_requisite_data = ExpansionTile(
-            title=Text(
-                value=await self.client.session.gtv(key='request_create_requisite_data_extra_options'),
-                size=settings.get_font_size(multiple=2),
-                font_family=Fonts.BOLD,
-                color=colors.ON_BACKGROUND,
-            ),
-            bgcolor=colors.BACKGROUND,
-            collapsed_bgcolor=colors.BACKGROUND,
-            icon_color=colors.ON_BACKGROUND,
-            collapsed_icon_color=colors.ON_BACKGROUND,
-            initially_expanded=self.client.session.debug,
-            controls_padding=5,
-        )
+        self.output_requisite_data_column = Column(controls=[])
         self.output_column = Column(
             controls=[
                 SubTitle(value=await self.client.session.gtv(key='request_create_output')),
@@ -273,10 +259,7 @@ class RequestCreateView(ClientBaseView):
                 ),
                 self.dd_output_method,
                 self.dd_output_requisite_data,
-                Container(
-                    content=self.et_output_requisite_data,
-                    border=border.all(color=colors.ON_BACKGROUND, width=1),
-                ),
+                self.output_requisite_data_column,
             ],
         )
         if update:
@@ -287,7 +270,7 @@ class RequestCreateView(ClientBaseView):
     """
 
     async def construct(self):
-        self.dialog = AlertDialog(modal=True)
+        self.requisite_data_model = None
         await self.set_type(loading=True)
         self.methods = await self.client.session.api.client.methods.get_list()
         self.currencies = await self.client.session.api.client.currencies.get_list()
@@ -318,7 +301,6 @@ class RequestCreateView(ClientBaseView):
                 Container(
                     content=Column(
                         controls=[
-                            self.dialog,
                             self.input_column,
                             self.common_column,
                             self.output_column,
@@ -503,12 +485,11 @@ class RequestCreateView(ClientBaseView):
     async def change_output_requisite_data(self, _=None):
         await self.delete_error_texts()
         self.requisite_data_model = None
-        self.et_output_requisite_data.controls = []
+        self.output_requisite_data_column.controls = []
         if self.dd_output_requisite_data.value == RequisiteDataCreateTypes.DEFAULT:
             self.requisite_data_model = RequisiteDataCreateModel(
                 session=self.client.session,
                 update_async=self.update_async,
-                after_close=self.create_output_requisite_data_after_close,
                 currency_id_str=self.dd_output_currency.value,
                 method_id=self.dd_output_method.value,
             )
@@ -516,33 +497,14 @@ class RequestCreateView(ClientBaseView):
             self.requisite_data_model = RequisiteDataCreateModel(
                 session=self.client.session,
                 update_async=self.update_async,
-                after_close=self.create_output_requisite_data_after_close,
                 currency_id_str=self.dd_output_currency.value,
                 method_id=self.dd_output_method.value,
                 is_disposable=True,
             )
         if self.requisite_data_model:
             await self.requisite_data_model.construct()
-            self.et_output_requisite_data.controls = [
-                *self.requisite_data_model.controls,
-                *self.requisite_data_model.buttons,
-            ]
-            self.et_output_requisite_data.initially_expanded = True
-        await self.et_output_requisite_data.update_async()
-
-    async def create_output_requisite_data_after_close(self):
-        self.et_output_requisite_data.initially_expanded = self.client.session.debug
-        self.et_output_requisite_data.controls = []
-        await self.et_output_requisite_data.update_async()
-        await self.change_output_method()
-        if self.dd_output_currency.value == self.requisite_data_model.currency_id_str:
-            if str(self.dd_output_method.value) == str(self.requisite_data_model.method_id):
-                self.dd_output_requisite_data.value = self.requisite_data_model.requisite_data_id
-        await self.dd_output_requisite_data.update_async()
-
-    async def create_output_requisite_data_close(self, _=None):
-        self.dialog.open = False
-        await self.dialog.update_async()
+            self.output_requisite_data_column.controls = self.requisite_data_model.controls
+        await self.output_requisite_data_column.update_async()
 
     """
     BLOCK FIELDS
@@ -723,6 +685,12 @@ class RequestCreateView(ClientBaseView):
         return await self.go_request_create(wallet_id=self.client.session.wallets[0]['id'])
 
     async def go_request_create(self, wallet_id: int):
+        if self.requisite_data_model:
+            if not await self.requisite_data_model.create_requisite_data():
+                return
+            if self.dd_output_currency.value == self.requisite_data_model.currency_id_str:
+                if str(self.dd_output_method.value) == str(self.requisite_data_model.method_id):
+                    self.dd_output_requisite_data.value = self.requisite_data_model.requisite_data_id
         await self.set_type(loading=True)
         for field in [self.dd_input_currency, self.dd_output_currency]:
             if field.value is not None:

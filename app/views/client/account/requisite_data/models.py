@@ -38,7 +38,6 @@ class RequisiteDataCreateModel:
 
     title: str
     optional: Column
-    error_field: Text
     tf_name: TextField
     dd_currency: Dropdown
     dd_method: Dropdown
@@ -81,7 +80,6 @@ class RequisiteDataCreateModel:
                 method_options += [
                     Option(text=method_str, key=method.id),
                 ]
-        self.error_field = Text(value='', size=settings.get_font_size(multiple=1.5), font_family=Fonts.REGULAR)
         self.tf_name = TextField(label=await self.session.gtv(key='name'))
         self.dd_currency = Dropdown(
             label=await self.session.gtv(key='currency'),
@@ -98,7 +96,6 @@ class RequisiteDataCreateModel:
         if self.currency_id_str:
             await self.change_currency('')
         self.controls = [
-            self.error_field,
             self.tf_name,
         ]
         if not self.currency_id_str:
@@ -128,7 +125,7 @@ class RequisiteDataCreateModel:
             )
         ]
 
-    async def change_currency(self, _):
+    async def change_currency(self, _=None):
         self.currency_id_str = self.dd_currency.value
         method_options = []
         for method in self.methods:
@@ -148,12 +145,10 @@ class RequisiteDataCreateModel:
             self.method_id = None
             await self.change_method('')
 
-    async def change_method(self, _):
+    async def change_method(self, _=None):
         self.method = await self.session.api.client.methods.get(id_=self.dd_method.value)
         self.method_id = self.method['id']
-        controls = [
-            self.error_field,
-        ]
+        controls = []
         for field in self.method['schema_fields']:
             type_ = field["type"]
             name_list = [await self.session.gtv(key=field[f'name_text_key'])]
@@ -174,7 +169,7 @@ class RequisiteDataCreateModel:
     async def change_fields(self, key: str, event: ControlEvent):
         self.fields[key] = event.data
 
-    async def create_requisite_data(self, _):
+    async def create_requisite_data(self, _=None):
         for field in self.method['schema_fields']:
             if not self.fields.get(field['key']):
                 continue
@@ -188,6 +183,8 @@ class RequisiteDataCreateModel:
                 is_disposable=self.is_disposable,
             )
         except ApiException as exception:
-            return await self.session.error(exception=exception)
+            await self.session.error(exception=exception)
+            return
         if self.after_close:
             await self.after_close()
+        return True

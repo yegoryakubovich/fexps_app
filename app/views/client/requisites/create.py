@@ -65,7 +65,7 @@ class RequisiteCreateView(ClientBaseView):
     tf_output_currency_value_max = TextField
     dd_output_method: Dropdown
     dd_output_requisite_data: Dropdown
-    et_output_requisite_data: ExpansionTile
+    output_requisite_data_column: Column
     tf_output_rate: TextField
 
     requisite_data_model: Optional[RequisiteDataCreateModel]
@@ -265,20 +265,7 @@ class RequisiteCreateView(ClientBaseView):
             label=await self.client.session.gtv(key='requisite_create_output_requisite_data'),
             on_change=self.change_output_requisite_data,
         )
-        self.et_output_requisite_data = ExpansionTile(
-            title=Text(
-                value=await self.client.session.gtv(key='requisite_create_requisite_data_extra_options'),
-                size=settings.get_font_size(multiple=2),
-                font_family=Fonts.BOLD,
-                color=colors.ON_BACKGROUND,
-            ),
-            bgcolor=colors.BACKGROUND,
-            collapsed_bgcolor=colors.BACKGROUND,
-            icon_color=colors.ON_BACKGROUND,
-            collapsed_icon_color=colors.ON_BACKGROUND,
-            initially_expanded=self.client.session.debug,
-            controls_padding=5,
-        )
+        self.output_requisite_data_column = Column()
         self.tf_output_currency_value_min = TextField(
             label=await self.client.session.gtv(key='value_min'),
             expand=1,
@@ -301,10 +288,7 @@ class RequisiteCreateView(ClientBaseView):
                 self.tf_output_value,
                 self.dd_output_method,
                 self.dd_output_requisite_data,
-                Container(
-                    content=self.et_output_requisite_data,
-                    border=border.all(color=colors.ON_BACKGROUND, width=1),
-                ),
+                self.output_requisite_data_column,
                 Container(
                     content=ExpansionTile(
                         title=Text(
@@ -434,12 +418,11 @@ class RequisiteCreateView(ClientBaseView):
 
     async def change_output_requisite_data(self, _=None):
         self.requisite_data_model = None
-        self.et_output_requisite_data.controls = []
+        self.output_requisite_data_column.controls = []
         if self.dd_output_requisite_data.value == RequisiteDataCreateTypes.DEFAULT:
             self.requisite_data_model = RequisiteDataCreateModel(
                 session=self.client.session,
                 update_async=self.update_async,
-                after_close=self.create_output_requisite_data_after_close,
                 currency_id_str=self.dd_currency.value,
                 method_id=self.dd_output_method.value,
             )
@@ -447,35 +430,22 @@ class RequisiteCreateView(ClientBaseView):
             self.requisite_data_model = RequisiteDataCreateModel(
                 session=self.client.session,
                 update_async=self.update_async,
-                after_close=self.create_output_requisite_data_after_close,
                 currency_id_str=self.dd_currency.value,
                 method_id=self.dd_output_method.value,
                 is_disposable=True,
             )
         if self.requisite_data_model:
             await self.requisite_data_model.construct()
-            self.et_output_requisite_data.controls = [
-                *self.requisite_data_model.controls,
-                *self.requisite_data_model.buttons,
-            ]
-            self.et_output_requisite_data.initially_expanded = True
-        await self.et_output_requisite_data.update_async()
-
-    async def create_output_requisite_data_after_close(self):
-        self.et_output_requisite_data.initially_expanded = self.client.session.debug
-        self.et_output_requisite_data.controls = []
-        await self.et_output_requisite_data.update_async()
-        await self.change_output_method()
-        if self.dd_currency.value == self.requisite_data_model.currency_id_str:
-            if str(self.dd_output_method.value) == str(self.requisite_data_model.method_id):
-                self.dd_output_requisite_data.value = self.requisite_data_model.requisite_data_id
-        await self.update_async()
-
-    async def create_output_requisite_data_close(self, _=None):
-        self.dialog.open = False
-        await self.dialog.update_async()
+            self.output_requisite_data_column.controls = self.requisite_data_model.controls
+        await self.output_requisite_data_column.update_async()
 
     async def requisite_create(self, _=None):
+        if self.requisite_data_model:
+            if not await self.requisite_data_model.create_requisite_data():
+                return
+            if self.dd_currency.value == self.requisite_data_model.currency_id_str:
+                if str(self.dd_output_method.value) == str(self.requisite_data_model.method_id):
+                    self.dd_output_requisite_data.value = self.requisite_data_model.requisite_data_id
         await self.set_type(loading=True)
         # check exists type
         if not self.dd_type.value:
