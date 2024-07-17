@@ -22,6 +22,7 @@ from typing import Any, Optional
 from flet_core import Column, Container, CrossAxisAlignment, Image, MainAxisAlignment, Row, Text, \
     padding, BoxShadow, colors, margin
 
+from app.controls.information.avatar import Avatar
 from app.utils import Fonts
 from config import settings
 
@@ -84,12 +85,18 @@ class BottomNavigationTab(Container):
         self.account_change_func = account_change_func
         self.change_view = change_view
 
-        self.icon = Image(
-            src=icon_src,
-            src_base64=icon_src_base64,
-            color=None if icon_src_base64 else colors.SECONDARY,
-            height=30,
-        )
+        if icon_src:
+            self.icon = Image(
+                src=icon_src,
+                color=colors.SECONDARY,
+                height=30,
+            )
+        else:
+            self.icon = Avatar(
+                src_base64=icon_src_base64,
+                width=30,
+                height=30,
+            )
         self.text = Text(
             font_family=Fonts.MEDIUM,
             value=self.name,

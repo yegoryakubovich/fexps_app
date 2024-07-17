@@ -15,31 +15,24 @@
 #
 
 
-from .file import get_file_scheme
-
-
-def get_account_list_scheme(accounts: list[dict] = None) -> list:
-    if accounts is None:
+def get_file_list_scheme(files: list[dict] = None) -> list:
+    if files is None:
         return []
     return [
-        get_account_scheme(account=account)
-        for account in accounts
+        get_file_scheme(file=file)
+        for file in files
     ]
 
 
-def get_account_scheme(account: dict = None) -> list:
-    if account is None:
+def get_file_scheme(file: dict = None) -> list:
+    if file is None:
         return []
     return [
-        account['id'],
-        account['username'],
-        account['firstname'],
-        account['lastname'],
-        account['country'],
-        account['language'],
-        account['timezone'],
-        account['currency'],
-        *get_file_scheme(account['file']),
-        account['permissions'],
-        account['text_pack_id'],
+        file['id'],
+        file['id_str'],
+        file['filename'],
+        file['extension'],
+        file['open_url'],
+        file['download_url'],
+        file['value'],
     ]

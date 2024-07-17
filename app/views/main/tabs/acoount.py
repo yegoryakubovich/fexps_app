@@ -13,16 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+import logging
 from base64 import b64encode
 from typing import Any
 
-from flet_core import Column, ScrollMode, Container, padding, colors, alignment, CrossAxisAlignment, \
-    CircleAvatar, Image
+from flet_core import Column, ScrollMode, Container, padding, colors, alignment, CrossAxisAlignment
 
 from app.controls.button import ListItemButton
 from app.controls.information import Title, Text
+from app.controls.information.avatar import Avatar
 from app.utils import Fonts, Icons
 from app.views import AdminView
 from app.views.main.tabs.base import BaseTab
@@ -146,7 +145,7 @@ class AccountTab(BaseTab):
             )
             for section in sections
         ]
-
+        logging.critical(self.client.session.account['file']['open_url'])
         self.scroll = ScrollMode.AUTO
         account_icon_src, icon_src_base64 = Icons.ACCOUNT, None
         if self.client.session.account['file']:
@@ -160,14 +159,11 @@ class AccountTab(BaseTab):
                         Container(
                             content=Column(
                                 controls=[
-                                    CircleAvatar(
-                                        content=Image(
-                                            src=account_icon_src,
-                                            src_base64=icon_src_base64,
-                                            color=colors.SECONDARY if account_icon_src else None,
-                                        ),
-                                        bgcolor=colors.ON_PRIMARY,
-                                        radius=48,
+                                    Avatar(
+                                        src=account_icon_src,
+                                        src_base64=icon_src_base64,
+                                        width=100,
+                                        height=100,
                                     ),
                                     Text(
                                         value=f'{firstname} {lastname}',

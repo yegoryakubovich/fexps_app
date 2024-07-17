@@ -16,7 +16,7 @@
 
 
 from app.utils.updater import update_check
-from app.utils.updater.schemes.account import get_account_scheme
+from app.utils.updater.schemes import get_account_scheme
 from app.views.main.tabs import AccountTab
 
 
