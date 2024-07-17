@@ -59,6 +59,7 @@ class RequisiteDataView(ClientBaseView):
         self.controls = await self.get_controls(
             title=self.requisite_data['name'],
             with_expand=True,
+            with_restart=True,
             main_section_controls=[
                 Container(
                     content=Column(

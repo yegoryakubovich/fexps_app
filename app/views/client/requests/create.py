@@ -390,7 +390,7 @@ class RequestCreateView(ClientBaseView):
         await self.save_data()
 
     async def change_client_text(self, update: bool = True, _=None):
-        logging.critical(1)
+        self.tf_account_client_text.value = ''
         if self.dd_input_currency.value == settings.coin_name:
             request_type = 'output'
         elif self.dd_output_currency.value == settings.coin_name:
@@ -401,7 +401,8 @@ class RequestCreateView(ClientBaseView):
         account_client_text = await self.client.session.api.client.accounts.clients_texts.get(
             key=f'request_{request_type}_{request_state}',
         )
-        self.tf_account_client_text.value = account_client_text.value
+        if account_client_text.value:
+            self.tf_account_client_text.value = account_client_text.value
         if update:
             await self.tf_account_client_text.update_async()
 

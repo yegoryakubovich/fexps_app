@@ -84,7 +84,7 @@ class RequisiteView(ClientBaseView):
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
                     Text(
-                        value=f'{self.requisite.type}',
+                        value=await self.client.session.gtv(key=f'requisite_type_{self.requisite.type}'),
                         size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
@@ -101,7 +101,7 @@ class RequisiteView(ClientBaseView):
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
                     Text(
-                        value=f'{self.requisite.state}',
+                        value=await self.client.session.gtv(key=f'requisite_state_{self.requisite.state}'),
                         size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
