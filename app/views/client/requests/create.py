@@ -401,7 +401,7 @@ class RequestCreateView(ClientBaseView):
         account_client_text = await self.client.session.api.client.accounts.clients_texts.get(
             key=f'request_{request_type}_{request_state}',
         )
-        if account_client_text.value:
+        if account_client_text and account_client_text.value:
             self.tf_account_client_text.value = account_client_text.value
         if update:
             await self.tf_account_client_text.update_async()
