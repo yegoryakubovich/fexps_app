@@ -103,8 +103,7 @@ class RegistrationFirstView(AuthView):
 
     async def change_view(self, _):
         await self.set_type(loading=True)
-        fields = [(self.tf_username, 6, 32), (self.tf_password, 7, 32)]
-        for field, min_len, max_len in fields:
+        for field, min_len, max_len in [(self.tf_username, 5, 32), (self.tf_password, 6, 32)]:
             if not await Error.check_field(self, field, min_len=min_len, max_len=max_len):
                 await self.set_type(loading=False)
                 return
