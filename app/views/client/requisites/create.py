@@ -240,7 +240,7 @@ class RequisiteCreateView(ClientBaseView):
                     controls=[
                         self.tf_input_rate,
                         self.btn_input_flex,
-                    ]
+                    ],
                 ),
             ],
         )
@@ -276,7 +276,6 @@ class RequisiteCreateView(ClientBaseView):
         )
         self.tf_output_rate = TextField(
             label=await self.client.session.gtv(key='rate'),
-            expand=True,
         )
         self.output_column = Column(
             controls=[
