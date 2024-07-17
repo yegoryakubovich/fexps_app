@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
+
 from base64 import b64encode
 from typing import Any
 
@@ -145,7 +146,6 @@ class AccountTab(BaseTab):
             )
             for section in sections
         ]
-        logging.critical(self.client.session.account['file']['open_url'])
         self.scroll = ScrollMode.AUTO
         account_icon_src, icon_src_base64 = Icons.ACCOUNT, None
         if self.client.session.account['file']:
