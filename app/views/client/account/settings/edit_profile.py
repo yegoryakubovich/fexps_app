@@ -158,7 +158,6 @@ class AccountSettingsEdtProfileView(ClientBaseView):
                 lastname=self.tf_lastname.value,
                 file_key=self.file_key,
             )
-            self.account = self.client.session.account = await self.client.session.api.client.accounts.get()
             await self.set_type(loading=False)
             self.snack_bar.open = True
             await self.update_async()
