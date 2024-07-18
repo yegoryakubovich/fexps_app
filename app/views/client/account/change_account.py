@@ -154,7 +154,7 @@ class ChangeAccountView(ClientBaseView):
             tokens: list = await self.client.session.get_cs(key='tokens')
             tokens.pop(tokens.index(token))
             await self.client.session.set_cs(key='tokens', value=tokens)
-            self.client.session.accounts.pop(account_tuple)
+            self.client.session.accounts.pop(self.client.session.accounts.index(token))
             if token == self.client.session.token:
                 await self.client.session.set_cs(key='token', value=None)
                 await self.client.change_view(view=InitView(), delete_current=True)

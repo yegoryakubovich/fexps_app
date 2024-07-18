@@ -104,7 +104,6 @@ class Session:
             next_i = account_i + 1
             if next_i >= len(self.tokens):
                 next_i -= len(self.tokens)
-            logging.critical(self.accounts[account_i])
             await self.set_cs(key='token', value=self.accounts[next_i][1])
         await self.set_cs(key='current_wallet', value=None)
         await change_view(view=InitView(), delete_current=True)
@@ -231,8 +230,8 @@ class Session:
                     continue
                 try:
                     await func(view=last_view)
-                except:
-                    logging.critical(f'Updater pass {type_}')
+                except Exception as exception:
+                    logging.critical(f'Updater pass {type_} | {exception}')
             await asyncio.sleep(settings.update_interval)
 
     async def on_disconnect(self, _):
