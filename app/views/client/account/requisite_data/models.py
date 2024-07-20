@@ -95,9 +95,11 @@ class RequisiteDataCreateModel:
         self.optional = Column(controls=[])
         if self.currency_id_str:
             await self.change_currency('')
-        self.controls = [
-            self.tf_name,
-        ]
+        self.controls = []
+        if not self.is_disposable:
+            self.controls += [
+                self.tf_name,
+            ]
         if not self.currency_id_str:
             self.controls += [
                 self.dd_currency,

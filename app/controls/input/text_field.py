@@ -39,17 +39,14 @@ class TextField(FletTextField):
         self.prefix_style = TextStyle(
             font_family=Fonts.REGULAR,
             color=color,
-            size=settings.get_font_size(multiple=1.5),
         )
         self.text_style = TextStyle(
             font_family=Fonts.REGULAR,
             color=color,
-            size=settings.get_font_size(multiple=1.5),
         )
         self.suffix_style = TextStyle(
             font_family=Fonts.REGULAR,
             color=color,
-            size=settings.get_font_size(multiple=1.5),
         )
 
         self.bgcolor = bgcolor

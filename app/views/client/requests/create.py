@@ -15,7 +15,6 @@
 #
 
 
-import logging
 from functools import partial
 from typing import Optional
 
@@ -75,7 +74,7 @@ class RequestCreateView(ClientBaseView):
     dd_output_requisite_data: Dropdown
     output_requisite_data_column: Column
 
-    tf_account_client_text: TextField
+    client_text_column: Column
 
     requisite_data_model: Optional[RequisiteDataCreateModel]
 
@@ -289,10 +288,7 @@ class RequestCreateView(ClientBaseView):
         await self.update_input(update=False)
         await self.update_common(update=False)
         await self.update_output(update=False)
-        self.tf_account_client_text = TextField(
-            label=await self.client.session.gtv(key='request_get_client_text'),
-            multiline=True,
-        )
+        self.client_text_column = Column()
         await self.write_data()
         self.controls = await self.get_controls(
             with_expand=True,
@@ -305,7 +301,7 @@ class RequestCreateView(ClientBaseView):
                             self.common_column,
                             self.output_column,
                             Divider(),
-                            self.tf_account_client_text,
+                            self.client_text_column,
                         ],
                         scroll=ScrollMode.AUTO,
                     ),
@@ -390,7 +386,7 @@ class RequestCreateView(ClientBaseView):
         await self.save_data()
 
     async def change_client_text(self, update: bool = True, _=None):
-        self.tf_account_client_text.value = ''
+        self.client_text_column.controls = []
         if self.dd_input_currency.value == settings.coin_name:
             request_type = 'output'
         elif self.dd_output_currency.value == settings.coin_name:
@@ -402,9 +398,15 @@ class RequestCreateView(ClientBaseView):
             key=f'request_{request_type}_{request_state}',
         )
         if account_client_text and account_client_text.value:
-            self.tf_account_client_text.value = account_client_text.value
+            self.client_text_column.controls = [
+                TextField(
+                    label=await self.client.session.gtv(key='request_get_client_text'),
+                    multiline=True,
+                    value=account_client_text.value,
+                )
+            ]
         if update:
-            await self.tf_account_client_text.update_async()
+            await self.client_text_column.update_async()
 
     async def change_method(self, update: bool = True, _=None):
         if update:

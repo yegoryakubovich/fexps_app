@@ -15,6 +15,7 @@
 #
 
 
+import logging
 from functools import partial
 
 from _ctypes import alignment
@@ -25,6 +26,7 @@ from app.controls.information import Text
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from config import settings
+from fexps_api_client import FexpsApiClient
 from fexps_api_client.utils import ApiException
 
 
@@ -32,32 +34,24 @@ class AccountSettingsAccountClientTextView(ClientBaseView):
     route = '/client/account/client/text'
 
     clients_texts = list[dict]
-    accounts_clients_texts = list[dict]
+    accounts_cts = list[dict]
 
-    dict_clients_texts_db: dict
-    dict_clients_texts: dict
-    dict_accounts_clients_texts: dict
-
-    def reform_to_dict(self):
-        for account_client_text in self.accounts_clients_texts:
-            self.dict_clients_texts_db[account_client_text.client_text_id] = account_client_text.value
-            self.dict_clients_texts[account_client_text.client_text_id] = account_client_text.value
-            self.dict_accounts_clients_texts[account_client_text.client_text_id] = account_client_text.id
+    result: dict
 
     async def construct(self):
-        self.dict_clients_texts_db = {}
-        self.dict_clients_texts = {}
-        self.dict_accounts_clients_texts = {}
         await self.set_type(loading=True)
         self.clients_texts = await self.client.session.api.client.clients_texts.get_list()
-        self.accounts_clients_texts = await self.client.session.api.client.accounts.clients_texts.get_list()
-        self.reform_to_dict()
+        self.accounts_cts = await self.client.session.api.client.accounts.clients_texts.get_list()
+        logging.critical(self.accounts_cts)
         await self.set_type(loading=False)
+        self.result = {}
+        for account_ct in self.accounts_cts:
+            self.result[account_ct.client_text_id] = account_ct.value
         client_text_controls = [
             TextField(
                 label=await self.client.session.gtv(key=client_text.name_text),
                 multiline=True,
-                value=self.dict_clients_texts_db.get(client_text.id),
+                value=self.result.get(client_text.id),
                 on_change=partial(self.change_client_text, client_text.id),
             )
             for client_text in self.clients_texts
@@ -92,32 +86,34 @@ class AccountSettingsAccountClientTextView(ClientBaseView):
         )
 
     async def change_client_text(self, client_text_id: int, event: ControlEvent):
-        self.dict_clients_texts[client_text_id] = event.data
-        if not self.dict_clients_texts[client_text_id]:
-            del self.dict_clients_texts[client_text_id]
+        self.result[client_text_id] = event.data
+        if not event.data:
+            self.result[client_text_id] = None
 
     async def update_account_client_text(self, _):
         await self.set_type(loading=True)
+        accounts_cts_ids = {}
+        for account_ct in self.accounts_cts:
+            accounts_cts_ids[account_ct.client_text_id] = account_ct.id
         try:
-            for client_text_id in self.dict_clients_texts:
-                if not self.dict_clients_texts.get(client_text_id):
-                    if self.dict_accounts_clients_texts.get(client_text_id):
-                        await self.client.session.api.client.accounts.clients_texts.delete(
-                            id_=self.dict_accounts_clients_texts[client_text_id],
-                        )
-                    continue
-                if self.dict_accounts_clients_texts.get(client_text_id) is None:
-                    await self.client.session.api.client.accounts.clients_texts.create(
-                        client_text_id=client_text_id,
-                        value=self.dict_clients_texts[client_text_id],
+            for client_text in self.clients_texts:
+                value = self.result.get(client_text.id)
+                if not value:
+                    if not accounts_cts_ids.get(client_text.id):
+                        continue
+                    await self.client.session.api.client.accounts.clients_texts.delete(
+                        id_=accounts_cts_ids[client_text.id],
                     )
-                    continue
-                if self.dict_clients_texts[client_text_id] == self.dict_clients_texts_db[client_text_id]:
-                    continue
-                await self.client.session.api.client.accounts.clients_texts.update(
-                    id_=self.dict_accounts_clients_texts[client_text_id],
-                    value=self.dict_clients_texts[client_text_id],
-                )
+                elif accounts_cts_ids.get(client_text.id):
+                    await self.client.session.api.client.accounts.clients_texts.update(
+                        id_=accounts_cts_ids[client_text.id],
+                        value=value,
+                    )
+                else:
+                    await self.client.session.api.client.accounts.clients_texts.create(
+                        client_text_id=client_text.id,
+                        value=value,
+                    )
             await self.set_type(loading=False)
             await self.construct()
             await self.update_async()
