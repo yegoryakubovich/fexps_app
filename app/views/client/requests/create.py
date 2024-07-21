@@ -697,7 +697,7 @@ class RequestCreateView(ClientBaseView):
             self.tf_input_value.disabled = True
             if update:
                 await self.tf_input_value.update_async()
-        await self.change_client_text()
+        await self.change_client_text(update=update)
 
     async def request_create(self, _=None):
         if len(self.client.session.wallets) == 1:
