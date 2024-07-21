@@ -264,10 +264,6 @@ class RequestCreateView(ClientBaseView):
         if update:
             await self.output_column.update_async()
 
-    """
-    ALL
-    """
-
     async def construct(self):
         self.requisite_data_model = None
         await self.set_type(loading=True)
@@ -387,12 +383,26 @@ class RequestCreateView(ClientBaseView):
 
     async def change_client_text(self, update: bool = True, _=None):
         self.client_text_column.controls = []
+        request_input_currency_value, request_output_currency_value = None, None
+        request_input_value, request_output_value = None, None
         if self.dd_input_currency.value == settings.coin_name:
             request_type = 'output'
+            if self.tf_input_value.value:
+                request_input_value = value_to_int(value=self.tf_input_value.value, decimal=settings.default_decimal)
+            if self.tf_output_value.value:
+                request_output_currency_value = self.tf_output_value.value
         elif self.dd_output_currency.value == settings.coin_name:
             request_type = 'input'
+            if self.tf_input_value.value:
+                request_input_currency_value = self.tf_input_value.value
+            if self.tf_output_value.value:
+                request_output_value = value_to_int(value=self.tf_output_value.value, decimal=settings.default_decimal)
         else:
             request_type = 'all'
+            if self.tf_input_value.value:
+                request_input_currency_value = self.tf_input_value.value
+            if self.tf_output_value.value:
+                request_output_currency_value = self.tf_output_value.value
         request_state = 'create'
         account_client_text = await self.client.session.api.client.accounts.clients_texts.get(
             key=f'request_{request_type}_{request_state}',
@@ -402,7 +412,14 @@ class RequestCreateView(ClientBaseView):
                 TextField(
                     label=await self.client.session.gtv(key='request_get_client_text'),
                     multiline=True,
-                    value=account_client_text.value,
+                    value=account_client_text.value.format(
+                        type=request_type,
+                        state=request_state,
+                        input_currency_value=request_input_currency_value,
+                        input_value=request_input_value,
+                        output_value=request_output_value,
+                        output_currency_value=request_output_currency_value,
+                    ),
                 )
             ]
         if update:
@@ -680,6 +697,7 @@ class RequestCreateView(ClientBaseView):
             self.tf_input_value.disabled = True
             if update:
                 await self.tf_input_value.update_async()
+        await self.change_client_text()
 
     async def request_create(self, _=None):
         if len(self.client.session.wallets) == 1:

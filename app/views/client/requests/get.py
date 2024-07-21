@@ -539,12 +539,30 @@ class RequestView(ClientBaseView):
                         difference_rate=self.request.difference_rate,
                         commission=self.request.commission,
                         rate=self.request.rate,
-                        input_currency_value=self.request.input_currency_value,
-                        input_rate=self.request.input_rate,
-                        input_value=self.request.input_value,
-                        output_value=self.request.output_value,
-                        output_rate=self.request.output_rate,
-                        output_currency_value=self.request.output_currency_value,
+                        input_currency_value=value_to_float(
+                            value=self.request.input_currency_value,
+                            decimal=self.request.input_method.currency.decimal,
+                        ) if self.request.input_currency_value else None,
+                        input_rate=value_to_float(
+                            value=self.request.input_rate,
+                            decimal=self.request.rate_decimal,
+                        ),
+                        input_value=value_to_float(
+                            value=self.request.input_value,
+                            decimal=settings.default_decimal,
+                        ),
+                        output_value=value_to_float(
+                            value=self.request.output_value,
+                            decimal=settings.default_decimal,
+                        ),
+                        output_rate=value_to_float(
+                            value=self.request.output_rate,
+                            decimal=self.request.rate_decimal,
+                        ),
+                        output_currency_value=value_to_float(
+                            value=self.request.output_currency_value,
+                            decimal=self.request.output_method.currency.decimal,
+                        ) if self.request.output_currency_value else None,
                         date=self.request.date,
                         confirmation_delta=self.request.confirmation_delta,
                         rate_fixed_delta=self.request.rate_fixed_delta,
