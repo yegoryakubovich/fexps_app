@@ -500,6 +500,12 @@ class RequestView(ClientBaseView):
                 value=self.request.output_currency_value,
                 decimal=self.request.output_method.currency.decimal,
             )
+        input_method = None
+        if self.request.input_method:
+            input_method = await self.client.session.gtv(key=self.request.input_method.name_text)
+        output_method = None
+        if self.request.output_method:
+            output_method = await self.client.session.gtv(key=self.request.output_method.name_text)
         input_orders = []
         output_orders = []
         for i, order in enumerate(self.orders):
@@ -509,8 +515,6 @@ class RequestView(ClientBaseView):
             logging.critical(order)
             logging.critical(order.requisite_fields)
             data = [
-                f'{i + 1}',
-                f'({await self.client.session.gtv(key=order.method.name_text)}).',
                 ', '.join([f'{value}' for key, value in order.requisite_fields.items()]),
                 '->',
                 currency_value,
@@ -520,6 +524,12 @@ class RequestView(ClientBaseView):
                 input_orders += [' '.join(data)]
             elif order.type == OrderTypes.OUTPUT:
                 output_orders += [' '.join(data)]
+        if len(input_orders) > 1:
+            for i, input_order in enumerate(input_orders):
+                input_orders[i] = f'{i + 1}. {input_order}'
+        if len(output_orders) > 1:
+            for i, output_order in enumerate(output_orders):
+                output_orders[i] = f'{i + 1}. {output_order}'
         if self.account_client_text:
             self.client_text_column.controls = [
                 TextField(
@@ -529,9 +539,6 @@ class RequestView(ClientBaseView):
                         name=self.request.name,
                         type=self.request.type,
                         state=self.request.state,
-                        rate_decimal=self.request.rate_decimal,
-                        difference=self.request.difference,
-                        difference_rate=self.request.difference_rate,
                         commission=self.request.commission,
                         rate=self.request.rate,
                         input_currency_value=input_currency_value,
@@ -543,7 +550,9 @@ class RequestView(ClientBaseView):
                         date=self.request.date,
                         confirmation_delta=self.request.confirmation_delta,
                         rate_fixed_delta=self.request.rate_fixed_delta,
+                        input_method=input_method,
                         input_orders='\n'.join(input_orders),
+                        output_method=output_method,
                         output_orders='\n'.join(output_orders),
                     ),
                 ),

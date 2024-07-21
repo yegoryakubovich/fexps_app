@@ -17,7 +17,7 @@
 
 from typing import Optional
 
-from flet_core import ScrollMode, Row, Column, Container, AlertDialog, alignment, colors, ExpansionTile, border
+from flet_core import ScrollMode, Row, Column, Container, alignment, colors, ExpansionTile, border
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton, SwitchButton
@@ -41,7 +41,6 @@ class RequisiteCreateView(ClientBaseView):
 
     methods = list[dict]
     currencies = list[dict]
-    dialog: AlertDialog
     # general
     general_column: Column
     dd_type: Dropdown
@@ -322,7 +321,7 @@ class RequisiteCreateView(ClientBaseView):
             await self.output_column.update_async()
 
     async def construct(self):
-        self.dialog = AlertDialog(modal=True)
+        self.requisite_data_model = None
         await self.set_type(loading=True)
         self.methods = await self.client.session.api.client.methods.get_list()
         self.currencies = await self.client.session.api.client.currencies.get_list()
@@ -336,7 +335,6 @@ class RequisiteCreateView(ClientBaseView):
             title=await self.client.session.gtv(key='requisite_create_title'),
             with_expand=True,
             main_section_controls=[
-                self.dialog,
                 Container(
                     content=Column(
                         controls=[
