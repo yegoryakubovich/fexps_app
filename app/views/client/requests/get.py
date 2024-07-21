@@ -16,6 +16,7 @@
 
 
 import asyncio
+import logging
 from functools import partial
 from typing import Optional
 
@@ -27,7 +28,7 @@ from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, value_to_str
-from app.utils.constants.order import OrderStates
+from app.utils.constants.order import OrderStates, OrderTypes
 from app.utils.constants.request import RequestStates, RequestTypes
 from app.utils.value import requisite_value_to_str, get_fix_rate
 from app.views.client.requests.models import RequestUpdateNameModel
@@ -102,6 +103,7 @@ class RequestView(ClientBaseView):
     confirmation_true_button: StandardButton
     cancellation_button: StandardButton
     orders_row: Row
+    client_text_column: Column
 
     def __init__(self, request_id: int):
         super().__init__()
@@ -480,6 +482,75 @@ class RequestView(ClientBaseView):
         if update:
             await self.orders_row.update_async()
 
+    async def update_client_text(self, update: bool = True, _=None):
+        self.client_text_column.controls = []
+        input_currency_value = None
+        if self.request.input_currency_value:
+            input_currency_value = value_to_float(
+                value=self.request.input_currency_value,
+                decimal=self.request.input_method.currency.decimal,
+            )
+        input_rate = value_to_float(value=self.request.input_rate, decimal=self.request.rate_decimal)
+        input_value = value_to_float(value=self.request.input_value, decimal=settings.default_decimal)
+        output_value = value_to_float(value=self.request.output_rate, decimal=self.request.rate_decimal)
+        output_rate = value_to_float(value=self.request.output_rate, decimal=self.request.rate_decimal)
+        output_currency_value = None
+        if self.request.output_currency_value:
+            output_currency_value = value_to_float(
+                value=self.request.output_currency_value,
+                decimal=self.request.output_method.currency.decimal,
+            )
+        input_orders = []
+        output_orders = []
+        for i, order in enumerate(self.orders):
+            currency_value: str = value_to_str(
+                value=value_to_float(value=order.currency_value, decimal=order.method.currency.decimal),
+            )
+            logging.critical(order)
+            logging.critical(order.requisite_fields)
+            data = [
+                f'{i + 1}',
+                f'({await self.client.session.gtv(key=order.method.name_text)}).',
+                ', '.join([f'{value}' for key, value in order.requisite_fields.items()]),
+                '->',
+                currency_value,
+                order.method.currency.id_str.upper(),
+            ]
+            if order.type == OrderTypes.INPUT:
+                input_orders += [' '.join(data)]
+            elif order.type == OrderTypes.OUTPUT:
+                output_orders += [' '.join(data)]
+        if self.account_client_text:
+            self.client_text_column.controls = [
+                TextField(
+                    label=await self.client.session.gtv(key='request_get_client_text'),
+                    multiline=True,
+                    value=self.account_client_text.value.format(
+                        name=self.request.name,
+                        type=self.request.type,
+                        state=self.request.state,
+                        rate_decimal=self.request.rate_decimal,
+                        difference=self.request.difference,
+                        difference_rate=self.request.difference_rate,
+                        commission=self.request.commission,
+                        rate=self.request.rate,
+                        input_currency_value=input_currency_value,
+                        input_rate=input_rate,
+                        input_value=input_value,
+                        output_value=output_value,
+                        output_rate=output_rate,
+                        output_currency_value=output_currency_value,
+                        date=self.request.date,
+                        confirmation_delta=self.request.confirmation_delta,
+                        rate_fixed_delta=self.request.rate_fixed_delta,
+                        input_orders='\n'.join(input_orders),
+                        output_orders='\n'.join(output_orders),
+                    ),
+                ),
+            ]
+        if update:
+            await self.client_text_column.update_async()
+
     async def construct(self):
         controls, buttons = [], []
         await self.set_type(loading=True)
@@ -525,50 +596,11 @@ class RequestView(ClientBaseView):
                     ],
                 ),
             ]
-        if self.account_client_text:
-            controls += [
-                TextField(
-                    label=await self.client.session.gtv(key='request_get_client_text'),
-                    multiline=True,
-                    value=self.account_client_text.value.format(
-                        name=self.request.name,
-                        type=self.request.type,
-                        state=self.request.state,
-                        rate_decimal=self.request.rate_decimal,
-                        difference=self.request.difference,
-                        difference_rate=self.request.difference_rate,
-                        commission=self.request.commission,
-                        rate=self.request.rate,
-                        input_currency_value=value_to_float(
-                            value=self.request.input_currency_value,
-                            decimal=self.request.input_method.currency.decimal,
-                        ) if self.request.input_currency_value else None,
-                        input_rate=value_to_float(
-                            value=self.request.input_rate,
-                            decimal=self.request.rate_decimal,
-                        ),
-                        input_value=value_to_float(
-                            value=self.request.input_value,
-                            decimal=settings.default_decimal,
-                        ),
-                        output_value=value_to_float(
-                            value=self.request.output_value,
-                            decimal=settings.default_decimal,
-                        ),
-                        output_rate=value_to_float(
-                            value=self.request.output_rate,
-                            decimal=self.request.rate_decimal,
-                        ),
-                        output_currency_value=value_to_float(
-                            value=self.request.output_currency_value,
-                            decimal=self.request.output_method.currency.decimal,
-                        ) if self.request.output_currency_value else None,
-                        date=self.request.date,
-                        confirmation_delta=self.request.confirmation_delta,
-                        rate_fixed_delta=self.request.rate_fixed_delta,
-                    ),
-                ),
-            ]
+        self.client_text_column = Column()
+        await self.update_client_text(update=False)
+        controls += [
+            self.client_text_column,
+        ]
         title_str = await self.client.session.gtv(key='request_get_title')
         self.controls = await self.get_controls(
             title=f'{title_str} #{self.request.id:08}',
