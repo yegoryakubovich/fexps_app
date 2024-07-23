@@ -193,7 +193,6 @@ class Session:
             return None
 
     async def gtv(self, key, **kwargs):
-        logging.critical(f'{key}: {kwargs}')
         text = await self.get_text_value(key=key)
         if kwargs:
             return text.format(**kwargs)

@@ -42,7 +42,6 @@ class AccountSettingsAccountClientTextView(ClientBaseView):
         await self.set_type(loading=True)
         self.clients_texts = await self.client.session.api.client.clients_texts.get_list()
         self.accounts_cts = await self.client.session.api.client.accounts.clients_texts.get_list()
-        logging.critical(self.accounts_cts)
         await self.set_type(loading=False)
         self.result = {}
         for account_ct in self.accounts_cts:

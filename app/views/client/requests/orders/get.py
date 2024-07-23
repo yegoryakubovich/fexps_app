@@ -19,7 +19,7 @@ from functools import partial
 from typing import Optional
 
 from flet_core import Column, Container, Row, Divider, MainAxisAlignment, padding, Image, colors, ScrollMode, \
-    AlertDialog, IconButton, icons
+    AlertDialog, IconButton, icons, alignment, CircleAvatar, Stack
 
 from app.controls.button import StandardButton
 from app.controls.information import Text, InformationContainer
@@ -226,20 +226,37 @@ class RequestOrderView(ClientBaseView):
     """
 
     async def update_chat_button(self, update: bool = True) -> None:
+        image = Image(
+            src=Icons.CHAT,
+            height=16,
+            width=16,
+            color=colors.ON_PRIMARY_CONTAINER,
+        )
+        if self.order.chat_is_read:
+            image = Stack(
+                controls=[
+                    image,
+                    Container(
+                        content=CircleAvatar(
+                            bgcolor=colors.RED,
+                            radius=4,
+                        ),
+                        alignment=alignment.top_right,
+                    ),
+                ],
+                width=20,
+                height=16,
+            )
         self.chat_button = StandardButton(
             content=Row(
                 controls=[
-                    Image(
-                        src=Icons.CHAT,
-                        width=14,
-                        color=colors.ON_PRIMARY_CONTAINER,
-                    ),
                     Text(
                         value=await self.client.session.gtv(key='chat_button'),
                         size=settings.get_font_size(multiple=1.5),
                         font_family=Fonts.SEMIBOLD,
                         color=colors.ON_PRIMARY_CONTAINER,
                     ),
+                    image,
                 ],
                 alignment=MainAxisAlignment.CENTER,
             ),

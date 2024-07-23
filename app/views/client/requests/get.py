@@ -512,8 +512,6 @@ class RequestView(ClientBaseView):
             currency_value: str = value_to_str(
                 value=value_to_float(value=order.currency_value, decimal=order.method.currency.decimal),
             )
-            logging.critical(order)
-            logging.critical(order.requisite_fields)
             data = [
                 ', '.join([f'{value}' for key, value in order.requisite_fields.items()]),
                 '->',

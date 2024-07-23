@@ -36,7 +36,6 @@ class TransferView(ClientBaseView):
         await self.set_type(loading=True)
         self.transfer = await self.client.session.api.client.transfers.get(id_=self.transfer_id)
         await self.set_type(loading=False)
-        logging.critical(self.transfer)
         value = value_to_float(value=self.transfer.value)
         short_name = ''
         if self.transfer.operation == 'send':

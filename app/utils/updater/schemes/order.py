@@ -52,4 +52,5 @@ def get_order_scheme(order: dict = None) -> list:
         order['input_scheme_fields'],
         order['input_fields'],
         *get_order_request_scheme(order['order_request']),
+        order['chat_is_read'],
     ]
