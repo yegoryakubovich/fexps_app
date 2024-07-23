@@ -17,13 +17,15 @@
 
 import asyncio
 
-from flet_core import Checkbox, ScrollMode
+from flet_core import Checkbox, ScrollMode, Container, Row, alignment, Column
+from flet_core.dropdown import Option
 
-from app.controls.button import StandardButton
+from app.controls.button import StandardButton, SwitchButton
 from app.controls.information import Text
-from app.controls.input import TextField
+from app.controls.input import TextField, Dropdown
 from app.controls.layout import AdminBaseView
 from app.utils import Fonts
+from app.utils.constants.commission_pack import CommissionPackTelegramTypes
 from config import settings
 from fexps_api_client.utils import ApiException
 from .get import CommissionPackView
@@ -33,28 +35,58 @@ class CommissionPackCreateView(AdminBaseView):
     route = '/admin/commissions/packs/create'
 
     tf_name: TextField
-    cb_is_default: Checkbox
+    tf_telegram_chat_id: TextField
+    dd_telegram_type: Dropdown
+    switch_is_default: SwitchButton
 
     async def construct(self):
         self.tf_name = TextField(
-            label=await self.client.session.gtv(key='name'),
+            label=await self.client.session.gtv(key="name"),
         )
-        self.cb_is_default = Checkbox(
-            label=await self.client.session.gtv(key='commission_pack_is_default'),
+        self.tf_telegram_chat_id = TextField(
+            label=await self.client.session.gtv(key="admin_commission_pack_telegram_chat_id"),
         )
-        self.scroll = ScrollMode.AUTO
+        self.dd_telegram_type = Dropdown(
+            label=await self.client.session.gtv(key="admin_commission_pack_telegram_type"),
+            options=[
+                Option(key=CommissionPackTelegramTypes.FEXPS, text=CommissionPackTelegramTypes.FEXPS),
+                Option(key=CommissionPackTelegramTypes.SOWAPAY, text=CommissionPackTelegramTypes.SOWAPAY),
+            ],
+        )
+        self.switch_is_default = SwitchButton(
+            label=await self.client.session.gtv(key="admin_commission_pack_is_default"),
+        )
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='commissions_packs_create_title'),
+            with_expand=True,
             main_section_controls=[
-                self.tf_name,
-                self.cb_is_default,
-                StandardButton(
-                    content=Text(
-                        value=await self.client.session.gtv(key='create'),
-                        size=settings.get_font_size(multiple=1.5),
-                        font_family=Fonts.REGULAR,
+                Container(
+                    content=Column(
+                        controls=[
+                            self.tf_name,
+                            self.tf_telegram_chat_id,
+                            self.dd_telegram_type,
+                            self.switch_is_default,
+                        ],
+                        scroll=ScrollMode.AUTO,
                     ),
-                    on_click=self.create_commission_pack,
+                    expand=True,
+                ),
+                Container(
+                    content=Row(
+                        controls=[
+                            StandardButton(
+                                content=Text(
+                                    value=await self.client.session.gtv(key='create'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                    font_family=Fonts.REGULAR,
+                                ),
+                                on_click=self.create_commission_pack,
+                                expand=True,
+                            ),
+                        ],
+                    ),
+                    alignment=alignment.bottom_center,
                 ),
             ],
         )
@@ -64,11 +96,12 @@ class CommissionPackCreateView(AdminBaseView):
         try:
             commission_pack_id = await self.client.session.api.admin.commissions_packs.create(
                 name=self.tf_name.value,
-                is_default=self.cb_is_default.value,
+                telegram_chat_id=self.tf_telegram_chat_id.value,
+                telegram_type=self.dd_telegram_type.value,
+                is_default=self.switch_is_default.value,
             )
             await self.client.session.get_text_pack()
             await self.set_type(loading=False)
-            await asyncio.sleep(0.05)
             await self.client.change_view(
                 view=CommissionPackView(commission_pack_id=commission_pack_id),
                 delete_current=True,

@@ -184,47 +184,51 @@ class MethodView(AdminBaseView):
                             ),
                         ]),
                         Column(controls=self.schema_fields),
-                        Row(controls=[
-                            Text(
-                                value=await self.client.session.gtv(key="admin_method_input_schema_fields"),
-                                size=24,
-                                font_family=Fonts.MEDIUM,
-                                color=colors.ON_BACKGROUND,
-                            ),
-                            StandardButton(
-                                content=Text(
-                                    value=await self.client.session.gtv(key='add_line'),
-                                    size=settings.get_font_size(multiple=1.5),
+                        Row(
+                            controls=[
+                                Text(
+                                    value=await self.client.session.gtv(key="admin_method_input_schema_fields"),
+                                    size=24,
+                                    font_family=Fonts.MEDIUM,
+                                    color=colors.ON_BACKGROUND,
                                 ),
-                                on_click=self.schema_input_fields_add_line,
-                            ),
-                            StandardButton(
-                                content=Text(
-                                    value=await self.client.session.gtv(key='remove_line'),
-                                    size=settings.get_font_size(multiple=1.5),
+                                StandardButton(
+                                    content=Text(
+                                        value=await self.client.session.gtv(key='add_line'),
+                                        size=settings.get_font_size(multiple=1.5),
+                                    ),
+                                    on_click=self.schema_input_fields_add_line,
                                 ),
-                                on_click=self.schema_input_fields_remove_line,
-                            ),
-                        ]),
+                                StandardButton(
+                                    content=Text(
+                                        value=await self.client.session.gtv(key='remove_line'),
+                                        size=settings.get_font_size(multiple=1.5),
+                                    ),
+                                    on_click=self.schema_input_fields_remove_line,
+                                ),
+                            ],
+                        ),
                         Column(controls=self.schema_input_fields),
-                        Row(controls=[
-                            StandardButton(
-                                content=Text(
-                                    value=await self.client.session.gtv(key='save'),
-                                    size=settings.get_font_size(multiple=1.5),
+                        Row(
+                            controls=[
+                                StandardButton(
+                                    content=Text(
+                                        value=await self.client.session.gtv(key='save'),
+                                        size=settings.get_font_size(multiple=1.5),
+                                    ),
+                                    on_click=self.update_method,
+                                    expand=True,
                                 ),
-                                on_click=self.update_method,
-                                expand=True,
-                            ),
-                            StandardButton(
-                                content=Text(
-                                    value=await self.client.session.gtv(key='delete'),
-                                    size=settings.get_font_size(multiple=1.5),
+                                StandardButton(
+                                    content=Text(
+                                        value=await self.client.session.gtv(key='delete'),
+                                        size=settings.get_font_size(multiple=1.5),
+                                    ),
+                                    on_click=self.delete_method,
+                                    expand=True,
                                 ),
-                                on_click=self.delete_method,
-                                expand=True,
-                            ),
-                        ]),
+                            ],
+                        ),
                     ],
                 ),
             ],

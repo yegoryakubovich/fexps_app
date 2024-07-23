@@ -107,6 +107,7 @@ class AdminBaseView(View):
             main_section_controls: list,
             sections: list[Section] = None,
             on_create_click: Any = None,
+            with_expand: bool = False,
     ) -> list:
 
         title_control = await self.get_title(
@@ -125,6 +126,7 @@ class AdminBaseView(View):
                 ),
                 padding=16,
                 margin=margin.only(bottom=15),
+                expand=with_expand,
             ),
         ]
 
