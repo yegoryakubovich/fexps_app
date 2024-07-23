@@ -17,7 +17,7 @@
 
 from copy import deepcopy
 
-from flet_core import Checkbox, colors, Column, Row, ScrollMode, Divider
+from flet_core import Checkbox, colors, Column, Row, ScrollMode, Divider, alignment, Container
 from flet_core.dropdown import Option
 
 from app.controls.button import StandardButton
@@ -118,72 +118,88 @@ class MethodCreateView(AdminBaseView):
         schema_input_field_column = deepcopy(self.schema)
         schema_input_field_column.controls[3].options = deepcopy(self.schema_input_type_options)
         self.schema_input_fields = [schema_input_field_column]
-        self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_method_create_view_title'),
+            with_expand=True,
             main_section_controls=[
-                self.dd_currency,
-                self.tf_name,
-                self.tf_input_rate_default,
-                self.tf_output_rate_default,
-                self.tf_input_rate_percent,
-                self.tf_output_rate_percent,
-                self.tf_color,
-                self.tf_bgcolor,
-                self.cb_is_rate_default,
-                Row(controls=[
-                    Text(
-                        value=await self.client.session.gtv(key="admin_method_schema_fields"),
-                        size=24,
-                        font_family=Fonts.MEDIUM,
-                        color=colors.ON_BACKGROUND,
+                Container(
+                    content=Column(
+                        controls=[
+                            self.dd_currency,
+                            self.tf_name,
+                            self.tf_input_rate_default,
+                            self.tf_output_rate_default,
+                            self.tf_input_rate_percent,
+                            self.tf_output_rate_percent,
+                            self.tf_color,
+                            self.tf_bgcolor,
+                            self.cb_is_rate_default,
+                            Row(controls=[
+                                Text(
+                                    value=await self.client.session.gtv(key="admin_method_schema_fields"),
+                                    size=24,
+                                    font_family=Fonts.MEDIUM,
+                                    color=colors.ON_BACKGROUND,
+                                ),
+                                StandardButton(
+                                    content=Text(
+                                        value=await self.client.session.gtv(key='add_line'),
+                                        size=settings.get_font_size(multiple=1.5),
+                                    ),
+                                    on_click=self.schema_fields_add_line,
+                                ),
+                                StandardButton(
+                                    content=Text(
+                                        value=await self.client.session.gtv(key='delete_line'),
+                                        size=settings.get_font_size(multiple=1.5),
+                                    ),
+                                    on_click=self.schema_fields_delete_line,
+                                ),
+                            ]),
+                            Column(controls=self.schema_fields),
+                            Row(controls=[
+                                Text(
+                                    value=await self.client.session.gtv(key="admin_method_input_schema_fields"),
+                                    size=settings.get_font_size(multiple=2),
+                                    font_family=Fonts.MEDIUM,
+                                    color=colors.ON_BACKGROUND,
+                                ),
+                                StandardButton(
+                                    content=Text(
+                                        value=await self.client.session.gtv(key='add_line'),
+                                        size=settings.get_font_size(multiple=1.5),
+                                    ),
+                                    on_click=self.schema_input_fields_add_line,
+                                ),
+                                StandardButton(
+                                    content=Text(
+                                        value=await self.client.session.gtv(key='delete_line'),
+                                        size=settings.get_font_size(multiple=1.5),
+                                    ),
+                                    on_click=self.schema_input_fields_delete_line,
+                                ),
+                            ]),
+                            Column(controls=self.schema_input_fields),
+                        ],
+                        scroll=ScrollMode.AUTO,
                     ),
-                    StandardButton(
-                        content=Text(
-                            value=await self.client.session.gtv(key='add_line'),
-                            size=settings.get_font_size(multiple=1.5),
-                        ),
-                        on_click=self.schema_fields_add_line,
+                    expand=True,
+                ),
+                Container(
+                    content=Row(
+                        controls=[
+                            StandardButton(
+                                content=Text(
+                                    value=await self.client.session.gtv(key='create'),
+                                    size=settings.get_font_size(multiple=1.5),
+                                    font_family=Fonts.REGULAR,
+                                ),
+                                on_click=self.create_method,
+                                expand=True,
+                            ),
+                        ],
                     ),
-                    StandardButton(
-                        content=Text(
-                            value=await self.client.session.gtv(key='delete_line'),
-                            size=settings.get_font_size(multiple=1.5),
-                        ),
-                        on_click=self.schema_fields_delete_line,
-                    ),
-                ]),
-                Column(controls=self.schema_fields),
-                Row(controls=[
-                    Text(
-                        value=await self.client.session.gtv(key="admin_method_input_schema_fields"),
-                        size=settings.get_font_size(multiple=2),
-                        font_family=Fonts.MEDIUM,
-                        color=colors.ON_BACKGROUND,
-                    ),
-                    StandardButton(
-                        content=Text(
-                            value=await self.client.session.gtv(key='add_line'),
-                            size=settings.get_font_size(multiple=1.5),
-                        ),
-                        on_click=self.schema_input_fields_add_line,
-                    ),
-                    StandardButton(
-                        content=Text(
-                            value=await self.client.session.gtv(key='delete_line'),
-                            size=settings.get_font_size(multiple=1.5),
-                        ),
-                        on_click=self.schema_input_fields_delete_line,
-                    ),
-                ]),
-                Column(controls=self.schema_input_fields),
-                StandardButton(
-                    content=Text(
-                        value=await self.client.session.gtv(key='create'),
-                        size=settings.get_font_size(multiple=1.5),
-                        font_family=Fonts.REGULAR,
-                    ),
-                    on_click=self.create_method,
+                    alignment=alignment.bottom_center,
                 ),
             ],
         )
