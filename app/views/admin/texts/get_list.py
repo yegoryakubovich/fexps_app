@@ -41,9 +41,7 @@ class TextListView(AdminBaseView):
         await self.set_type(loading=False)
 
         self.total_pages = (len(self.texts) - 1) // self.items_per_page + 1
-        self.texts = self.texts[(
-                                        self.page_text - 1) * self.items_per_page: self.page_text * self.items_per_page]
-
+        self.texts = self.texts[(self.page_text - 1) * self.items_per_page: self.page_text * self.items_per_page]
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key='admin_text_get_list_view_title'),
