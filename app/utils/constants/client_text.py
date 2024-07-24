@@ -13,3 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+
+class ClientTextTypes:
+    REQUEST_INPUT = 'request_input'
+    REQUEST_OUTPUT = 'request_output'
+    REQUEST_ALL = 'request_all'
