@@ -491,8 +491,8 @@ class RequestView(ClientBaseView):
                 decimal=self.request.input_method.currency.decimal,
             )
         input_rate = value_to_float(value=self.request.input_rate, decimal=self.request.rate_decimal)
-        input_value = value_to_float(value=self.request.input_value, decimal=settings.default_decimal)
-        output_value = value_to_float(value=self.request.output_rate, decimal=self.request.rate_decimal)
+        input_value = value_to_float(value=self.request.input_value)
+        output_value = value_to_float(value=self.request.output_value)
         output_rate = value_to_float(value=self.request.output_rate, decimal=self.request.rate_decimal)
         output_currency_value = None
         if self.request.output_currency_value:
@@ -514,14 +514,12 @@ class RequestView(ClientBaseView):
             )
             data = [
                 ', '.join([f'{value}' for key, value in order.requisite_fields.items()]),
-                '->',
-                currency_value,
-                order.method.currency.id_str.upper(),
+                ' '.join([currency_value, order.method.currency.id_str.upper()])
             ]
             if order.type == OrderTypes.INPUT:
-                input_orders += [' '.join(data)]
+                input_orders += [' -> '.join(data)]
             elif order.type == OrderTypes.OUTPUT:
-                output_orders += [' '.join(data)]
+                output_orders += [' -> '.join(data)]
         if len(input_orders) > 1:
             for i, input_order in enumerate(input_orders):
                 input_orders[i] = f'{i + 1}. {input_order}'
