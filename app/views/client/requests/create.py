@@ -268,19 +268,24 @@ class RequestCreateView(ClientBaseView):
         self.client_text_column.controls = []
         request_input_currency_value, request_output_currency_value = None, None
         request_input_value, request_output_value = None, None
+        input_currency, output_currency = None, None
         if self.dd_input_currency.value == settings.coin_name:
             request_type = 'output'
+            output_currency = self.dd_output_currency.value.upper()
             if self.tf_input_value.value:
                 request_input_value = value_to_int(value=self.tf_input_value.value, decimal=settings.default_decimal)
             if self.tf_output_value.value:
                 request_output_currency_value = self.tf_output_value.value
         elif self.dd_output_currency.value == settings.coin_name:
             request_type = 'input'
+            input_currency = self.dd_input_currency.value.upper()
             if self.tf_input_value.value:
                 request_input_currency_value = self.tf_input_value.value
             if self.tf_output_value.value:
                 request_output_value = value_to_int(value=self.tf_output_value.value, decimal=settings.default_decimal)
         else:
+            input_currency = self.dd_input_currency.value.upper()
+            output_currency = self.dd_output_currency.value.upper()
             request_type = 'all'
             if self.tf_input_value.value:
                 request_input_currency_value = self.tf_input_value.value
@@ -298,12 +303,14 @@ class RequestCreateView(ClientBaseView):
                     value=account_client_text.value.format(
                         type=request_type,
                         state=request_state,
+                        input_currency=input_currency,
+                        output_currency=output_currency,
                         input_currency_value=request_input_currency_value,
                         input_value=request_input_value,
                         output_value=request_output_value,
                         output_currency_value=request_output_currency_value,
                     ),
-                )
+                ),
             ]
         if update:
             await self.client_text_column.update_async()

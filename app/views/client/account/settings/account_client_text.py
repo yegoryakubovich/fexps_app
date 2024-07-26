@@ -108,7 +108,11 @@ class AccountSettingsAccountClientTextView(ClientBaseView):
             ),
         ]
         extra_information_create_list = []
-        for name in ['type', 'state', 'input_currency_value', 'input_value', 'output_value', 'output_currency_value']:
+        for name in [
+            'type', 'state', 'input_currency', 'output_currency',
+            'input_currency_value', 'input_value', 'output_value', 'output_currency_value',
+
+        ]:
             extra_information_create_list.append(
                 await self.client.session.gtv(key=f'account_settings_account_client_text_extra_information_{name}'),
             )
@@ -124,10 +128,10 @@ class AccountSettingsAccountClientTextView(ClientBaseView):
         )
         extra_information_other_list = []
         for name in [
-            'name', 'type', 'state', 'commission', 'rate',
-            'input_currency_value', 'input_rate', 'input_value',
-            'output_value', 'output_rate', 'output_currency_value',
-            'date', 'input_orders', 'output_orders',
+            'name', 'type', 'state', 'commission', 'rate', 'date',
+            'input_currency_value', 'input_rate', 'input_value', 'output_value', 'output_rate', 'output_currency_value',
+            'input_method', 'input_currency', 'input_orders',
+            'output_method', 'output_currency', 'output_orders',
         ]:
             extra_information_other_list.append(
                 await self.client.session.gtv(key=f'account_settings_account_client_text_extra_information_{name}'),

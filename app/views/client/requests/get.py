@@ -500,15 +500,19 @@ class RequestView(ClientBaseView):
                 value=self.request.output_currency_value,
                 decimal=self.request.output_method.currency.decimal,
             )
-        input_method = None
+        input_method, input_currency = None, None
         if self.request.input_method:
             input_method = await self.client.session.gtv(key=self.request.input_method.name_text)
-        output_method = None
+            input_currency = self.request.input_method.currency.id_str.upper()
+        output_method, output_currency = None, None
         if self.request.output_method:
             output_method = await self.client.session.gtv(key=self.request.output_method.name_text)
+            output_currency = self.request.output_method.currency.id_str.upper()
         input_orders = []
         output_orders = []
         for i, order in enumerate(self.orders):
+            if order.state == OrderStates.CANCELED:
+                continue
             currency_value: str = value_to_str(
                 value=value_to_float(value=order.currency_value, decimal=order.method.currency.decimal),
             )
@@ -547,8 +551,10 @@ class RequestView(ClientBaseView):
                         confirmation_delta=self.request.confirmation_delta,
                         rate_fixed_delta=self.request.rate_fixed_delta,
                         input_method=input_method,
+                        input_currency=input_currency,
                         input_orders='\n'.join(input_orders),
                         output_method=output_method,
+                        output_currency=output_currency,
                         output_orders='\n'.join(output_orders),
                     ),
                 ),
