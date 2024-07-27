@@ -16,7 +16,6 @@
 
 
 import datetime
-import logging
 from typing import Any, Optional
 
 from flet_core import Column, Container, CrossAxisAlignment, Image, MainAxisAlignment, Row, Text, \
@@ -49,7 +48,6 @@ class BottomNavigationTab(Container):
             change_view=self.change_view,
             account_next=True,
         )
-        logging.critical('CHANGE ACCOUNT')
 
     async def set_state(self, activated: bool, key: str):
         if key == 'tab_account':
