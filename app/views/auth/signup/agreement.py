@@ -87,20 +87,16 @@ class AgreementRegistrationView(AuthView):
             currency=self.client.session.registration.currency,
             timezone=self.client.session.registration.timezone,
         )
-
         session = await self.client.session.api.client.sessions.create(
             username=self.client.session.registration.username,
             password=self.client.session.registration.password,
         )
-
-        token = session.token
-        tokens = await self.client.session.get_cs(key='tokens')
-        if not tokens:
-            tokens = []
-        await self.client.session.set_cs(key='tokens', value=tokens + [token])
-        await self.client.session.set_cs(key='token', value=token)
+        tokens = await self.client.session.get_cs(key='tokens') or []
+        tokens.append(session.token)
+        await self.client.session.set_cs(key='tokens', value=tokens)
+        await self.client.session.set_cs(key='token', value=session.token)
         await self.client.session.set_cs(key='current_wallet', value=None)
-        self.client.session.api = FexpsApiClient(url=settings.get_url(), token=token)
+        self.client.session.api = FexpsApiClient(url=settings.get_url(), token=session.token)
         for contact_id, value in self.client.session.registration.contacts.items():
             if not contact_id or not value:
                 continue

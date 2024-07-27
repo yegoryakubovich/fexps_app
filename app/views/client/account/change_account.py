@@ -34,12 +34,11 @@ class ChangeAccountView(ClientBaseView):
 
     async def get_account_list(self):
         account_list = []
-        for account_tuple in self.client.session.accounts:
-            account = account_tuple[2]
+        for account_dict in self.client.session.accounts:
             color, bgcolor = colors.ON_PRIMARY_CONTAINER, colors.PRIMARY_CONTAINER
-            if account.id == self.client.session.account.id:
+            if account_dict['id'] == self.client.session.account.id:
                 color, bgcolor = colors.ON_PRIMARY, colors.PRIMARY
-            account_list += [
+            account_list.append(
                 Row(
                     controls=[
                         StandardButton(
@@ -48,13 +47,13 @@ class ChangeAccountView(ClientBaseView):
                                     Column(
                                         controls=[
                                             Text(
-                                                value=f'#{account.id:08}',
+                                                value=f'#{account_dict["id"]:08}',
                                                 size=settings.get_font_size(multiple=2),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
                                             ),
                                             Text(
-                                                value=f'{account.username}',
+                                                value=f'{account_dict["username"]}',
                                                 size=settings.get_font_size(multiple=3),
                                                 font_family=Fonts.SEMIBOLD,
                                                 color=color,
@@ -75,7 +74,7 @@ class ChangeAccountView(ClientBaseView):
                                                 key='change_account_logout_description',
                                             ),
                                             button_title=await self.client.session.gtv(key='confirm'),
-                                            button_on_click=partial(self.account_logout, account.id),
+                                            button_on_click=partial(self.account_logout, account_dict['id']),
                                         ),
                                     ),
                                 ],
@@ -84,12 +83,12 @@ class ChangeAccountView(ClientBaseView):
                             bgcolor=bgcolor,
                             vertical=24,
                             horizontal=8,
-                            on_click=partial(self.account_select, account.id),
+                            on_click=partial(self.account_select, account_dict['id']),
                             expand=True,
                         ),
                     ],
-                )
-            ]
+                ),
+            )
         return account_list
 
     async def construct(self):
@@ -125,7 +124,7 @@ class ChangeAccountView(ClientBaseView):
         )
 
     async def account_add(self, _=None):
-        if len(self.client.session.tokens) >= settings.max_accounts:
+        if len(self.client.session.accounts) >= settings.max_accounts:
             await self.client.session.bs_error.open_(
                 icon=Icons.ERROR,
                 title=await self.client.session.gtv(key='change_account_max_error', max_count=settings.max_accounts),

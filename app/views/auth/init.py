@@ -35,14 +35,11 @@ class InitView(AuthView):
         self.client.session = Session(client=self.client)
         await self.client.session.init()
         await self.set_type(loading=False)
-
         # If not language
         if not self.client.session.language:
             await self.client.change_view(view=LanguageView(), delete_current=True)
             return
-
         await self.client.session.get_text_pack(language=self.client.session.language)
-
         # If not token
         if self.new_login or not self.client.session.token:
             from app.views.auth.signup.first import RegistrationFirstView
@@ -51,5 +48,4 @@ class InitView(AuthView):
                 delete_current=True,
             )
             return
-
         await self.client.change_view(view=MainView())

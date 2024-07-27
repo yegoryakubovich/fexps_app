@@ -33,6 +33,7 @@ async def check_update_main_account_view(view: AccountTab, update: bool = True):
     ]
     if True not in check_list:
         return
+    view.client.session.account = account
     await view.construct()
     if update:
         await view.update_async()

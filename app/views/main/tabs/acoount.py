@@ -54,7 +54,6 @@ class Section:
 class AccountTab(BaseTab):
 
     async def construct(self):
-        self.client.session.account = await self.client.session.api.client.accounts.get()
         firstname = self.client.session.account.firstname
         lastname = self.client.session.account.lastname
         username = self.client.session.account.username

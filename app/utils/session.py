@@ -52,7 +52,7 @@ class Session:
     def __init__(self, client: Client):
         self.client = client
         self.page = client.page
-        self.accounts: list[tuple[int, str, dict]] = []
+        self.accounts: list[dict] = []
         self.account = None
         self.timezone = None
         self.updater = True
@@ -84,69 +84,51 @@ class Session:
             account_next: bool = False,
     ) -> bool:
         from app.views.auth.init import InitView
-        if len(self.tokens) == 1:
+        if len(self.accounts) == 1:
             return False
         if account_id:
             if account_id == self.account.id:
                 return False
-            for account_tuple in self.accounts:
-                if account_id != account_tuple[0]:
+            for account_dict in self.accounts:
+                if account_id != account_dict['id']:
                     continue
-                await self.set_cs(key='token', value=account_tuple[1])
+                await self.set_cs(key='token', value=account_dict['token'])
         elif account_next:
-            account_i = None
-            for i, acc_tuple in enumerate(self.accounts):
-                acc_id, acc_token, acc = acc_tuple
-                if self.account.id != acc_id:
+            i = None
+            for i, account_dict in enumerate(self.accounts):
+                if self.account.id != account_dict['id']:
                     continue
-                account_i = i
+                i = i
                 break
-            next_i = account_i + 1
-            if next_i >= len(self.tokens):
-                next_i -= len(self.tokens)
-            await self.set_cs(key='token', value=self.accounts[next_i][1])
+            i += 1
+            if i >= len(self.accounts):
+                i -= len(self.accounts)
+            await self.set_cs(key='token', value=self.accounts[i]['token'])
         await self.set_cs(key='current_wallet', value=None)
         await change_view(view=InitView(), delete_current=True)
 
-    async def init_accounts(self):
-        self.tokens = await self.get_cs(key='tokens')
-        if not self.tokens:
-            self.tokens = []
-        self.token = await self.get_cs(key='token')
-        account_ids = []
-        if self.token:
-            try:
-                self.api = FexpsApiClient(url=settings.get_url(), token=self.token)
-                self.account = await self.api.client.accounts.get()
-            except:
-                self.tokens.pop(self.tokens.index(self.token))
-                self.token = None
-                await self.client.session.set_cs(key='token', value=None)
-                await self.client.session.set_cs(key='current_wallet', value=None)
-        for token in self.tokens:
-            try:
-                api = FexpsApiClient(url=settings.get_url(), token=token)
-                account = await api.client.accounts.get()
-                if account.id not in account_ids:
-                    if not self.token:
-                        self.token = token
-                    account_ids.append(account.id)
-                    self.accounts.append((account.id, token, account))
-                    continue
-            except:
-                pass
-            self.tokens.pop(self.tokens.index(token))
-
     async def init(self):
-        await self.init_accounts()
+        self.token = await self.get_cs(key='token')
+        self.accounts = await self.get_cs(key='accounts') or []
         self.language = await self.get_cs(key='language')
         self.text_pack = await self.get_cs(key='text_pack')
         self.current_wallet = await self.get_cs(key='current_wallet')
-        asyncio.create_task(self.start_updater())
-
         self.api = FexpsApiClient(url=settings.get_url(), token=self.token)
+        asyncio.create_task(self.start_updater())
         try:
             self.account = await self.api.client.accounts.get()
+            account_index = None
+            for account_dict in self.accounts:
+                if account_dict['id'] != self.account.id:
+                    continue
+                account_index = self.accounts.index(account_dict)
+                break
+            current_account_dict = {'id': self.account.id, 'username': self.account.username, 'token': self.token}
+            if account_index is None:
+                self.accounts.append(current_account_dict)
+            else:
+                self.accounts[account_index] = current_account_dict
+            await self.set_cs(key='accounts', value=self.accounts)
             self.timezone = await self.api.client.timezones.get(id_str=self.account.timezone)
             self.api = FexpsApiClient(url=settings.get_url(), token=self.token, deviation=self.timezone.deviation)
             if self.language != self.account.language:

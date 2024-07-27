@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import logging
 
 from flet_core import Column, Row, Container, padding, colors, border_radius, ScrollMode
 
@@ -113,16 +113,12 @@ class AuthenticationView(AuthView):
         except ApiException as exception:
             await self.set_type(loading=False)
             return await self.client.session.error(exception=exception)
-
         # Get result, set in CS
-        tokens = await self.client.session.get_cs(key='tokens')
-        if not tokens:
-            tokens = []
-        token = session.token
-        await self.client.session.set_cs(key='tokens', value=tokens + [token])
-        await self.client.session.set_cs(key='token', value=token)
+        tokens = await self.client.session.get_cs(key='tokens') or []
+        tokens.append(session.token)
+        await self.client.session.set_cs(key='tokens', value=tokens)
+        await self.client.session.set_cs(key='token', value=session.token)
         await self.client.session.set_cs(key='current_wallet', value=None)
-
         # Change view
         self.client.page.views.clear()
         await self.set_type(loading=False)
