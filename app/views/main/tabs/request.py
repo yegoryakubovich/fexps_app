@@ -69,6 +69,10 @@ class RequestTab(BaseTab):
         self.selected_chip = Chips.COMPLETED
         self.partner_chip = False
         self.search_value = None
+        self.current_requests = []
+        self.current_requests_column = Column()
+        self.history_requests = []
+        self.history_requests_column = Column()
 
     async def get_request_cards(self, requests: list) -> list[StandardButton]:
         cards: list[StandardButton] = []
@@ -185,10 +189,8 @@ class RequestTab(BaseTab):
     """
 
     async def update_current_request_column(self, update: bool = True):
-        response = await self.client.session.api.client.requests.search(is_active=True)
-        self.current_requests = response.requests
         cards = await self.get_request_cards(requests=self.current_requests)
-        self.current_requests_column = Column()
+        self.current_requests_column.controls = []
         if cards:
             self.current_requests_column.controls = [
                 SubTitle(value=await self.client.session.gtv(key='requests_currently_title')),
@@ -240,59 +242,47 @@ class RequestTab(BaseTab):
         return chips
 
     async def update_history_request_column(self, update: bool = True):
-        response = await self.client.session.api.client.requests.search(
-            id_=self.search_value,
-            is_active=self.selected_chip in [Chips.ACTIVE, Chips.ALL],
-            is_completed=self.selected_chip in [Chips.COMPLETED, Chips.ALL],
-            is_canceled=self.selected_chip in [Chips.CANCELED, Chips.ALL],
-            is_partner=self.partner_chip,
-            page=self.page_request,
-        )
-        self.history_requests = response.requests
-        self.total_pages = response.pages
         self.tf_history_requests_search = TextField(
             label=await self.client.session.gtv(key='request_history_search'),
             value=self.search_value,
             expand=True,
         )
-        self.history_requests_column = Column(
-            controls=[
-                Row(
-                    controls=[
-                        Text(
-                            value=await self.client.session.gtv(key='request_history_title'),
-                            size=settings.get_font_size(multiple=2),
-                            font_family=Fonts.BOLD,
-                            color=colors.ON_BACKGROUND,
+        self.history_requests_column.controls = [
+            Row(
+                controls=[
+                    Text(
+                        value=await self.client.session.gtv(key='request_history_title'),
+                        size=settings.get_font_size(multiple=2),
+                        font_family=Fonts.BOLD,
+                        color=colors.ON_BACKGROUND,
+                    ),
+                    self.tf_history_requests_search,
+                    StandardButton(
+                        content=Image(
+                            src=Icons.SEARCH,
+                            height=14,
+                            color=colors.ON_PRIMARY_CONTAINER,
                         ),
-                        self.tf_history_requests_search,
-                        StandardButton(
-                            content=Image(
-                                src=Icons.SEARCH,
-                                height=14,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                            on_click=self.change_request_search,
-                            bgcolor=colors.PRIMARY_CONTAINER,
-                        ),
-                    ],
-                    spacing=8,
-                ),
-                Row(
-                    controls=await self.get_history_request_chips(),
-                    wrap=True,
-                ),
-                *await self.get_request_cards(requests=self.history_requests),
-                PaginationWidget(
-                    current_page=self.page_request,
-                    total_pages=self.total_pages,
-                    on_next=self.next_page,
-                    on_back=self.previous_page,
-                    text_next=await self.client.session.gtv(key='next'),
-                    text_back=await self.client.session.gtv(key='back'),
-                ),
-            ],
-        )
+                        on_click=self.change_request_search,
+                        bgcolor=colors.PRIMARY_CONTAINER,
+                    ),
+                ],
+                spacing=8,
+            ),
+            Row(
+                controls=await self.get_history_request_chips(),
+                wrap=True,
+            ),
+            *await self.get_request_cards(requests=self.history_requests),
+            PaginationWidget(
+                current_page=self.page_request,
+                total_pages=self.total_pages,
+                on_next=self.next_page,
+                on_back=self.previous_page,
+                text_next=await self.client.session.gtv(key='next'),
+                text_back=await self.client.session.gtv(key='back'),
+            ),
+        ]
         if update:
             await self.update_async()
 

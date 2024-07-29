@@ -52,12 +52,45 @@ class Section:
 
 
 class AccountTab(BaseTab):
+    account_column: Column
 
-    async def construct(self):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.account_column = Column(spacing=0, horizontal_alignment=CrossAxisAlignment.CENTER, )
+
+    async def update_account_container(self, update: bool = True):
         firstname = self.client.session.account.firstname
         lastname = self.client.session.account.lastname
         username = self.client.session.account.username
+        account_icon_src, icon_src_base64 = Icons.ACCOUNT, None
+        if self.client.session.account['file']:
+            account_icon_src = None
+            icon_src_base64 = b64encode(self.client.session.account['file']['value'].encode('ISO-8859-1')).decode()
+        self.account_column.controls = [
+            Avatar(
+                src=account_icon_src,
+                src_base64=icon_src_base64,
+                width=100,
+                height=100,
+            ),
+            Text(
+                value=f'{firstname} {lastname}',
+                font_family=Fonts.SEMIBOLD,
+                size=settings.get_font_size(multiple=2.5),
+                color=colors.ON_BACKGROUND,
+            ),
+            Text(
+                value=f'@{username}',
+                font_family=Fonts.SEMIBOLD,
+                size=settings.get_font_size(multiple=1),
+                color=colors.ON_BACKGROUND,
+            ),
+        ]
+        if update:
+            await self.account_column.update_async()
 
+    async def construct(self):
+        await self.update_account_container(update=False)
         sections = [
             Section(
                 name='my_account',
@@ -146,40 +179,13 @@ class AccountTab(BaseTab):
             for section in sections
         ]
         self.scroll = ScrollMode.AUTO
-        account_icon_src, icon_src_base64 = Icons.ACCOUNT, None
-        if self.client.session.account['file']:
-            account_icon_src = None
-            icon_src_base64 = b64encode(self.client.session.account['file']['value'].encode('ISO-8859-1')).decode()
         self.controls = [
             Container(
                 content=Column(
                     controls=[
                         Title(value=await self.client.session.gtv(key='account_tab_title')),
                         Container(
-                            content=Column(
-                                controls=[
-                                    Avatar(
-                                        src=account_icon_src,
-                                        src_base64=icon_src_base64,
-                                        width=100,
-                                        height=100,
-                                    ),
-                                    Text(
-                                        value=f'{firstname} {lastname}',
-                                        font_family=Fonts.SEMIBOLD,
-                                        size=settings.get_font_size(multiple=2.5),
-                                        color=colors.ON_BACKGROUND,
-                                    ),
-                                    Text(
-                                        value=f'@{username}',
-                                        font_family=Fonts.SEMIBOLD,
-                                        size=settings.get_font_size(multiple=1),
-                                        color=colors.ON_BACKGROUND,
-                                    ),
-                                ],
-                                spacing=0,
-                                horizontal_alignment=CrossAxisAlignment.CENTER,
-                            ),
+                            content=self.account_column,
                             padding=padding.only(top=12),
                             alignment=alignment.center,
                         ),

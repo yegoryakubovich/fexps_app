@@ -24,13 +24,19 @@ from app.views.main.tabs import HomeTab, RequestTab, RequisiteTab, AccountTab
 
 
 async def check_update_main_view(view: MainView):
+    tabs = []
     for tab in view.tabs:
+        if tab == view.tab_selected:
+            tabs.insert(0, tab)
+            continue
+        tabs.append(tab)
+    for tab in tabs:
         tab_view = tab.controls[0]
         if isinstance(tab_view, HomeTab):
-            await check_update_main_home_view(tab_view, update=tab == view.tab_selected)
+            await check_update_main_home_view(tab_view)
         elif isinstance(tab_view, RequestTab):
-            await check_update_main_request_view(tab_view, update=tab == view.tab_selected)
+            await check_update_main_request_view(tab_view)
         elif isinstance(tab_view, RequisiteTab):
-            await check_update_main_requisite_view(tab_view, update=tab == view.tab_selected)
+            await check_update_main_requisite_view(tab_view)
         elif isinstance(tab_view, AccountTab):
-            await check_update_main_account_view(tab_view, update=tab == view.tab_selected)
+            await check_update_main_account_view(tab_view)

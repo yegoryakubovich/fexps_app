@@ -21,19 +21,9 @@ from app.views.main.tabs import AccountTab
 
 
 async def check_update_main_account_view(view: AccountTab, update: bool = True):
-    check_list = []
     # account
     account = await view.client.session.api.client.accounts.get()
-    check_list += [
-        update_check(
-            scheme=get_account_scheme,
-            obj_1=view.client.session.account,
-            obj_2=account,
-        ),
-    ]
-    if True not in check_list:
-        return
-    view.client.session.account = account
-    await view.construct()
-    if update:
-        await view.update_async()
+    if update_check(scheme=get_account_scheme, obj_1=view.client.session.account, obj_2=account):
+        view.client.session.account = account
+        await view.update_account_container(update=update)
+

@@ -29,16 +29,11 @@ class Chips:
 
 
 async def check_update_main_request_view(view: RequestTab, update: bool = True):
-    check_list = []
     # current_requests
     current_requests = await view.client.session.api.client.requests.search(is_active=True)
-    check_list += [
-        update_check(
-            scheme=get_request_list_scheme,
-            obj_1=view.current_requests,
-            obj_2=current_requests.requests,
-        ),
-    ]
+    if update_check(scheme=get_request_list_scheme, obj_1=view.current_requests, obj_2=current_requests.requests):
+        view.current_requests = current_requests.requests
+        await view.update_current_request_column(update=update)
     # history_requests
     history_requests = await view.client.session.api.client.requests.search(
         id_=view.tf_history_requests_search.value,
@@ -48,15 +43,7 @@ async def check_update_main_request_view(view: RequestTab, update: bool = True):
         is_partner=view.partner_chip,
         page=view.page_request,
     )
-    check_list += [
-        update_check(
-            scheme=get_request_list_scheme,
-            obj_1=view.history_requests,
-            obj_2=history_requests.requests,
-        ),
-    ]
-    if True not in check_list:
-        return
-    await view.construct()
-    if update:
-        await view.update_async()
+    if update_check(scheme=get_request_list_scheme, obj_1=view.history_requests, obj_2=history_requests.requests):
+        view.history_requests = history_requests.requests
+        view.total_pages = history_requests.pages
+        await view.update_history_request_column(update=update)

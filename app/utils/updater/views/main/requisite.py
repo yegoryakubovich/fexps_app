@@ -34,7 +34,6 @@ class StateChips:
 
 
 async def check_update_main_requisite_view(view: RequisiteTab, update: bool = True):
-    check_list = []
     # currency_orders
     currency_orders = await view.client.session.api.client.orders.list_get.main(
         by_request=False,
@@ -42,13 +41,9 @@ async def check_update_main_requisite_view(view: RequisiteTab, update: bool = Tr
         is_active=True,
         is_finished=False,
     )
-    check_list += [
-        update_check(
-            scheme=get_order_list_scheme,
-            obj_1=view.current_orders,
-            obj_2=currency_orders,
-        ),
-    ]
+    if update_check(scheme=get_order_list_scheme, obj_1=view.current_orders, obj_2=currency_orders):
+        view.current_orders = currency_orders
+        await view.update_current_orders_column(update=update)
     # history_requisites
     history_requisites = await view.client.session.api.client.requisites.search(
         is_type_input=view.selected_type_chip in [TypeChips.INPUT, TypeChips.ALL],
@@ -58,29 +53,20 @@ async def check_update_main_requisite_view(view: RequisiteTab, update: bool = Tr
         is_state_disable=view.selected_state_chip in [StateChips.DISABLE, StateChips.ALL],
         page=view.page_requisites,
     )
-    check_list += [
-        update_check(
+    if update_check(
             scheme=get_requisite_list_scheme,
             obj_1=view.history_requisites,
             obj_2=history_requisites.requisites,
-        ),
-    ]
-    # currency_orders
+    ):
+        view.history_requisites = history_requisites.requisites
+        await view.update_history_requisites_column(update=update)
+    # orders
     orders = await view.client.session.api.client.orders.list_get.main(
         by_request=False,
         by_requisite=True,
         is_active=False,
         is_finished=True,
     )
-    check_list += [
-        update_check(
-            scheme=get_order_list_scheme,
-            obj_1=view.orders,
-            obj_2=orders,
-        ),
-    ]
-    if True not in check_list:
-        return
-    await view.construct()
-    if update:
-        await view.update_async()
+    if update_check(scheme=get_order_list_scheme, obj_1=view.orders, obj_2=orders):
+        view.orders = orders
+        await view.update_orders_column(update=update)

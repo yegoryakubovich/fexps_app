@@ -28,50 +28,27 @@ class Chips:
 
 
 async def check_update_main_home_view(view: HomeTab, update: bool = True):
-    check_list = []
     # wallets
     wallets = await view.client.session.api.client.wallets.get_list()
-    check_list += [
-        update_check(
-            scheme=get_wallet_list_scheme,
-            obj_1=view.client.session.wallets,
-            obj_2=wallets,
-        ),
-    ]
+    if update_check(scheme=get_wallet_list_scheme, obj_1=view.client.session.wallets, obj_2=wallets):
+        view.client.session.wallets = wallets
     # current_wallet
     current_wallet = await view.client.session.api.client.wallets.get(id_=view.client.session.current_wallet['id'])
-    check_list += [
-        update_check(
-            scheme=get_wallet_scheme,
-            obj_1=view.client.session.current_wallet,
-            obj_2=current_wallet,
-        ),
-    ]
+    if update_check(scheme=get_wallet_scheme, obj_1=view.client.session.current_wallet, obj_2=current_wallet):
+        view.client.session.current_wallet = current_wallet
+        await view.update_balance_container(update=update)
     # current_requests
     current_requests = await view.client.session.api.client.requests.search(is_active=True)
-    check_list += [
-        update_check(
-            scheme=get_request_list_scheme,
-            obj_1=view.current_requests,
-            obj_2=current_requests.requests,
-        ),
-    ]
+    if update_check(scheme=get_request_list_scheme, obj_1=view.current_requests, obj_2=current_requests.requests):
+        view.current_requests = current_requests.requests
+        await view.update_currently_request_row(update=update)
     # transfers
     transfers = await view.client.session.api.client.transfers.search(
-        wallet_id=view.client.session.current_wallet.id,
+        wallet_id=view.client.session.current_wallet['id'],
         is_sender=view.selected_chip in [Chips.output, Chips.all],
         is_receiver=view.selected_chip in [Chips.input, Chips.all],
         page=view.page_transfer,
     )
-    check_list += [
-        update_check(
-            scheme=get_transfer_list_scheme,
-            obj_1=view.transfers,
-            obj_2=transfers.transfers,
-        ),
-    ]
-    if True not in check_list:
-        return
-    await view.construct()
-    if update:
-        await view.update_async()
+    if update_check(scheme=get_transfer_list_scheme, obj_1=view.transfers, obj_2=transfers.transfers):
+        view.transfers = transfers.transfers
+        await view.update_transfer_history_row(update=update)

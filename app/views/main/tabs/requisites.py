@@ -64,6 +64,13 @@ class RequisiteTab(BaseTab):
             'currently_orders': None,
             'history_requisites': None,
         }
+        # null data
+        self.history_requisites = []
+        self.history_requisites_column = Column()
+        self.current_orders = []
+        self.current_orders_column = Column()
+        self.orders = []
+        self.orders_column = Column()
 
     async def get_orders_cards(
             self,
@@ -134,14 +141,8 @@ class RequisiteTab(BaseTab):
     """
 
     async def update_current_orders_column(self, update: bool = True):
-        self.current_orders = await self.client.session.api.client.orders.list_get.main(
-            by_request=False,
-            by_requisite=True,
-            is_active=True,
-            is_finished=False,
-        )
         cards = await self.get_orders_cards(orders=self.current_orders, bgcolor=colors.PRIMARY, color=colors.ON_PRIMARY)
-        self.current_orders_column = Column()
+        self.current_orders_column.controls = []
         if cards:
             self.current_orders_column.controls = [
                 SubTitle(value=await self.client.session.gtv(key='requisite_currently_orders_title')),
@@ -310,30 +311,19 @@ class RequisiteTab(BaseTab):
         return cards
 
     async def update_history_requisites_column(self, update: bool = True):
-        response = await self.client.session.api.client.requisites.search(
-            is_type_input=self.selected_type_chip in [TypeChips.INPUT, TypeChips.ALL],
-            is_type_output=self.selected_type_chip in [TypeChips.OUTPUT, TypeChips.ALL],
-            is_state_enable=self.selected_state_chip in [StateChips.ENABLE, StateChips.ALL],
-            is_state_stop=self.selected_state_chip in [StateChips.STOP, StateChips.ALL],
-            is_state_disable=self.selected_state_chip in [StateChips.DISABLE, StateChips.ALL],
-            page=self.page_requisites,
-        )
-        self.history_requisites = response.requisites
-        self.history_requisites_column = Column(
-            controls=[
-                SubTitle(value=await self.client.session.gtv(key='requisite_history_title')),
-                *await self.get_requisite_history_chips(),
-                *await self.get_requisite_history_cards(requisites=self.history_requisites),
-                PaginationWidget(
-                    current_page=self.page_requisites,
-                    total_pages=self.total_pages,
-                    on_next=self.next_page,
-                    on_back=self.previous_page,
-                    text_next=await self.client.session.gtv(key='next'),
-                    text_back=await self.client.session.gtv(key='back'),
-                ),
-            ],
-        )
+        self.history_requisites_column.controls = [
+            SubTitle(value=await self.client.session.gtv(key='requisite_history_title')),
+            *await self.get_requisite_history_chips(),
+            *await self.get_requisite_history_cards(requisites=self.history_requisites),
+            PaginationWidget(
+                current_page=self.page_requisites,
+                total_pages=self.total_pages,
+                on_next=self.next_page,
+                on_back=self.previous_page,
+                text_next=await self.client.session.gtv(key='next'),
+                text_back=await self.client.session.gtv(key='back'),
+            ),
+        ]
         if update:
             await self.history_requisites_column.update_async()
 
@@ -342,14 +332,8 @@ class RequisiteTab(BaseTab):
     """
 
     async def update_orders_column(self, update: bool = True):
-        self.orders = await self.client.session.api.client.orders.list_get.main(
-            by_request=False,
-            by_requisite=True,
-            is_active=False,
-            is_finished=True,
-        )
         cards = await self.get_orders_cards(orders=self.orders)
-        self.orders_column = Column()
+        self.orders_column.controls = []
         if cards:
             self.orders_column.controls = [
                 SubTitle(value=await self.client.session.gtv(key='requisite_orders_title')),
@@ -362,9 +346,7 @@ class RequisiteTab(BaseTab):
         await self.update_current_orders_column(update=False)
         await self.update_history_requisites_column(update=False)
         await self.update_orders_column(update=False)
-        create_disable = False
-        if 'requisite_no' in self.client.session.account.permissions:
-            create_disable = True
+        create_disable = 'requisite_no' in self.client.session.account.permissions
         self.scroll = ScrollMode.AUTO
         self.controls = [
             Container(

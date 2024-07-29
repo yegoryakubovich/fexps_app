@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+
 
 from flet_core import Column, Row, Container, padding, colors, border_radius, ScrollMode
 
@@ -103,12 +103,11 @@ class AuthenticationView(AuthView):
             if not await Error.check_field(self, field, min_len=min_len, max_len=max_len):
                 await self.set_type(loading=False)
                 return
+        username = self.tf_username.value.replace(' ', '')
+        password = self.tf_password.value.replace(' ', '')
         # Create session
         try:
-            session = await self.client.session.api.client.sessions.create(
-                username=self.tf_username.value,
-                password=self.tf_password.value,
-            )
+            session = await self.client.session.api.client.sessions.create(username=username, password=password)
             await self.set_type(loading=False)
         except ApiException as exception:
             await self.set_type(loading=False)

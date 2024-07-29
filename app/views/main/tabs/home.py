@@ -22,7 +22,7 @@ from flet_core import Column, Container, ControlEvent, colors, ScrollMode, Row, 
     Stack, alignment
 
 from app.controls.button import Chip, StandardButton
-from app.controls.information import Card, Text, InformationContainer, SubTitle
+from app.controls.information import Text, InformationContainer, SubTitle
 from app.controls.navigation.pagination import PaginationWidget
 from app.utils import Fonts, Icons, value_to_float, value_to_str
 from app.utils.constants.request import RequestTypes
@@ -39,10 +39,13 @@ class Chips:
 
 class HomeTab(BaseTab):
     transfers = list[dict]
-    control_dict: dict
-
-    cards: list[Card]
     current_requests = list[dict]
+
+    account_row: Row
+    balance_container: InformationContainer
+    actions_row: Row
+    currently_request_row: Row
+    transfer_history_row: Row
 
     page_transfer: int = 1
     total_pages: int = 1
@@ -51,15 +54,15 @@ class HomeTab(BaseTab):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.selected_chip = Chips.all
-        self.control_dict = {
-            'account': None,
-            'balance': None,
-            'actions': None,
-            'currently_request': None,
-            'history_transfer': None,
-        }
+        self.account_row = Row(wrap=True)
+        self.balance_container = InformationContainer(content=Row(), height=150)
+        self.actions_row = Row()
+        self.current_requests = []
+        self.currently_request_row = Row(wrap=True)
+        self.transfers = []
+        self.transfer_history_row = Row(wrap=True)
 
-    async def update_account(self, update: bool = True):
+    async def update_account_row(self, update: bool = True):
         time_utcnow = datetime.datetime.now(tz=datetime.UTC).replace(tzinfo=None)
         time_delta = datetime.timedelta(hours=self.client.session.timezone.deviation)
         time_now = time_utcnow + time_delta
@@ -72,136 +75,128 @@ class HomeTab(BaseTab):
         else:
             hello_text_str = await self.client.session.gtv(key='good_evening')
         hello_text_str = f'{hello_text_str},'
-        self.control_dict['account'] = Row(
-            controls=[
-                Text(
-                    value=hello_text_str,
-                    size=settings.get_font_size(multiple=2),
-                    font_family=Fonts.MEDIUM,
-                    color=colors.ON_BACKGROUND,
-                ),
-                Text(
-                    value=f'{self.client.session.account.firstname}.',
-                    size=settings.get_font_size(multiple=2.5),
-                    font_family=Fonts.SEMIBOLD,
-                    color=colors.ON_BACKGROUND,
-                ),
-            ],
-            wrap=True,
-        )
-        if update:
-            await self.update_async()
-
-    async def update_balance(self, update: bool = True):
-        wallet_name = self.client.session.current_wallet.name
-        value = value_to_float(value=self.client.session.current_wallet.value)
-        value_str = value_to_str(value=value)
-        self.control_dict['balance'] = InformationContainer(
-            content=Stack(
-                controls=[
-                    Column(
-                        controls=[
-                            Row(
-                                controls=[
-                                    Text(
-                                        value=f'{wallet_name}',
-                                        size=24,
-                                        font_family=Fonts.REGULAR,
-                                        color=colors.ON_PRIMARY,
-                                    )
-                                ],
-                                alignment=MainAxisAlignment.CENTER,
-                            ),
-                            Row(
-                                controls=[
-                                    Image(
-                                        src=Icons.COIN,
-                                        width=28,
-                                        color=colors.ON_PRIMARY,
-                                    ),
-                                    Text(
-                                        value=f'{value_str}',
-                                        size=settings.get_font_size(multiple=3),
-                                        font_family=Fonts.BOLD,
-                                        color=colors.ON_PRIMARY,
-                                    ),
-                                ],
-                                alignment=MainAxisAlignment.CENTER,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.CENTER,
-                    ),
-                    Container(
-                        content=StandardButton(
-                            content=Image(
-                                src=Icons.WALLET_MENU,
-                                width=24,
-                                color=colors.ON_PRIMARY,
-                            ),
-                            color=colors.PRIMARY,
-                            on_click=self.select_wallet_view,
-                            horizontal=20,
-                            vertical=20,
-                        ),
-                        alignment=alignment.top_right,
-                    ),
-                ],
-                expand=True,
+        self.account_row.controls = [
+            Text(
+                value=hello_text_str,
+                size=settings.get_font_size(multiple=2),
+                font_family=Fonts.MEDIUM,
+                color=colors.ON_BACKGROUND,
             ),
-            height=150,
-        )
+            Text(
+                value=f'{self.client.session.account.firstname}.',
+                size=settings.get_font_size(multiple=2.5),
+                font_family=Fonts.SEMIBOLD,
+                color=colors.ON_BACKGROUND,
+            ),
+        ]
         if update:
-            await self.update_async()
+            await self.account_row.update_async()
 
-    async def update_actions(self, update: bool = True):
-        self.control_dict['actions'] = Row(
+    async def update_balance_container(self, update: bool = True):
+        wallet_name = self.client.session.current_wallet['name']
+        value = value_to_float(value=self.client.session.current_wallet['value'])
+        value_str = value_to_str(value=value)
+        self.balance_container.content = Stack(
             controls=[
-                StandardButton(
-                    content=Row(
-                        controls=[
-                            Image(
-                                src=Icons.MAKE_EXCHANGE,
-                                height=20,
-                                width=20,
-                            ),
-                            Text(
-                                value=await self.client.session.gtv(key=f'action_make_exchange'),
-                                size=settings.get_font_size(multiple=1.5),
-                                font_family=Fonts.BOLD,
-                                color=colors.ON_PRIMARY,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.CENTER,
-                    ),
-                    on_click=self.request_create,
-                    expand=3,
-                    bgcolor=colors.PRIMARY,
+                Column(
+                    controls=[
+                        Row(
+                            controls=[
+                                Text(
+                                    value=f'{wallet_name}',
+                                    size=24,
+                                    font_family=Fonts.REGULAR,
+                                    color=colors.ON_PRIMARY,
+                                )
+                            ],
+                            alignment=MainAxisAlignment.CENTER,
+                        ),
+                        Row(
+                            controls=[
+                                Image(
+                                    src=Icons.COIN,
+                                    width=28,
+                                    color=colors.ON_PRIMARY,
+                                ),
+                                Text(
+                                    value=f'{value_str}',
+                                    size=settings.get_font_size(multiple=3),
+                                    font_family=Fonts.BOLD,
+                                    color=colors.ON_PRIMARY,
+                                ),
+                            ],
+                            alignment=MainAxisAlignment.CENTER,
+                        ),
+                    ],
+                    alignment=MainAxisAlignment.CENTER,
                 ),
-                StandardButton(
-                    content=Row(
-                        controls=[
-                            Image(
-                                src=Icons.PAYMENT,
-                                height=20,
-                                width=20,
-                            ),
-                            Text(
-                                value=await self.client.session.gtv(key=f'action_send'),
-                                size=settings.get_font_size(multiple=1.5),
-                                font_family=Fonts.BOLD,
-                                color=colors.ON_PRIMARY_CONTAINER,
-                            ),
-                        ],
-                        alignment=MainAxisAlignment.CENTER,
+                Container(
+                    content=StandardButton(
+                        content=Image(
+                            src=Icons.WALLET_MENU,
+                            width=24,
+                            color=colors.ON_PRIMARY,
+                        ),
+                        color=colors.PRIMARY,
+                        on_click=self.select_wallet_view,
+                        horizontal=20,
+                        vertical=20,
                     ),
-                    bgcolor=colors.PRIMARY_CONTAINER,
-                    expand=2,
-                    on_click=self.go_send,
+                    alignment=alignment.top_right,
                 ),
             ],
+            expand=True,
         )
         if update:
-            await self.update_async()
+            await self.balance_container.update_async()
+
+    async def update_actions_row(self, update: bool = True):
+        self.actions_row.controls = [
+            StandardButton(
+                content=Row(
+                    controls=[
+                        Image(
+                            src=Icons.MAKE_EXCHANGE,
+                            height=20,
+                            width=20,
+                        ),
+                        Text(
+                            value=await self.client.session.gtv(key=f'action_make_exchange'),
+                            size=settings.get_font_size(multiple=1.5),
+                            font_family=Fonts.BOLD,
+                            color=colors.ON_PRIMARY,
+                        ),
+                    ],
+                    alignment=MainAxisAlignment.CENTER,
+                ),
+                on_click=self.request_create,
+                expand=3,
+                bgcolor=colors.PRIMARY,
+            ),
+            StandardButton(
+                content=Row(
+                    controls=[
+                        Image(
+                            src=Icons.PAYMENT,
+                            height=20,
+                            width=20,
+                        ),
+                        Text(
+                            value=await self.client.session.gtv(key=f'action_send'),
+                            size=settings.get_font_size(multiple=1.5),
+                            font_family=Fonts.BOLD,
+                            color=colors.ON_PRIMARY_CONTAINER,
+                        ),
+                    ],
+                    alignment=MainAxisAlignment.CENTER,
+                ),
+                bgcolor=colors.PRIMARY_CONTAINER,
+                expand=2,
+                on_click=self.go_send,
+            ),
+        ]
+        if update:
+            await self.actions_row.update_async()
 
     """
     CURRENTLY REQUESTS
@@ -303,19 +298,16 @@ class HomeTab(BaseTab):
             )
         return cards
 
-    async def update_currently_request(self, update: bool = True):
+    async def update_currently_request_row(self, update: bool = True):
         cards = await self.get_currently_request_cards()
-        self.control_dict['currently_request'] = Row()
+        self.currently_request_row.controls = []
         if cards:
-            self.control_dict['currently_request'] = Row(
-                controls=[
-                    SubTitle(value=await self.client.session.gtv(key='requests_currently_title')),
-                    *cards,
-                ],
-                wrap=True,
-            )
+            self.currently_request_row.controls = [
+                SubTitle(value=await self.client.session.gtv(key='requests_currently_title')),
+                *cards,
+            ]
         if update:
-            await self.update_async()
+            await self.currently_request_row.update_async()
 
     """
     HISTORY TRANSFER
@@ -327,25 +319,25 @@ class HomeTab(BaseTab):
                 name=await self.client.session.gtv(key=f'chip_{Chips.input}'),
                 key=Chips.input,
                 on_select=self.chip_select,
-                selected=True if self.selected_chip == Chips.input else False,
+                selected=self.selected_chip == Chips.input,
             ),
             Chip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.output}'),
                 key=Chips.output,
                 on_select=self.chip_select,
-                selected=True if self.selected_chip == Chips.output else False,
+                selected=self.selected_chip == Chips.output,
             ),
             Chip(
                 name=await self.client.session.gtv(key=f'chip_{Chips.all}'),
                 key=Chips.all,
                 on_select=self.chip_select,
-                selected=True if self.selected_chip == Chips.all else False,
+                selected=self.selected_chip == Chips.all,
             ),
         ]
 
     async def get_history_transfer_cards(self) -> list[StandardButton]:
         response = await self.client.session.api.client.transfers.search(
-            wallet_id=self.client.session.current_wallet.id,
+            wallet_id=self.client.session.current_wallet['id'],
             is_sender=self.selected_chip in [Chips.output, Chips.all],
             is_receiver=self.selected_chip in [Chips.input, Chips.all],
             page=self.page_transfer,
@@ -406,57 +398,50 @@ class HomeTab(BaseTab):
             )
         return cards
 
-    async def update_history_transfer(self, update: bool = True):
-        self.control_dict['history_transfer'] = Row(
-            controls=[
-                SubTitle(value=await self.client.session.gtv(key='last_transfers_title')),
-                *await self.get_history_transfer_chips(),
-                *await self.get_history_transfer_cards(),
-                PaginationWidget(
-                    current_page=self.page_transfer,
-                    total_pages=self.total_pages,
-                    on_back=self.previous_page,
-                    on_next=self.next_page,
-                    text_back=await self.client.session.gtv(key='back'),
-                    text_next=await self.client.session.gtv(key='next'),
-                ),
-            ],
-            wrap=True,
-        )
+    async def update_transfer_history_row(self, update: bool = True):
+        self.transfer_history_row.controls = [
+            SubTitle(value=await self.client.session.gtv(key='last_transfers_title')),
+            *await self.get_history_transfer_chips(),
+            *await self.get_history_transfer_cards(),
+            PaginationWidget(
+                current_page=self.page_transfer,
+                total_pages=self.total_pages,
+                on_back=self.previous_page,
+                on_next=self.next_page,
+                text_back=await self.client.session.gtv(key='back'),
+                text_next=await self.client.session.gtv(key='next'),
+            ),
+        ]
         if update:
-            await self.update_async()
+            await self.transfer_history_row.update_async()
 
     async def construct(self):
-        self.client.session.wallets = await self.client.session.api.client.wallets.get_list()
-        self.client.session.current_wallet = await self.client.session.api.client.wallets.get(
-            id_=self.client.session.current_wallet['id'],
-        )
-        await self.update_account(update=False)
-        await self.update_balance(update=False)
-        await self.update_actions(update=False)
-        await self.update_currently_request(update=False)
-        await self.update_history_transfer(update=False)
+        await self.update_account_row(update=False)
+        await self.update_balance_container(update=False)
+        await self.update_actions_row(update=False)
+        await self.update_currently_request_row(update=False)
+        await self.update_transfer_history_row(update=False)
         self.scroll = ScrollMode.AUTO
         self.controls = [
             Container(
                 content=Column(
                     controls=[
-                        self.control_dict['account'],
-                        self.control_dict['balance'],
-                        self.control_dict['actions'],
-                        self.control_dict['currently_request'],
-                        self.control_dict['history_transfer'],
+                        self.account_row,
+                        self.balance_container,
+                        self.actions_row,
+                        self.currently_request_row,
+                        self.transfer_history_row,
                     ]
                 ),
                 padding=10,
-            )
+            ),
         ]
 
     async def select_wallet_view(self, _):
         from app.views.client.wallets import WalletView
         await self.client.change_view(
             view=WalletView(
-                current_wallet_id=self.client.session.current_wallet.id,
+                current_wallet_id=self.client.session.current_wallet['id'],
             ),
         )
 
