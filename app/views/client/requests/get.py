@@ -27,9 +27,9 @@ from app.controls.information import Text, SubTitle, InformationContainer
 from app.controls.input import TextField
 from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, value_to_str
-from app.utils.constants.order import OrderStates, OrderTypes
+from app.utils.constants.order import OrderStates
 from app.utils.constants.request import RequestStates, RequestTypes
-from app.utils.value import requisite_value_to_str, get_fix_rate, value_replace
+from app.utils.value import requisite_value_to_str, get_fix_rate
 from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView
 from config import settings
@@ -96,7 +96,7 @@ class RequestView(ClientBaseView):
     orders = list[dict]
     account_client_text = dict
 
-    info_card: InformationContainer
+    info_card_column: Column
     confirmation_timer: Optional[DynamicTimer]
     confirmation_false_button: StandardButton
     confirmation_true_button: StandardButton
@@ -109,6 +109,9 @@ class RequestView(ClientBaseView):
         self.request_id = request_id
         self.dialog = AlertDialog(modal=True)
         self.confirmation_timer = None
+        self.orders = []
+        self.orders_row = Row(wrap=True)
+        self.info_card_column = Column(spacing=-50)
 
     async def update_info_card(self, update: bool = True) -> None:
         rate = value_to_float(value=self.request.rate, decimal=self.request.rate_decimal)
@@ -301,16 +304,9 @@ class RequestView(ClientBaseView):
             ),
         ]
 
-        self.info_card = InformationContainer(
-            content=Column(
-                controls=info_card_controls,
-                spacing=-50,
-            ),
-            bgcolor=colors.PRIMARY_CONTAINER,
-            padding=padding.symmetric(vertical=32, horizontal=32),
-        )
+        self.info_card_column.controls = info_card_controls
         if update:
-            await self.info_card.update_async()
+            await self.info_card_column.update_async()
 
     async def update_confirmation_timer(self, update: bool = True):
         self.confirmation_timer = DynamicTimer(
@@ -494,89 +490,19 @@ class RequestView(ClientBaseView):
                 SubTitle(value=await self.client.session.gtv(key='request_orders_output_title')),
                 *output_orders,
             ]
-        self.orders_row = Row(
-            controls=controls,
-            wrap=True,
-        )
+        self.orders_row.controls = controls
         if update:
             await self.orders_row.update_async()
 
     async def update_client_text(self, update: bool = True, _=None):
         self.client_text_column.controls = []
-        input_currency_value = None
-        if self.request.input_currency_value:
-            input_currency_value = value_to_float(
-                value=self.request.input_currency_value,
-                decimal=self.request.input_method.currency.decimal,
-            )
-        input_rate = value_to_float(value=self.request.input_rate, decimal=self.request.rate_decimal)
-        input_value = value_to_float(value=self.request.input_value)
-        output_value = value_to_float(value=self.request.output_value)
-        output_rate = value_to_float(value=self.request.output_rate, decimal=self.request.rate_decimal)
-        output_currency_value = None
-        if self.request.output_currency_value:
-            output_currency_value = value_to_float(
-                value=self.request.output_currency_value,
-                decimal=self.request.output_method.currency.decimal,
-            )
-        input_method, input_currency = None, None
-        if self.request.input_method:
-            input_method = await self.client.session.gtv(key=self.request.input_method.name_text)
-            input_currency = self.request.input_method.currency.id_str.upper()
-        output_method, output_currency = None, None
-        if self.request.output_method:
-            output_method = await self.client.session.gtv(key=self.request.output_method.name_text)
-            output_currency = self.request.output_method.currency.id_str.upper()
-        input_orders = []
-        output_orders = []
-        for i, order in enumerate(self.orders):
-            if order.state == OrderStates.CANCELED:
-                continue
-            currency_value: str = value_to_str(
-                value=value_to_float(value=order.currency_value, decimal=order.method.currency.decimal),
-            )
-            data = [
-                ', '.join([f'{value}' for key, value in order.requisite_fields.items()]),
-                ' '.join([currency_value, order.method.currency.id_str.upper()])
-            ]
-            if order.type == OrderTypes.INPUT:
-                input_orders += [' -> '.join(data)]
-            elif order.type == OrderTypes.OUTPUT:
-                output_orders += [' -> '.join(data)]
-        if len(input_orders) > 1:
-            for i, input_order in enumerate(input_orders):
-                input_orders[i] = f'{i + 1}. {input_order}'
-        if len(output_orders) > 1:
-            for i, output_order in enumerate(output_orders):
-                output_orders[i] = f'{i + 1}. {output_order}'
-        if self.account_client_text:
+        if self.request.client_text:
             self.client_text_column.controls = [
+                Divider(),
                 TextField(
                     label=await self.client.session.gtv(key='request_get_client_text'),
                     multiline=True,
-                    value=value_replace(
-                        self.account_client_text.value,
-                        name=self.request.name,
-                        type=self.request.type,
-                        state=self.request.state,
-                        commission=self.request.commission,
-                        rate=self.request.rate,
-                        input_currency_value=input_currency_value,
-                        input_rate=input_rate,
-                        input_value=input_value,
-                        output_value=output_value,
-                        output_rate=output_rate,
-                        output_currency_value=output_currency_value,
-                        date=self.request.date,
-                        confirmation_delta=self.request.confirmation_delta,
-                        rate_fixed_delta=self.request.rate_fixed_delta,
-                        input_method=input_method,
-                        input_currency=input_currency,
-                        input_orders='\n'.join(input_orders),
-                        output_method=output_method,
-                        output_currency=output_currency,
-                        output_orders='\n'.join(output_orders),
-                    ),
+                    value=self.request.client_text,
                 ),
             ]
         if update:
@@ -586,14 +512,14 @@ class RequestView(ClientBaseView):
         controls, buttons = [], []
         await self.set_type(loading=True)
         self.request = await self.client.session.api.client.requests.get(id_=self.request_id)
-        self.orders = await self.client.session.api.client.orders.list_get.by_request(request_id=self.request_id)
-        self.account_client_text = await self.client.session.api.client.accounts.clients_texts.get(
-            key=f'request_{self.request.type}_{self.request.state}',
-        )
         await self.set_type(loading=False)
         await self.update_info_card(update=False)
         controls += [
-            self.info_card,
+            InformationContainer(
+                content=self.info_card_column,
+                bgcolor=colors.PRIMARY_CONTAINER,
+                padding=padding.symmetric(vertical=32, horizontal=32),
+            ),
         ]
         if self.confirmation_timer:
             self.confirmation_timer.running = False

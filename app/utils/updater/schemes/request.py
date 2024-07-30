@@ -54,5 +54,6 @@ def get_request_scheme(request: dict = None) -> list:
         request['output_value'],
         request['output_rate'],
         request['output_currency_value'],
+        request['client_text'],
         request['date'],
     ]
