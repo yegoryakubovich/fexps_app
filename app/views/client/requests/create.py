@@ -300,7 +300,8 @@ class RequestCreateView(ClientBaseView):
                 TextField(
                     label=await self.client.session.gtv(key='request_get_client_text'),
                     multiline=True,
-                    value=account_client_text.value.format(
+                    value=value_replace(
+                        account_client_text.value,
                         type=request_type,
                         state=request_state,
                         input_currency=input_currency,

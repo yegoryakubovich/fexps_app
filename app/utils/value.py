@@ -92,3 +92,9 @@ def requisite_value_to_str(
             value_list[2], value_list[3] = '****', '****'
         value = ' '.join(value_list)
     return value
+
+
+def value_replace(value_: str, **kwargs):
+    for key, item in kwargs.items():
+        value_ = value_.replace('{' + str(key) + '}', str(item))
+    return value_

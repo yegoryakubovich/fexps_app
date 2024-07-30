@@ -16,7 +16,6 @@
 
 
 import asyncio
-import logging
 from functools import partial
 from typing import Optional
 
@@ -30,7 +29,7 @@ from app.controls.layout import ClientBaseView
 from app.utils import Fonts, value_to_float, Icons, value_to_str
 from app.utils.constants.order import OrderStates, OrderTypes
 from app.utils.constants.request import RequestStates, RequestTypes
-from app.utils.value import requisite_value_to_str, get_fix_rate
+from app.utils.value import requisite_value_to_str, get_fix_rate, value_replace
 from app.views.client.requests.models import RequestUpdateNameModel
 from app.views.client.requests.orders.get import RequestOrderView
 from config import settings
@@ -535,7 +534,8 @@ class RequestView(ClientBaseView):
                 TextField(
                     label=await self.client.session.gtv(key='request_get_client_text'),
                     multiline=True,
-                    value=self.account_client_text.value.format(
+                    value=value_replace(
+                        self.account_client_text.value,
                         name=self.request.name,
                         type=self.request.type,
                         state=self.request.state,

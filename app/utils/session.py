@@ -24,6 +24,7 @@ from flet_manager.utils import Client
 
 from app.utils import Icons
 from app.utils.registration import Registration
+from app.utils.value import value_replace
 from config import settings
 from fexps_api_client import FexpsApiClient
 from fexps_api_client.utils import ApiException
@@ -175,10 +176,7 @@ class Session:
             return None
 
     async def gtv(self, key, **kwargs):
-        text = await self.get_text_value(key=key)
-        if kwargs:
-            return text.format(**kwargs)
-        return text
+        return value_replace(await self.get_text_value(key=key), **kwargs)
 
     async def get_text_pack(self, language: str = None):
         if not language:
