@@ -107,8 +107,8 @@ class RegistrationFirstView(AuthView):
             if not await Error.check_field(self, field, min_len=min_len, max_len=max_len):
                 await self.set_type(loading=False)
                 return
-        username = self.tf_username.value.replace(' ','')
-        password = self.tf_password.value.replace(' ','')
+        username = self.tf_username.value.replace(' ', '')
+        password = self.tf_password.value.replace(' ', '')
         try:
             await self.client.session.api.client.accounts.check_username(username=username)
         except ApiException as exception:
