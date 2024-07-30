@@ -17,7 +17,8 @@
 
 from functools import partial
 
-from flet_core import Column, ScrollMode, Row, ControlEvent, colors, Image, MainAxisAlignment, Container, Divider
+from flet_core import Column, ScrollMode, Row, ControlEvent, colors, Image, MainAxisAlignment, Container, Divider, \
+    VerticalDivider
 
 from app.controls.button import Chip, StandardButton
 from app.controls.information import Text
@@ -81,6 +82,10 @@ class RequisiteTab(BaseTab):
         cards: list[StandardButton] = []
         for order in orders:
             currency = order.currency
+            requisite_data_str = ', '.join([
+                value_
+                for key_, value_ in order.requisite_fields.items()
+            ])
             state_str = await self.client.session.gtv(key=f'requisite_order_{order.type}_{order.state}')
             value = value_to_float(value=order.currency_value, decimal=currency.decimal)
             value_str = f'{value} {currency.id_str.upper()}'
@@ -90,11 +95,27 @@ class RequisiteTab(BaseTab):
                         controls=[
                             Column(
                                 controls=[
-                                    Text(
-                                        value=f'#{order.id:08}',
-                                        size=settings.get_font_size(multiple=1.2),
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=color,
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=f'#{order.id:08}',
+                                                size=settings.get_font_size(multiple=1.2),
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=color,
+                                            ),
+                                            Text(
+                                                value='|',
+                                                size=settings.get_font_size(multiple=1.2),
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=color,
+                                            ),
+                                            Text(
+                                                value=requisite_data_str,
+                                                size=settings.get_font_size(multiple=1.2),
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=color,
+                                            ),
+                                        ],
                                     ),
                                     Row(
                                         controls=[
@@ -400,6 +421,7 @@ class RequisiteTab(BaseTab):
         self.history_requisites = history_requisites.requisites
         self.total_pages = history_requisites.pages
         await self.update_history_requisites_column()
+
     async def requisite_view(self, requisite_id: int, _: ControlEvent):
         from app.views.client.requisites import RequisiteView
         await self.client.change_view(view=RequisiteView(requisite_id=requisite_id))

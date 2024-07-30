@@ -387,6 +387,10 @@ class RequestView(ClientBaseView):
             if order.type != type_:
                 continue
             currency = order.currency
+            requisite_data_str = ', '.join([
+                value_
+                for key_, value_ in order.requisite_fields.items()
+            ])
             state_str = await self.client.session.gtv(key=f'request_order_{order.type}_{order.state}')
             value = value_to_float(value=order.currency_value, decimal=currency.decimal)
             value_str = f'{value} {currency.id_str.upper()}'
@@ -406,11 +410,27 @@ class RequestView(ClientBaseView):
                         controls=[
                             Column(
                                 controls=[
-                                    Text(
-                                        value=f'#{order.id:08}',
-                                        size=settings.get_font_size(multiple=1.2),
-                                        font_family=Fonts.SEMIBOLD,
-                                        color=color,
+                                    Row(
+                                        controls=[
+                                            Text(
+                                                value=f'#{order.id:08}',
+                                                size=settings.get_font_size(multiple=1.2),
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=color,
+                                            ),
+                                            Text(
+                                                value='|',
+                                                size=settings.get_font_size(multiple=1.2),
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=color,
+                                            ),
+                                            Text(
+                                                value=requisite_data_str,
+                                                size=settings.get_font_size(multiple=1.2),
+                                                font_family=Fonts.SEMIBOLD,
+                                                color=color,
+                                            ),
+                                        ],
                                     ),
                                     Row(
                                         controls=[
