@@ -211,11 +211,11 @@ class Session:
             for type_, func in methods:
                 if not isinstance(last_view, type_):
                     continue
-                await func(view=last_view)
-                # try:
-                #     await func(view=last_view)
-                # except Exception as exception:
-                #     logging.critical(f'Updater pass {type_} | {exception}')
+                # await func(view=last_view)
+                try:
+                    await func(view=last_view)
+                except Exception as exception:
+                    logging.critical(f'Updater pass {type_} | {exception}')
             await asyncio.sleep(settings.update_interval)
 
     async def on_disconnect(self, _):
