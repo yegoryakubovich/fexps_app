@@ -36,19 +36,25 @@ async def check_update_main_home_view(view: HomeTab, update: bool = True):
     current_wallet = await view.client.session.api.client.wallets.get(id_=view.client.session.current_wallet['id'])
     if update_check(scheme=get_wallet_scheme, obj_1=view.client.session.current_wallet, obj_2=current_wallet):
         view.client.session.current_wallet = current_wallet
-        await view.update_balance_container(update=update)
+        await view.update_balance_stack(update=update)
+    if update:
+        await view.balance_stack.update_async()
     # current_requests
-    current_requests = await view.client.session.api.client.requests.search(is_active=True)
-    if update_check(scheme=get_request_list_scheme, obj_1=view.current_requests, obj_2=current_requests.requests):
-        view.current_requests = current_requests.requests
+    currently_request = await view.client.session.api.client.requests.search(is_active=True)
+    if update_check(scheme=get_request_list_scheme, obj_1=view.currently_request, obj_2=currently_request.requests):
+        view.currently_request = currently_request.requests
         await view.update_currently_request_row(update=update)
+    if update:
+        await view.currently_request_row.update_async()
     # transfers
-    transfers = await view.client.session.api.client.transfers.search(
+    transfer_history = await view.client.session.api.client.transfers.search(
         wallet_id=view.client.session.current_wallet['id'],
         is_sender=view.selected_chip in [Chips.output, Chips.all],
         is_receiver=view.selected_chip in [Chips.input, Chips.all],
         page=view.page_transfer,
     )
-    if update_check(scheme=get_transfer_list_scheme, obj_1=view.transfers, obj_2=transfers.transfers):
-        view.transfers = transfers.transfers
+    if update_check(scheme=get_transfer_list_scheme, obj_1=view.transfer_history, obj_2=transfer_history.transfers):
+        view.transfer_history = transfer_history.transfers
         await view.update_transfer_history_row(update=update)
+    if update:
+        await view.transfer_history_row.update_async()

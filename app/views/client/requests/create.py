@@ -31,7 +31,7 @@ from app.utils.calculations.requests.rate import calculate_request_rate_all_by_i
     calculate_request_rate_all_by_output_currency_value, calculate_request_rate_input_by_input_currency_value, \
     calculate_request_rate_input_by_input_value, calculate_request_rate_output_by_output_value, \
     calculate_request_rate_output_by_output_currency_value
-from app.utils.value import value_to_int
+from app.utils.value import value_to_int, value_replace
 from app.views.client.account.requisite_data.models import RequisiteDataCreateModel
 from app.views.client.requests.get import RequestView
 from config import settings

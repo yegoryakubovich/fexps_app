@@ -56,9 +56,9 @@ class AccountTab(BaseTab):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.account_column = Column(spacing=0, horizontal_alignment=CrossAxisAlignment.CENTER, )
+        self.account_column = Column(spacing=0, horizontal_alignment=CrossAxisAlignment.CENTER)
 
-    async def update_account_container(self, update: bool = True):
+    async def update_account_column(self, update: bool = True):
         firstname = self.client.session.account.firstname
         lastname = self.client.session.account.lastname
         username = self.client.session.account.username
@@ -90,7 +90,7 @@ class AccountTab(BaseTab):
             await self.account_column.update_async()
 
     async def construct(self):
-        await self.update_account_container(update=False)
+        await self.update_account_column(update=False)
         sections = [
             Section(
                 name='my_account',

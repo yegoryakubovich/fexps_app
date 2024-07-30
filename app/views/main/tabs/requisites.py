@@ -43,10 +43,10 @@ class StateChips:
 
 
 class RequisiteTab(BaseTab):
-    history_requisites = list[dict]
-    history_requisites_column: Column
     current_orders = list[dict]
     current_orders_column: Column
+    history_requisites = list[dict]
+    history_requisites_column: Column
     orders = list[dict]
     orders_column: Column
 
@@ -65,10 +65,10 @@ class RequisiteTab(BaseTab):
             'history_requisites': None,
         }
         # null data
-        self.history_requisites = []
-        self.history_requisites_column = Column()
         self.current_orders = []
         self.current_orders_column = Column()
+        self.history_requisites = []
+        self.history_requisites_column = Column()
         self.orders = []
         self.orders_column = Column()
 
@@ -343,9 +343,7 @@ class RequisiteTab(BaseTab):
             await self.orders_column.update_async()
 
     async def construct(self):
-        await self.update_current_orders_column(update=False)
         await self.update_history_requisites_column(update=False)
-        await self.update_orders_column(update=False)
         create_disable = 'requisite_no' in self.client.session.account.permissions
         self.scroll = ScrollMode.AUTO
         self.controls = [
@@ -377,14 +375,31 @@ class RequisiteTab(BaseTab):
 
     async def chip_type_select(self, type_: str, _):
         self.selected_type_chip = type_
-        await self.construct()
-        await self.update_async()
+        history_requisites = await self.client.session.api.client.requisites.search(
+            is_type_input=self.selected_type_chip in [TypeChips.INPUT, TypeChips.ALL],
+            is_type_output=self.selected_type_chip in [TypeChips.OUTPUT, TypeChips.ALL],
+            is_state_enable=self.selected_state_chip in [StateChips.ENABLE, StateChips.ALL],
+            is_state_stop=self.selected_state_chip in [StateChips.STOP, StateChips.ALL],
+            is_state_disable=self.selected_state_chip in [StateChips.DISABLE, StateChips.ALL],
+            page=self.page_requisites,
+        )
+        self.history_requisites = history_requisites.requisites
+        self.total_pages = history_requisites.pages
+        await self.update_history_requisites_column()
 
     async def chip_state_select(self, state: str, _):
         self.selected_state_chip = state
-        await self.construct()
-        await self.update_async()
-
+        history_requisites = await self.client.session.api.client.requisites.search(
+            is_type_input=self.selected_type_chip in [TypeChips.INPUT, TypeChips.ALL],
+            is_type_output=self.selected_type_chip in [TypeChips.OUTPUT, TypeChips.ALL],
+            is_state_enable=self.selected_state_chip in [StateChips.ENABLE, StateChips.ALL],
+            is_state_stop=self.selected_state_chip in [StateChips.STOP, StateChips.ALL],
+            is_state_disable=self.selected_state_chip in [StateChips.DISABLE, StateChips.ALL],
+            page=self.page_requisites,
+        )
+        self.history_requisites = history_requisites.requisites
+        self.total_pages = history_requisites.pages
+        await self.update_history_requisites_column()
     async def requisite_view(self, requisite_id: int, _: ControlEvent):
         from app.views.client.requisites import RequisiteView
         await self.client.change_view(view=RequisiteView(requisite_id=requisite_id))
@@ -392,11 +407,29 @@ class RequisiteTab(BaseTab):
     async def next_page(self, _):
         if self.page_requisites < self.total_pages:
             self.page_requisites += 1
-            await self.construct()
-            await self.update_async()
+            history_requisites = await self.client.session.api.client.requisites.search(
+                is_type_input=self.selected_type_chip in [TypeChips.INPUT, TypeChips.ALL],
+                is_type_output=self.selected_type_chip in [TypeChips.OUTPUT, TypeChips.ALL],
+                is_state_enable=self.selected_state_chip in [StateChips.ENABLE, StateChips.ALL],
+                is_state_stop=self.selected_state_chip in [StateChips.STOP, StateChips.ALL],
+                is_state_disable=self.selected_state_chip in [StateChips.DISABLE, StateChips.ALL],
+                page=self.page_requisites,
+            )
+            self.history_requisites = history_requisites.requisites
+            self.total_pages = history_requisites.pages
+            await self.update_history_requisites_column()
 
     async def previous_page(self, _):
         if self.page_requisites > 1:
             self.page_requisites -= 1
-            await self.construct()
-            await self.update_async()
+            history_requisites = await self.client.session.api.client.requisites.search(
+                is_type_input=self.selected_type_chip in [TypeChips.INPUT, TypeChips.ALL],
+                is_type_output=self.selected_type_chip in [TypeChips.OUTPUT, TypeChips.ALL],
+                is_state_enable=self.selected_state_chip in [StateChips.ENABLE, StateChips.ALL],
+                is_state_stop=self.selected_state_chip in [StateChips.STOP, StateChips.ALL],
+                is_state_disable=self.selected_state_chip in [StateChips.DISABLE, StateChips.ALL],
+                page=self.page_requisites,
+            )
+            self.history_requisites = history_requisites.requisites
+            self.total_pages = history_requisites.pages
+            await self.update_history_requisites_column()

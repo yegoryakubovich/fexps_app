@@ -81,7 +81,7 @@ class TransferCreateView(ClientBaseView):
             return
         try:
             await self.client.session.api.client.transfers.create(
-                wallet_from_id=self.client.session.current_wallet.id,
+                wallet_from_id=self.client.session.current_wallet['id'],
                 wallet_to_id=int(self.wallet_to_id_tf.value),
                 value=value_to_int(value=self.value_tf.value),
             )

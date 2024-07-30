@@ -46,10 +46,10 @@ class WalletView(ClientBaseView):
     async def get_wallet_list(self):
         wallets_list = []
         for wallet in self.wallets:
-            value = f'{wallet.value / 10 ** settings.default_decimal}'.replace('.', ',')
+            value = f'{wallet['value'] / 10 ** settings.default_decimal}'.replace('.', ',')
             bgcolor = colors.PRIMARY_CONTAINER
             color = colors.ON_PRIMARY_CONTAINER
-            if self.selected_wallet_id == wallet.id:
+            if self.selected_wallet_id == wallet['id']:
                 bgcolor = colors.PRIMARY
                 color = colors.ON_PRIMARY
             wallets_list.append(
@@ -59,7 +59,7 @@ class WalletView(ClientBaseView):
                             content=Row(
                                 controls=[
                                     Text(
-                                        value=f'{wallet.name}',
+                                        value=f'{wallet['name']}',
                                         size=settings.get_font_size(multiple=1.5),
                                         font_family=Fonts.SEMIBOLD,
                                         color=color,
@@ -75,7 +75,7 @@ class WalletView(ClientBaseView):
                             ),
                             bgcolor=bgcolor,
                             vertical=24,
-                            on_click=partial(self.select_wallet, wallet.id),
+                            on_click=partial(self.select_wallet, wallet['id']),
                             expand=True,
                         ),
                     ],
@@ -87,7 +87,7 @@ class WalletView(ClientBaseView):
         self.dialog = AlertDialog(modal=True)
         await self.set_type(loading=True)
         self.wallets = await self.client.session.api.client.wallets.get_list()
-        self.wallet = await self.client.session.api.client.wallets.get(id_=self.client.session.current_wallet.id)
+        self.wallet = await self.client.session.api.client.wallets.get(id_=self.client.session.current_wallet['id'])
         self.wallets_column = Column(
             controls=await self.get_wallet_list(),
             scroll=ScrollMode.AUTO,
@@ -228,7 +228,7 @@ class WalletView(ClientBaseView):
     async def wallet_edit_name_open(self, _):
         self.tf_name = TextField(
             label=await self.client.session.gtv(key='wallet_name'),
-            value=self.wallet.name,
+            value=self.wallet['name'],
         )
         self.dialog.content = Container(
             content=Column(
@@ -284,7 +284,7 @@ class WalletView(ClientBaseView):
 
     async def switch_wallet(self, _):
         for wallet in self.wallets:
-            if self.selected_wallet_id == wallet.id:
+            if self.selected_wallet_id == wallet['id']:
                 self.client.session.current_wallet = wallet
                 await self.client.session.set_cs(key='current_wallet', value=self.client.session.current_wallet)
         await self.client.change_view(go_back=True, delete_current=True, with_restart=True)

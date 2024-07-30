@@ -38,13 +38,12 @@ class Chips:
 
 
 class HomeTab(BaseTab):
-    transfers = list[dict]
-    current_requests = list[dict]
-
     account_row: Row
-    balance_container: InformationContainer
+    balance_stack: Stack
     actions_row: Row
+    currently_request = list[dict]
     currently_request_row: Row
+    transfer_history = list[dict]
     transfer_history_row: Row
 
     page_transfer: int = 1
@@ -55,11 +54,11 @@ class HomeTab(BaseTab):
         super().__init__(**kwargs)
         self.selected_chip = Chips.all
         self.account_row = Row(wrap=True)
-        self.balance_container = InformationContainer(content=Row(), height=150)
+        self.balance_stack = Stack(expand=True)
         self.actions_row = Row()
-        self.current_requests = []
+        self.currently_request = []
         self.currently_request_row = Row(wrap=True)
-        self.transfers = []
+        self.transfer_history = []
         self.transfer_history_row = Row(wrap=True)
 
     async def update_account_row(self, update: bool = True):
@@ -92,63 +91,60 @@ class HomeTab(BaseTab):
         if update:
             await self.account_row.update_async()
 
-    async def update_balance_container(self, update: bool = True):
+    async def update_balance_stack(self, update: bool = True):
         wallet_name = self.client.session.current_wallet['name']
         value = value_to_float(value=self.client.session.current_wallet['value'])
         value_str = value_to_str(value=value)
-        self.balance_container.content = Stack(
-            controls=[
-                Column(
-                    controls=[
-                        Row(
-                            controls=[
-                                Text(
-                                    value=f'{wallet_name}',
-                                    size=24,
-                                    font_family=Fonts.REGULAR,
-                                    color=colors.ON_PRIMARY,
-                                )
-                            ],
-                            alignment=MainAxisAlignment.CENTER,
-                        ),
-                        Row(
-                            controls=[
-                                Image(
-                                    src=Icons.COIN,
-                                    width=28,
-                                    color=colors.ON_PRIMARY,
-                                ),
-                                Text(
-                                    value=f'{value_str}',
-                                    size=settings.get_font_size(multiple=3),
-                                    font_family=Fonts.BOLD,
-                                    color=colors.ON_PRIMARY,
-                                ),
-                            ],
-                            alignment=MainAxisAlignment.CENTER,
-                        ),
-                    ],
-                    alignment=MainAxisAlignment.CENTER,
-                ),
-                Container(
-                    content=StandardButton(
-                        content=Image(
-                            src=Icons.WALLET_MENU,
-                            width=24,
-                            color=colors.ON_PRIMARY,
-                        ),
-                        color=colors.PRIMARY,
-                        on_click=self.select_wallet_view,
-                        horizontal=20,
-                        vertical=20,
+        self.balance_stack.controls = [
+            Column(
+                controls=[
+                    Row(
+                        controls=[
+                            Text(
+                                value=f'{wallet_name}',
+                                size=24,
+                                font_family=Fonts.REGULAR,
+                                color=colors.ON_PRIMARY,
+                            )
+                        ],
+                        alignment=MainAxisAlignment.CENTER,
                     ),
-                    alignment=alignment.top_right,
+                    Row(
+                        controls=[
+                            Image(
+                                src=Icons.COIN,
+                                width=28,
+                                color=colors.ON_PRIMARY,
+                            ),
+                            Text(
+                                value=f'{value_str}',
+                                size=settings.get_font_size(multiple=3),
+                                font_family=Fonts.BOLD,
+                                color=colors.ON_PRIMARY,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.CENTER,
+                    ),
+                ],
+                alignment=MainAxisAlignment.CENTER,
+            ),
+            Container(
+                content=StandardButton(
+                    content=Image(
+                        src=Icons.WALLET_MENU,
+                        width=24,
+                        color=colors.ON_PRIMARY,
+                    ),
+                    color=colors.PRIMARY,
+                    on_click=self.select_wallet_view,
+                    horizontal=20,
+                    vertical=20,
                 ),
-            ],
-            expand=True,
-        )
+                alignment=alignment.top_right,
+            ),
+        ]
         if update:
-            await self.balance_container.update_async()
+            await self.balance_stack.update_async()
 
     async def update_actions_row(self, update: bool = True):
         self.actions_row.controls = [
@@ -203,10 +199,8 @@ class HomeTab(BaseTab):
     """
 
     async def get_currently_request_cards(self) -> list[StandardButton]:
-        response = await self.client.session.api.client.requests.search(is_active=True)
-        self.current_requests = response.requests
         cards: list[StandardButton] = []
-        for request in self.current_requests:
+        for request in self.currently_request:
             state_str = await self.client.session.gtv(key=f'request_state_{request.state}')
             input_currency_id_str, output_currency_id_str, rate_currency_id_str = '', '', ''
             if request.type == RequestTypes.INPUT:
@@ -336,17 +330,9 @@ class HomeTab(BaseTab):
         ]
 
     async def get_history_transfer_cards(self) -> list[StandardButton]:
-        response = await self.client.session.api.client.transfers.search(
-            wallet_id=self.client.session.current_wallet['id'],
-            is_sender=self.selected_chip in [Chips.output, Chips.all],
-            is_receiver=self.selected_chip in [Chips.input, Chips.all],
-            page=self.page_transfer,
-        )
-        self.transfers = response.transfers
-        self.total_pages = response.pages
         self.scroll = ScrollMode.AUTO
         cards: list = []
-        for transfer in self.transfers:
+        for transfer in self.transfer_history:
             value = value_to_float(value=transfer.value)
             value_str, short_name = '', ''
             if transfer.operation == 'send':
@@ -417,9 +403,8 @@ class HomeTab(BaseTab):
 
     async def construct(self):
         await self.update_account_row(update=False)
-        await self.update_balance_container(update=False)
+        await self.update_balance_stack(update=False)
         await self.update_actions_row(update=False)
-        await self.update_currently_request_row(update=False)
         await self.update_transfer_history_row(update=False)
         self.scroll = ScrollMode.AUTO
         self.controls = [
@@ -427,7 +412,10 @@ class HomeTab(BaseTab):
                 content=Column(
                     controls=[
                         self.account_row,
-                        self.balance_container,
+                        InformationContainer(
+                            content=self.balance_stack,
+                            height=150,
+                        ),
                         self.actions_row,
                         self.currently_request_row,
                         self.transfer_history_row,

@@ -44,6 +44,8 @@ async def check_update_main_requisite_view(view: RequisiteTab, update: bool = Tr
     if update_check(scheme=get_order_list_scheme, obj_1=view.current_orders, obj_2=currency_orders):
         view.current_orders = currency_orders
         await view.update_current_orders_column(update=update)
+    if update:
+        await view.current_orders_column.update_async()
     # history_requisites
     history_requisites = await view.client.session.api.client.requisites.search(
         is_type_input=view.selected_type_chip in [TypeChips.INPUT, TypeChips.ALL],
@@ -59,7 +61,10 @@ async def check_update_main_requisite_view(view: RequisiteTab, update: bool = Tr
             obj_2=history_requisites.requisites,
     ):
         view.history_requisites = history_requisites.requisites
+        view.total_pages = history_requisites.pages
         await view.update_history_requisites_column(update=update)
+    if update:
+        await view.history_requisites_column.update_async()
     # orders
     orders = await view.client.session.api.client.orders.list_get.main(
         by_request=False,
@@ -70,3 +75,5 @@ async def check_update_main_requisite_view(view: RequisiteTab, update: bool = Tr
     if update_check(scheme=get_order_list_scheme, obj_1=view.orders, obj_2=orders):
         view.orders = orders
         await view.update_orders_column(update=update)
+    if update:
+        await view.orders_column.update_async()

@@ -25,5 +25,7 @@ async def check_update_main_account_view(view: AccountTab, update: bool = True):
     account = await view.client.session.api.client.accounts.get()
     if update_check(scheme=get_account_scheme, obj_1=view.client.session.account, obj_2=account):
         view.client.session.account = account
-        await view.update_account_container(update=update)
+        await view.update_account_column(update=update)
+    if update:
+        await view.account_column.update_async()
 

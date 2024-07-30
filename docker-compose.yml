@@ -6,7 +6,7 @@ services:
       dockerfile: dockerfile
     environment:
       MODULE_NAME: "main"
-      MAX_WORKERS: 2
+      MAX_WORKERS: 24
     ports:
       - "${APP_PORT}:80"
     volumes:

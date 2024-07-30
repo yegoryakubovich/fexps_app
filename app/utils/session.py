@@ -197,6 +197,7 @@ class Session:
         from app.views.client.requisites.orders import RequisiteOrderView
         from app.views.main.main import MainView
 
+        await asyncio.sleep(3)
         self.page.on_disconnect = self.on_disconnect
         methods = [
             (MainView, check_update_main_view),
@@ -210,10 +211,11 @@ class Session:
             for type_, func in methods:
                 if not isinstance(last_view, type_):
                     continue
-                try:
-                    await func(view=last_view)
-                except Exception as exception:
-                    logging.critical(f'Updater pass {type_} | {exception}')
+                await func(view=last_view)
+                # try:
+                #     await func(view=last_view)
+                # except Exception as exception:
+                #     logging.critical(f'Updater pass {type_} | {exception}')
             await asyncio.sleep(settings.update_interval)
 
     async def on_disconnect(self, _):

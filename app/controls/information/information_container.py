@@ -21,7 +21,7 @@ from flet_core import Container as FletContainer, colors
 class InformationContainer(FletContainer):
     def __init__(
             self,
-            content,
+            content=None,
             color=colors.ON_PRIMARY,
             bgcolor=colors.PRIMARY,
             on_click=None,

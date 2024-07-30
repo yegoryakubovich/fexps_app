@@ -15,6 +15,7 @@
 #
 
 
+import asyncio
 from functools import partial
 from typing import Optional
 
@@ -52,8 +53,8 @@ class ActionItem:
 class RequestTab(BaseTab):
     scopes: list[ActionItem]
 
-    current_requests = list[dict]
-    current_requests_column: Column
+    currently_request = list[dict]
+    currently_request_row: Row
     history_requests = list[dict]
     history_requests_column: Column
     tf_history_requests_search: TextField
@@ -68,9 +69,15 @@ class RequestTab(BaseTab):
         super().__init__(**kwargs)
         self.selected_chip = Chips.COMPLETED
         self.partner_chip = False
-        self.search_value = None
-        self.current_requests = []
-        self.current_requests_column = Column()
+        self.search_value = ''
+
+        self.currently_request = []
+        self.currently_request_row = Row(wrap=True)
+        self.tf_history_requests_search = TextField(
+            label='request_history_search',
+            value=self.search_value,
+            expand=True,
+        )
         self.history_requests = []
         self.history_requests_column = Column()
 
@@ -188,16 +195,16 @@ class RequestTab(BaseTab):
     CURRENTLY REQUESTS
     """
 
-    async def update_current_request_column(self, update: bool = True):
-        cards = await self.get_request_cards(requests=self.current_requests)
-        self.current_requests_column.controls = []
+    async def update_currently_request_row(self, update: bool = True):
+        cards = await self.get_request_cards(requests=self.currently_request)
+        self.currently_request_row.controls = []
         if cards:
-            self.current_requests_column.controls = [
+            self.currently_request_row.controls = [
                 SubTitle(value=await self.client.session.gtv(key='requests_currently_title')),
                 *cards,
             ]
         if update:
-            await self.current_requests_column.update_async()
+            await self.currently_request_row.update_async()
 
     """
     HISTORY REQUESTS
@@ -241,12 +248,9 @@ class RequestTab(BaseTab):
             ]
         return chips
 
-    async def update_history_request_column(self, update: bool = True):
-        self.tf_history_requests_search = TextField(
-            label=await self.client.session.gtv(key='request_history_search'),
-            value=self.search_value,
-            expand=True,
-        )
+    async def update_history_requests_column(self, update: bool = True):
+        self.tf_history_requests_search.label = await self.client.session.gtv(key='request_history_search')
+        self.tf_history_requests_search.value = self.search_value
         self.history_requests_column.controls = [
             Row(
                 controls=[
@@ -284,11 +288,10 @@ class RequestTab(BaseTab):
             ),
         ]
         if update:
-            await self.update_async()
+            await self.history_requests_column.update_async()
 
     async def construct(self):
-        await self.update_current_request_column(update=False)
-        await self.update_history_request_column(update=False)
+        await self.update_history_requests_column(update=False)
         self.scroll = ScrollMode.AUTO
         self.controls = [
             Container(
@@ -299,18 +302,32 @@ class RequestTab(BaseTab):
                             create_name_text=await self.client.session.gtv(key='create'),
                             on_create=self.request_create,
                         ),
-                        self.current_requests_column,
+                        self.currently_request_row,
                         self.history_requests_column,
-                    ]
+                    ],
                 ),
                 padding=10,
             )
         ]
 
+    @staticmethod
+    async def start_pause(coro):
+        await asyncio.sleep(3)
+        await coro
+
     async def change_request_search(self, _=None):
         self.search_value = self.tf_history_requests_search.value
-        await self.construct()
-        await self.update_async()
+        history_requests = await self.client.session.api.client.requests.search(
+            id_=self.search_value,
+            is_active=self.selected_chip in [Chips.ACTIVE, Chips.ALL],
+            is_completed=self.selected_chip in [Chips.COMPLETED, Chips.ALL],
+            is_canceled=self.selected_chip in [Chips.CANCELED, Chips.ALL],
+            is_partner=self.partner_chip,
+            page=self.page_request,
+        )
+        self.history_requests = history_requests.requests
+        self.total_pages = history_requests.pages
+        await self.update_history_requests_column()
 
     async def request_create(self, _):
         from app.views.client.requests import RequestCreateView
@@ -321,22 +338,58 @@ class RequestTab(BaseTab):
 
     async def chip_select(self, event: ControlEvent):
         self.selected_chip = event.control.key
-        await self.construct()
-        await self.update_async()
+        history_requests = await self.client.session.api.client.requests.search(
+            id_=self.search_value,
+            is_active=self.selected_chip in [Chips.ACTIVE, Chips.ALL],
+            is_completed=self.selected_chip in [Chips.COMPLETED, Chips.ALL],
+            is_canceled=self.selected_chip in [Chips.CANCELED, Chips.ALL],
+            is_partner=self.partner_chip,
+            page=self.page_request,
+        )
+        self.history_requests = history_requests.requests
+        self.total_pages = history_requests.pages
+        await self.update_history_requests_column()
 
     async def chip_partner_select(self, _: ControlEvent):
         self.partner_chip = False if self.partner_chip else True
-        await self.construct()
-        await self.update_async()
+        history_requests = await self.client.session.api.client.requests.search(
+            id_=self.search_value,
+            is_active=self.selected_chip in [Chips.ACTIVE, Chips.ALL],
+            is_completed=self.selected_chip in [Chips.COMPLETED, Chips.ALL],
+            is_canceled=self.selected_chip in [Chips.CANCELED, Chips.ALL],
+            is_partner=self.partner_chip,
+            page=self.page_request,
+        )
+        self.history_requests = history_requests.requests
+        self.total_pages = history_requests.pages
+        await self.update_history_requests_column()
 
     async def next_page(self, _):
         if self.page_request < self.total_pages:
             self.page_request += 1
-            await self.construct()
-            await self.update_async()
+            history_requests = await self.client.session.api.client.requests.search(
+                id_=self.search_value,
+                is_active=self.selected_chip in [Chips.ACTIVE, Chips.ALL],
+                is_completed=self.selected_chip in [Chips.COMPLETED, Chips.ALL],
+                is_canceled=self.selected_chip in [Chips.CANCELED, Chips.ALL],
+                is_partner=self.partner_chip,
+                page=self.page_request,
+            )
+            self.history_requests = history_requests.requests
+            self.total_pages = history_requests.pages
+            await self.update_history_requests_column()
 
     async def previous_page(self, _):
         if self.page_request > 1:
             self.page_request -= 1
-            await self.construct()
-            await self.update_async()
+            history_requests = await self.client.session.api.client.requests.search(
+                id_=self.search_value,
+                is_active=self.selected_chip in [Chips.ACTIVE, Chips.ALL],
+                is_completed=self.selected_chip in [Chips.COMPLETED, Chips.ALL],
+                is_canceled=self.selected_chip in [Chips.CANCELED, Chips.ALL],
+                is_partner=self.partner_chip,
+                page=self.page_request,
+            )
+            self.history_requests = history_requests.requests
+            self.total_pages = history_requests.pages
+            await self.update_history_requests_column()
