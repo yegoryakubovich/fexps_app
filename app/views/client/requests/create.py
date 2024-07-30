@@ -141,7 +141,7 @@ class RequestCreateView(ClientBaseView):
         )
         self.dd_input_currency = Dropdown(
             label=await self.client.session.gtv(key='currency'),
-            value=await self.client.session.get_cs(key='request_create_input_currency'),
+            # value=await self.client.session.get_cs(key='request_create_input_currency'),
             options=await self.get_currency_options(),
             on_change=partial(self.change_currency, 'input'),
             expand=2,
@@ -149,7 +149,7 @@ class RequestCreateView(ClientBaseView):
         self.t_input_available_sum = Text(value=value_to_str(value=0), font_family=Fonts.BOLD)
         self.dd_input_method = Dropdown(
             label=await self.client.session.gtv(key='request_create_input_method'),
-            value=await self.client.session.get_cs(key='request_create_input_method'),
+            # value=await self.client.session.get_cs(key='request_create_input_method'),
             on_change=self.change_method,
             disabled=True,
         )
@@ -221,13 +221,13 @@ class RequestCreateView(ClientBaseView):
         self.dd_output_currency = Dropdown(
             label=await self.client.session.gtv(key='currency'),
             options=await self.get_currency_options(),
-            value=await self.client.session.get_cs(key='request_create_output_currency'),
+            # value=await self.client.session.get_cs(key='request_create_output_currency'),
             on_change=partial(self.change_currency, 'output'),
             expand=2,
         )
         self.dd_output_method = Dropdown(
             label=await self.client.session.gtv(key='request_create_output_method'),
-            value=await self.client.session.get_cs(key='request_create_output_method'),
+            # value=await self.client.session.get_cs(key='request_create_output_method'),
             on_change=self.change_output_method,
             disabled=True,
         )
@@ -337,7 +337,7 @@ class RequestCreateView(ClientBaseView):
         await self.update_common(update=False)
         await self.update_output(update=False)
         self.client_text_column = Column()
-        await self.write_data()
+        # await self.write_data()
         self.controls = await self.get_controls(
             with_expand=True,
             title=await self.client.session.gtv(key='request_create_title'),
