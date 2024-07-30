@@ -1,6 +1,6 @@
 {
   "name": "Finance Express",
-  "short_name": "fexps",
+  "short_name": "Finance Express",
   "start_url": ".",
   "orientation": "natural",
   "display": "standalone",
