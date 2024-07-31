@@ -46,7 +46,7 @@ class WalletView(ClientBaseView):
     async def get_wallet_list(self):
         wallets_list = []
         for wallet in self.wallets:
-            value = f'{wallet['value'] / 10 ** settings.default_decimal}'.replace('.', ',')
+            value = f'{wallet["value"] / 10 ** settings.default_decimal}'.replace('.', ',')
             bgcolor = colors.PRIMARY_CONTAINER
             color = colors.ON_PRIMARY_CONTAINER
             if self.selected_wallet_id == wallet['id']:
@@ -59,7 +59,7 @@ class WalletView(ClientBaseView):
                             content=Row(
                                 controls=[
                                     Text(
-                                        value=f'{wallet['name']}',
+                                        value=wallet['name'],
                                         size=settings.get_font_size(multiple=1.5),
                                         font_family=Fonts.SEMIBOLD,
                                         color=color,
