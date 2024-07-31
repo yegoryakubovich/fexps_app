@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+import logging
 from functools import partial
 
-from flet_core import ScrollMode, colors
+from flet_core import colors, Row, ScrollMode
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -40,25 +39,24 @@ class RoleView(AdminBaseView):
 
     async def construct(self):
         await self.set_type(loading=True)
-        self.role = await self.client.session.api.admin.roles.get(
-            id_=self.role_id
-        )
-        self.permissions = await self.client.session.api.admin.roles.permissions.get_list(
-            role_id=self.role_id,
-        )
+        self.role = await self.client.session.api.admin.roles.get(id_=self.role_id)
+        self.permissions = await self.client.session.api.admin.roles.permissions.get_list(role_id=self.role_id)
         await self.set_type(loading=False)
-
         self.scroll = ScrollMode.AUTO
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key=self.role['name_text']),
             main_section_controls=[
-                StandardButton(
-                    content=Text(
-                        value=await self.client.session.gtv(key='delete'),
-                        size=settings.get_font_size(multiple=1.5),
-                    ),
-                    on_click=self.delete_role,
-                    expand=True,
+                Row(
+                    controls=[
+                        StandardButton(
+                            content=Text(
+                                value=await self.client.session.gtv(key='delete'),
+                                size=settings.get_font_size(multiple=1.5),
+                            ),
+                            on_click=self.delete_role,
+                            expand=True,
+                        ),
+                    ],
                 ),
             ],
             sections=[
@@ -82,7 +80,7 @@ class RoleView(AdminBaseView):
                     ],
                 ),
             ],
-         )
+        )
 
     async def delete_role(self, _):
         await self.client.session.api.admin.roles.delete(

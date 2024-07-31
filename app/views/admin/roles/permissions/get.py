@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from flet_core import Row
 
 from app.controls.button import StandardButton
 from app.controls.information import Text
@@ -31,21 +31,22 @@ class RolePermissionView(AdminBaseView):
 
     async def construct(self):
         await self.set_type(loading=True)
-        self.permission = await self.client.session.api.admin.roles.permissions.get(
-            id_=self.permission_id
-        )
+        self.permission = await self.client.session.api.admin.roles.permissions.get(id_=self.permission_id)
         await self.set_type(loading=False)
-
         self.controls = await self.get_controls(
             title=await self.client.session.gtv(key=self.permission['permission']),
             main_section_controls=[
-                StandardButton(
-                    content=Text(
-                        value=await self.client.session.gtv(key='delete'),
-                        size=settings.get_font_size(multiple=1.5),
-                    ),
-                    on_click=self.delete_permission,
-                    expand=True,
+                Row(
+                    controls=[
+                        StandardButton(
+                            content=Text(
+                                value=await self.client.session.gtv(key='delete'),
+                                size=settings.get_font_size(multiple=1.5),
+                            ),
+                            on_click=self.delete_permission,
+                            expand=True,
+                        ),
+                    ],
                 ),
             ],
         )
