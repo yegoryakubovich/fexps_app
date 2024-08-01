@@ -200,7 +200,7 @@ class RequisiteView(ClientBaseView):
                 Row(
                     controls=[
                         Text(
-                            value=await self.client.session.gtv(key='requisite_input_method'),
+                            value=await self.client.session.gtv(key='requisite_method'),
                             size=settings.get_font_size(multiple=1.5),
                             font_family=Fonts.SEMIBOLD,
                             color=colors.ON_PRIMARY_CONTAINER,
@@ -215,12 +215,12 @@ class RequisiteView(ClientBaseView):
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
                 ),
             ]
-        if self.requisite.output_method:
+        if self.requisite.output_requisite_data:
             info_card_controls += [
                 Row(
                     controls=[
                         Text(
-                            value=await self.client.session.gtv(key='requisite_output_method'),
+                            value=await self.client.session.gtv(key='requisite_method'),
                             size=settings.get_font_size(multiple=1.5),
                             font_family=Fonts.SEMIBOLD,
                             color=colors.ON_PRIMARY_CONTAINER,
@@ -234,6 +234,26 @@ class RequisiteView(ClientBaseView):
                     ],
                     alignment=MainAxisAlignment.SPACE_BETWEEN,
                 ),
+                *[
+                    Row(
+                        controls=[
+                            Text(
+                                value=await self.client.session.gtv(key=field_scheme['name_text_key']),
+                                size=settings.get_font_size(multiple=1.5),
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                            Text(
+                                value=self.requisite.output_requisite_data.fields[field_scheme['key']],
+                                size=settings.get_font_size(multiple=1.5),
+                                font_family=Fonts.SEMIBOLD,
+                                color=colors.ON_PRIMARY_CONTAINER,
+                            ),
+                        ],
+                        alignment=MainAxisAlignment.SPACE_BETWEEN,
+                    )
+                    for field_scheme in self.requisite.output_method.schema_fields
+                ],
             ]
         self.info_card = InformationContainer(
             content=Column(
